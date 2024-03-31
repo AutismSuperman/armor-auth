@@ -27,7 +27,10 @@ export default defineConfig({
     outDir,
     rollupOptions: {
       input: {
-        armorauth: resolve(armorauthDir, './index.html'),
+        index: resolve(armorauthDir, './index.html'),
+        login: resolve(armorauthDir, './login.html'),
+        consent: resolve(armorauthDir, './consent.html'),
+        device: resolve(armorauthDir, './device.html'),
       }
     },
   },

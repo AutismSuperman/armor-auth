@@ -117,7 +117,7 @@ const submit = async () => {
         <div class="flex-between h-15 px-4 mb-[2px] rounded-2">
           <div>
             <span class="ant-pro-form-login-logo">
-              <img class="h-[55px] w-[64px]" src="@/assets/logo.svg" />
+              <img class="h-[55px] w-[64px]" src="../../../assets/logo.svg" />
             </span>
             <span class="ant-pro-form-login-title"> ArmorAuth </span>
             <span class="ant-pro-form-login-desc">
@@ -145,7 +145,7 @@ const submit = async () => {
         <div class="box-border flex min-h-[550px]">
           <!-- 登录框左侧 -->
           <div class="ant-pro-form-login-main-left min-h-[550px] flex-center rounded-2 bg-[var(--bg-color-container)]">
-            <img src="@/assets/images/login-left.svg" class="h-5/6 w-5/6" />
+            <img src="../../../assets/images/login-left.svg" class="h-5/6 w-5/6" />
           </div>
           <a-divider m-0 type="vertical" class="ant-pro-login-divider min-h-[550px]" />
           <!-- 登录框右侧 -->

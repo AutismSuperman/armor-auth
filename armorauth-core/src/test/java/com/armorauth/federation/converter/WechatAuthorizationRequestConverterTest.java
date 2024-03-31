@@ -15,7 +15,7 @@
  */
 package com.armorauth.federation.converter;
 
-import com.armorauth.federation.wechat.WechatAuthorizationRequestConverter;
+import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;

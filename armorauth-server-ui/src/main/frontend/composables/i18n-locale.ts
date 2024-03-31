@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import { i18n, loadLanguageAsync } from '@/locales';
 import 'dayjs/locale/zh-cn';
-import router from '@/router';
 import { useLocaleStore } from '@/stores/locale';
 import { useMetaTitle } from '@/composables/meta-title';
 import { createSharedComposable } from '@vueuse/core';
 import { computed, ref, unref, watch } from 'vue';
+import { useRouter } from "vue-router";
 
 export const useI18nLocale = createSharedComposable(() => {
   // 加载多语言的loading状
@@ -37,6 +37,8 @@ export const useI18nLocale = createSharedComposable(() => {
       loading.value = false;
     }
   };
+
+  let router=useRouter();
 
   watch(
     locale,

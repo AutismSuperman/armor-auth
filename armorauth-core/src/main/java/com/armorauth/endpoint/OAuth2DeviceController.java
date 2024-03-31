@@ -38,12 +38,12 @@ public class OAuth2DeviceController {
         model.addAttribute("model", "device");
         model.addAttribute("deviceVerificationEndpoint",
                 authorizationServerSettings.getDeviceVerificationEndpoint());
-        return "index";
+        return "device";
     }
 
     @GetMapping("/activated")
     public String activated() {
-        return "index";
+        return "device";
     }
 
 

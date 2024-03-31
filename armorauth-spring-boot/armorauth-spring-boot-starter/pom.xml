@@ -51,7 +51,7 @@
         </dependency>
         <dependency>
             <groupId>com.armorauth</groupId>
-            <artifactId>armorauth</artifactId>
+            <artifactId>armorauth-core</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>

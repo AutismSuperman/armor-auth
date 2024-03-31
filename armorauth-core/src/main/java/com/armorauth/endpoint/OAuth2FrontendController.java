@@ -60,6 +60,15 @@ public class OAuth2FrontendController {
         this.authorizationServerSettings = authorizationServerSettings;
     }
 
+    @GetMapping(path = "/", produces = MediaType.TEXT_HTML_VALUE)
+    @RegisterReflectionForBinding(String.class)
+    public String index(@CurrentSecurityContext(expression = "authentication") Authentication authentication) {
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";
+        }
+        return "index";
+    }
+
 
     @GetMapping(path = "/login", produces = MediaType.TEXT_HTML_VALUE)
     @RegisterReflectionForBinding(String.class)
@@ -67,7 +76,7 @@ public class OAuth2FrontendController {
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
             return "redirect:/";
         }
-        return "index";
+        return "login";
     }
 
 
@@ -109,7 +118,7 @@ public class OAuth2FrontendController {
         model.addAttribute("scopes", scopesToApproves);
         model.addAttribute("previouslyApprovedScopes", previouslyApprovedScopesSet);
         model.addAttribute("principalName", principal.getName());
-        return "index";
+        return "consent";
     }
 
 

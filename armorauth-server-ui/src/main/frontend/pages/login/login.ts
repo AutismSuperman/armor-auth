@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
 import Antd from 'ant-design-vue';
-import App from '@/App.vue';
-import router from '@/router';
+import App from '@/pages/login/App.vue';
+import router from '@/pages/login/router';
 import { mocker } from '@/mocks/browser';
 import { setupI18n } from '@/locales';
 import { createPinia } from 'pinia';
@@ -29,7 +29,7 @@ async function start() {
   app.use(router);
   await setupI18n(app);
   app.use(head);
-  app.mount('#app');
+  app.mount('#login');
 }
 
 start();

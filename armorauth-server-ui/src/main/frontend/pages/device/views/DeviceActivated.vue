@@ -18,7 +18,7 @@ const { layoutSetting } = storeToRefs(appStore);
         <div class="flex-between h-15 px-4 mb-[2px] rounded-2">
           <div>
             <span class="ant-pro-form-device-activated-logo">
-              <img class="h-[55px] w-[64px]" src="@/assets/logo.svg" />
+              <img class="h-[55px] w-[64px]" src="../../../assets/logo.svg" />
             </span>
             <span class="ant-pro-form-device-activated-title"> ArmorAuth </span>
             <span class="ant-pro-form-device-activated-desc">
@@ -44,7 +44,7 @@ const { layoutSetting } = storeToRefs(appStore);
         <a-divider m-0 />
         <div class="box-border flex min-h-[550px]">
           <div class="ant-pro-form-device-activated-main-left flex-center flex-col px-5 relative z-11">
-            <img src="@/assets/images/device-activated.svg" class="h-5/6 w-5/6" />
+            <img src="../../../assets/images/device-activated.svg" class="h-5/6 w-5/6" />
           </div>
           <a-divider m-0 type="vertical" class="ant-pro-device-activated-divider min-h-[550px]" />
           <div class="ant-pro-form-device-activated-main-right px-5 w-[360px] flex items-center flex-col relative z-11">

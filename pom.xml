@@ -54,7 +54,6 @@
     </properties>
 
     <modules>
-        <module>armorauth</module>
         <module>armorauth-core</module>
         <module>armorauth-admin</module>
         <module>armorauth-spring-boot</module>

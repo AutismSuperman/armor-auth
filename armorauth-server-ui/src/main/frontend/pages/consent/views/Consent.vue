@@ -125,7 +125,7 @@ const allow = () => {
         <div class="flex-between h-15 px-4 mb-[2px] rounded-2">
           <div>
             <span class="ant-pro-form-consent-logo">
-              <img class="h-[55px] w-[64px]" src="@/assets/logo.svg" />
+              <img class="h-[55px] w-[64px]" src="../../../assets/logo.svg" />
             </span>
             <span class="ant-pro-form-consent-title"> ArmorAuth </span>
             <span class="ant-pro-form-consent-desc">
@@ -153,7 +153,7 @@ const allow = () => {
           <div class="ant-pro-form-consent-main-center flex-center flex-col px-5 relative z-11">
             <div class="ant-pro-form-consent-main-center-panel">
               <div class="text-16px text-center mt-2 mb-4">
-                <img src="@/assets/logo.svg" class="h-[128px] w-[128px] ml-auto" />
+                <img src="../../../assets/logo.svg" class="h-[128px] w-[128px] ml-auto" />
                 <span v-if="info.userCode" class="block">
                   <span class="text-xl font-bold"> {{ t('consent.device.have') }}</span
                   ><br />

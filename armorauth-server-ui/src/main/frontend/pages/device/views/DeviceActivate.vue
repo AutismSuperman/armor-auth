@@ -39,7 +39,7 @@ const activate = () => {
         <div class="flex-between h-15 px-4 mb-[2px] rounded-2">
           <div>
             <span class="ant-pro-form-device-activate-logo">
-              <img class="h-[55px] w-[64px]" src="@/assets/logo.svg" />
+              <img class="h-[55px] w-[64px]" src="../../../assets/logo.svg" />
             </span>
             <span class="ant-pro-form-device-activate-title"> ArmorAuth </span>
             <span class="ant-pro-form-device-activate-desc">
@@ -65,7 +65,7 @@ const activate = () => {
         <a-divider m-0 />
         <div class="box-border flex min-h-[550px]">
           <div class="ant-pro-form-device-activate-main-left flex-center flex-col px-5 relative z-11">
-            <img src="@/assets/images/device-activate.svg" class="h-5/6 w-5/6" />
+            <img src="../../../assets/images/device-activate.svg" class="h-5/6 w-5/6" />
           </div>
           <a-divider m-0 type="vertical" class="ant-pro-device-activate-divider min-h-[550px]" />
           <div class="ant-pro-form-device-activate-main-right px-5 w-[360px] flex items-center flex-col relative z-11">
