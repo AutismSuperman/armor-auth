@@ -16,11 +16,6 @@
     <dependencies>
         <dependency>
             <groupId>com.armorauth</groupId>
-            <artifactId>armorauth-federation-integration</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.armorauth</groupId>
             <artifactId>armorauth-model</artifactId>
             <version>${revision}</version>
         </dependency>

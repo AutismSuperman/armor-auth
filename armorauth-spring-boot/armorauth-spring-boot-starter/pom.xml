@@ -51,7 +51,7 @@
         </dependency>
         <dependency>
             <groupId>com.armorauth</groupId>
-            <artifactId>armorauth-core</artifactId>
+            <artifactId>armorauth-spring-boot-autoconfigure</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>

@@ -37,6 +37,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -76,13 +77,11 @@ public final class FederatedAuthenticationSuccessHandler implements Authenticati
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         if (authentication instanceof OAuth2AuthenticationToken) {
-            if (authentication.getPrincipal() instanceof OAuth2User) {
+            if (authentication.getPrincipal() instanceof OidcUser) {
                 //this.oidcUserHandler.accept((OidcUser) authentication.getPrincipal());
                 this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
-            } else if (authentication.getPrincipal() instanceof OidcUser) {
-                //this.oauth2UserHandler.accept((OAuth2User) authentication.getPrincipal());
-                this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
             } else {
+                //this.oauth2UserHandler.accept((OAuth2User) authentication.getPrincipal());
                 this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
             }
         } else if (authentication instanceof UsernamePasswordAuthenticationToken) {

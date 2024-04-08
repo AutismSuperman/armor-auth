@@ -165,21 +165,21 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
                 oauth2Authentication.getPrincipal(),
                 authenticationResult.getClientRegistration()
         );
+        BindUserRequest bindUserRequest =
+                new BindUserRequest(authenticationResult.getPrincipal(),
+                        authenticationResult.getClientRegistration().getRegistrationId(),
+                        authenticationResult
+                                .getClientRegistration()
+                                .getProviderDetails()
+                                .getUserInfoEndpoint()
+                                .getUserNameAttributeName()
+                );
+        bindUserRequestRepository.saveBindUserRequest(bindUserRequest, request, response);
         BindUserCheckToken checkBindUserResult =
                 (BindUserCheckToken) this.getAuthenticationManager().authenticate(checkBindUserRequest);
         // if not authenticated, send redirect to bind user page
         if (!checkBindUserResult.isAuthenticated()) {
             //send redirect to bind user page
-            BindUserRequest bindUserRequest =
-                    new BindUserRequest(authenticationResult.getPrincipal(),
-                            authenticationResult.getClientRegistration().getRegistrationId(),
-                            authenticationResult
-                                    .getClientRegistration()
-                                    .getProviderDetails()
-                                    .getUserInfoEndpoint()
-                                    .getUserNameAttributeName()
-                    );
-            bindUserRequestRepository.saveBindUserRequest(bindUserRequest, request, response);
             sendBindUser(request, response);
         }
         Assert.notNull(oauth2Authentication, "authentication result cannot be null");
