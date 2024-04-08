@@ -13,6 +13,7 @@
     <artifactId>armorauth-server</artifactId>
 
 
+
     <dependencies>
         <dependency>
             <groupId>com.armorauth</groupId>

@@ -1,0 +1,4 @@
+com.armorauth.autoconfigure.AuthorizationServerConfiguration
+com.armorauth.autoconfigure.DefaultSecurityConfiguration
+com.armorauth.autoconfigure.JpaConfiguration
+com.armorauth.autoconfigure.WebConfiguration

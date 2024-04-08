@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.autoconfigure.config;
+package com.armorauth.autoconfigure;
 
 
 import com.armorauth.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
@@ -69,7 +69,7 @@ import static com.armorauth.federation.ExtendedOAuth2ClientProvider.*;
 
 @EnableWebSecurity(debug = true)
 @Configuration(proxyBeanMethods = false)
-public class DefaultSecurityConfig {
+public class DefaultSecurityConfiguration {
 
     private static final String CUSTOM_LOGIN_PAGE = "/login";
 
