@@ -15,6 +15,8 @@
  */
 package com.armorauth.core.authorization.client;
 
+import com.armorauth.core.converter.OAuth2ModelConversionService;
+import com.armorauth.core.util.OAuth2ResolveUtil;
 import com.armorauth.data.entity.OAuth2Client;
 import com.armorauth.data.entity.OAuth2ClientSettings;
 import com.armorauth.data.entity.OAuth2Scope;
@@ -23,6 +25,8 @@ import com.armorauth.data.repository.OAuth2ClientRepository;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -102,10 +106,14 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                     oAuth2Scope.setScope(scope);
                     return oAuth2Scope;
                 }).collect(Collectors.toSet()));
-        OAuth2ClientSettings settings = ClientTransformUtil.fromClientSettings(registeredClient.getClientSettings());
-        settings.setClientId(clientId);
-        client.setClientSettings(settings);
-        OAuth2TokenSettings oAuth2TokenSettings = ClientTransformUtil.fromTokenSettings(registeredClient.getTokenSettings());
+        OAuth2ClientSettings oAuth2ClientSettings = OAuth2ModelConversionService.getSharedInstance()
+                .convert(registeredClient.getClientSettings(), OAuth2ClientSettings.class);
+        Assert.notNull(oAuth2ClientSettings, "OAuth2ClientSettings cannot be null");
+        oAuth2ClientSettings.setClientId(clientId);
+        client.setClientSettings(oAuth2ClientSettings);
+        OAuth2TokenSettings oAuth2TokenSettings = OAuth2ModelConversionService.getSharedInstance()
+                .convert(registeredClient.getTokenSettings(), OAuth2TokenSettings.class);
+        Assert.notNull(oAuth2TokenSettings, "OAuth2TokenSettings cannot be null");
         oAuth2TokenSettings.setClientId(clientId);
         client.setTokenSettings(oAuth2TokenSettings);
         return client;
@@ -136,18 +144,22 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                 .clientName(oAuth2Client.getClientName())
                 .clientAuthenticationMethods(authenticationMethods ->
                         clientAuthenticationMethods.forEach(authenticationMethod ->
-                                authenticationMethods.add(ClientTransformUtil.resolveClientAuthenticationMethod(authenticationMethod))))
+                                authenticationMethods.add(OAuth2ResolveUtil.resolveClientAuthenticationMethod(authenticationMethod))))
                 .authorizationGrantTypes((grantTypes) ->
                         authorizationGrantTypes.forEach(grantType ->
-                                grantTypes.add(ClientTransformUtil.resolveAuthorizationGrantType(grantType))))
+                                grantTypes.add(OAuth2ResolveUtil.resolveAuthorizationGrantType(grantType))))
                 .redirectUris((uris) -> uris.addAll(redirectUris))
                 .postLogoutRedirectUris((uris) -> uris.addAll(postLogoutRedirectUris))
                 .scopes(scopeSet -> scopeSet.addAll(oAuth2Scopes.stream()
                         .map(OAuth2Scope::getScope)
                         .collect(Collectors.toSet())))
                 .scope(OidcScopes.OPENID)
-                .clientSettings(ClientTransformUtil.toClientSettings(oAuth2Client.getClientSettings()))
-                .tokenSettings(ClientTransformUtil.toTokenSettings(oAuth2Client.getTokenSettings()));
+                .clientSettings(
+                        OAuth2ModelConversionService.getSharedInstance()
+                                .convert(oAuth2Client.getClientSettings(), ClientSettings.class))
+                .tokenSettings(
+                        OAuth2ModelConversionService.getSharedInstance()
+                                .convert(oAuth2Client.getTokenSettings(), TokenSettings.class));
         return builder.build();
     }
 
