@@ -15,8 +15,8 @@
  */
 package com.armorauth.federation.wechat.endpoint;
 
-import com.armorauth.federation.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
+import com.armorauth.federation.core.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.wechat.WechatParameterNames;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

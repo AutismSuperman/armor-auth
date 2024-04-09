@@ -15,8 +15,8 @@
  */
 package com.armorauth.federation.wechat.web.converter;
 
-import com.armorauth.federation.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.web.converter.OAuth2AuthorizationRequestConverter;
+import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
+import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestConverter;
 import com.armorauth.federation.wechat.WechatParameterNames;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;

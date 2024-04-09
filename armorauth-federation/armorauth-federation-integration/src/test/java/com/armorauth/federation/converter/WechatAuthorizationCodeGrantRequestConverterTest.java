@@ -15,7 +15,7 @@
  */
 package com.armorauth.federation.converter;
 
-import com.armorauth.federation.ExtendedOAuth2ClientProvider;
+import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
 import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestConverter;
 import lombok.extern.slf4j.Slf4j;

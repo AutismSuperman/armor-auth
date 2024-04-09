@@ -16,8 +16,8 @@
 package com.armorauth.samples.config;
 
 
-import com.armorauth.federation.ExtendedOAuth2ClientPropertiesMapper;
-import com.armorauth.federation.web.configurers.FederatedLoginConfigurer;
+import com.armorauth.federation.core.ExtendedOAuth2ClientPropertiesMapper;
+import com.armorauth.federation.integration.web.configurers.FederatedLoginConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.annotation.Bean;

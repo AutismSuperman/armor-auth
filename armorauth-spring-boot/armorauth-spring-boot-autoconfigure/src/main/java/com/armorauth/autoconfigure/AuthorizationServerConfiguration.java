@@ -15,17 +15,17 @@
  */
 package com.armorauth.autoconfigure;
 
-import com.armorauth.authentication.DeviceClientAuthenticationProvider;
-import com.armorauth.authorization.JpaOAuth2AuthorizationConsentService;
-import com.armorauth.authorization.JpaOAuth2AuthorizationService;
-import com.armorauth.authorization.client.JpaRegisteredClientRepository;
-import com.armorauth.constant.ConfigBeanNameConstants;
+import com.armorauth.core.authentication.DeviceClientAuthenticationProvider;
+import com.armorauth.core.authorization.JpaOAuth2AuthorizationConsentService;
+import com.armorauth.core.authorization.JpaOAuth2AuthorizationService;
+import com.armorauth.core.authorization.client.JpaRegisteredClientRepository;
+import com.armorauth.core.constant.ConfigBeanNameConstants;
 import com.armorauth.data.repository.AuthorizationConsentRepository;
 import com.armorauth.data.repository.AuthorizationRepository;
 import com.armorauth.data.repository.OAuth2ClientRepository;
-import com.armorauth.jose.Jwks;
-import com.armorauth.security.DeviceVerificationResponseHandler;
-import com.armorauth.web.authentication.DeviceClientAuthenticationConverter;
+import com.armorauth.core.jose.Jwks;
+import com.armorauth.core.security.DeviceVerificationResponseHandler;
+import com.armorauth.core.web.authentication.DeviceClientAuthenticationConverter;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;

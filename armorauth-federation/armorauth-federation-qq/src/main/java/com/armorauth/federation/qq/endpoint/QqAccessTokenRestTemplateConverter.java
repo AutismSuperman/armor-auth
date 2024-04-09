@@ -15,8 +15,8 @@
  */
 package com.armorauth.federation.qq.endpoint;
 
-import com.armorauth.federation.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.endpoint.OAuth2AccessTokenRestTemplateConverter;
+import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
+import com.armorauth.federation.core.endpoint.OAuth2AccessTokenRestTemplateConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.FormHttpMessageConverter;

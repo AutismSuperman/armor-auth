@@ -16,24 +16,28 @@
 package com.armorauth.autoconfigure;
 
 
-import com.armorauth.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
-import com.armorauth.constant.ConfigBeanNameConstants;
+import com.armorauth.core.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
+import com.armorauth.core.constant.ConfigBeanNameConstants;
 import com.armorauth.data.repository.UserInfoRepository;
-import com.armorauth.details.DelegateUserDetailsService;
-import com.armorauth.federation.*;
-import com.armorauth.federation.endpoint.OAuth2AccessTokenRestTemplateConverter;
-import com.armorauth.federation.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.core.details.DelegateUserDetailsService;
+import com.armorauth.federation.core.ExtendedOAuth2ClientPropertiesMapper;
+import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
+import com.armorauth.federation.core.endpoint.OAuth2AccessTokenRestTemplateConverter;
+import com.armorauth.federation.core.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
+import com.armorauth.federation.integration.DelegatingAccessTokenResponseClient;
+import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
+import com.armorauth.federation.integration.DelegatingOAuth2UserService;
 import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateConverter;
 import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.web.FederatedAuthenticationEntryPoint;
-import com.armorauth.federation.web.configurers.FederatedLoginConfigurer;
-import com.armorauth.federation.web.converter.OAuth2AuthorizationRequestConverter;
+import com.armorauth.federation.integration.web.FederatedAuthenticationEntryPoint;
+import com.armorauth.federation.integration.web.configurers.FederatedLoginConfigurer;
+import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestConverter;
 import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateConverter;
 import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestConverter;
-import com.armorauth.security.FailureAuthenticationEntryPoint;
-import com.armorauth.security.FederatedAuthenticationSuccessHandler;
+import com.armorauth.core.security.FailureAuthenticationEntryPoint;
+import com.armorauth.core.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.annotation.Bean;
@@ -65,7 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.armorauth.federation.ExtendedOAuth2ClientProvider.*;
+import static com.armorauth.federation.core.ExtendedOAuth2ClientProvider.*;
 
 @EnableWebSecurity(debug = true)
 @Configuration(proxyBeanMethods = false)
