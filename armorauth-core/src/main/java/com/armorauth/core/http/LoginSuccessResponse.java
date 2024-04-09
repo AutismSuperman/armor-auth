@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.core.web.endpoint;
+package com.armorauth.core.http;
 
 import lombok.Data;
 

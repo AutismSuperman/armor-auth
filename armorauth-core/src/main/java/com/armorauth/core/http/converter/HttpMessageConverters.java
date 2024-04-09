@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.core.web.http.converter;
+package com.armorauth.core.http.converter;
 
 import org.springframework.http.converter.GenericHttpMessageConverter;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;

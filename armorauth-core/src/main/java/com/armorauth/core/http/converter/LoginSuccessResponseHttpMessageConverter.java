@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.core.web.http.converter;
+package com.armorauth.core.http.converter;
 
-import com.armorauth.core.web.endpoint.LoginSuccessResponse;
+import com.armorauth.core.http.LoginSuccessResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.ParameterizedTypeReference;

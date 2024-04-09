@@ -16,8 +16,8 @@
 package com.armorauth.core.security;
 
 import com.armorauth.core.authentication.CaptchaAuthenticationToken;
-import com.armorauth.core.web.endpoint.LoginSuccessResponse;
-import com.armorauth.core.web.http.converter.LoginSuccessResponseHttpMessageConverter;
+import com.armorauth.core.http.LoginSuccessResponse;
+import com.armorauth.core.http.converter.LoginSuccessResponseHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
