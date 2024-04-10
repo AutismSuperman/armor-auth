@@ -20,14 +20,14 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.Assert;
 
-public class BindUserCheckToken extends AbstractAuthenticationToken {
+public class FederatedBindUserCheckToken extends AbstractAuthenticationToken {
 
     private final OAuth2User principal;
 
     private ClientRegistration clientRegistration;
 
 
-    public BindUserCheckToken(OAuth2User principal, ClientRegistration clientRegistration) {
+    public FederatedBindUserCheckToken(OAuth2User principal, ClientRegistration clientRegistration) {
         super(null);
         Assert.notNull(principal, "principal cannot be null");
         Assert.notNull(clientRegistration, "clientRegistration cannot be null");

@@ -15,9 +15,10 @@
  */
 package com.armorauth.federation.integration.authentication;
 
-public interface BindUserCheckService {
-
-
-    Boolean requireBindUser(String openId,String clientRegistrationId);
-
+public class DefaultFederatedBindUserCheckService implements FederatedBindUserCheckService {
+    @Override
+    public Boolean requireBindUser(String openId, String clientRegistrationId) {
+        // default return false
+        return false;
+    }
 }

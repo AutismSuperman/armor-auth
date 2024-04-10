@@ -15,7 +15,7 @@
  */
 package com.armorauth.federation.integration.web;
 
-import com.armorauth.federation.integration.authentication.BindUserCheckToken;
+import com.armorauth.federation.integration.authentication.FederatedBindUserCheckToken;
 import com.armorauth.federation.integration.authentication.FederatedLoginAuthenticationToken;
 import com.armorauth.federation.integration.endpoint.BindUserRequest;
 import com.armorauth.federation.integration.endpoint.BindUserRequestRepository;
@@ -161,7 +161,7 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
                 .convert(authenticationResult);
         // authenticationManager bind user
         Assert.notNull(oauth2Authentication, "authentication result cannot be null");
-        BindUserCheckToken checkBindUserRequest = new BindUserCheckToken(
+        FederatedBindUserCheckToken checkBindUserRequest = new FederatedBindUserCheckToken(
                 oauth2Authentication.getPrincipal(),
                 authenticationResult.getClientRegistration()
         );
@@ -175,8 +175,8 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
                                 .getUserNameAttributeName()
                 );
         bindUserRequestRepository.saveBindUserRequest(bindUserRequest, request, response);
-        BindUserCheckToken checkBindUserResult =
-                (BindUserCheckToken) this.getAuthenticationManager().authenticate(checkBindUserRequest);
+        FederatedBindUserCheckToken checkBindUserResult =
+                (FederatedBindUserCheckToken) this.getAuthenticationManager().authenticate(checkBindUserRequest);
         // if not authenticated, send redirect to bind user page
         if (!checkBindUserResult.isAuthenticated()) {
             //send redirect to bind user page

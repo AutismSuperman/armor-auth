@@ -15,9 +15,9 @@
  */
 package com.armorauth.federation.integration.web.configurers;
 
-import com.armorauth.federation.integration.authentication.BindUserCheckProvider;
-import com.armorauth.federation.integration.authentication.BindUserCheckService;
-import com.armorauth.federation.integration.authentication.DefaultBindUserCheckService;
+import com.armorauth.federation.integration.authentication.FederatedBindUserCheckProvider;
+import com.armorauth.federation.integration.authentication.FederatedBindUserCheckService;
+import com.armorauth.federation.integration.authentication.DefaultFederatedBindUserCheckService;
 import com.armorauth.federation.integration.web.FederatedAuthorizationRequestRedirectFilter;
 import com.armorauth.federation.integration.web.FederatedLoginAuthenticationFilter;
 import com.armorauth.federation.integration.web.HttpSecurityFilterOrderRegistrationUtils;
@@ -229,10 +229,10 @@ public class FederatedLoginConfigurer
             oauth2LoginAuthenticationProvider.setAuthoritiesMapper(userAuthoritiesMapper);
         }
         http.authenticationProvider(this.postProcess(oauth2LoginAuthenticationProvider));
-        BindUserCheckService bindUserCheckService = getBindUserCheckService();
-        BindUserCheckProvider bindUserCheckProvider =
-                new BindUserCheckProvider(bindUserCheckService);
-        http.authenticationProvider(this.postProcess(bindUserCheckProvider));
+        FederatedBindUserCheckService federatedBindUserCheckService = getBindUserCheckService();
+        FederatedBindUserCheckProvider federatedBindUserCheckProvider =
+                new FederatedBindUserCheckProvider(federatedBindUserCheckService);
+        http.authenticationProvider(this.postProcess(federatedBindUserCheckProvider));
         // check OIDC enable
         boolean oidcAuthenticationProviderEnabled = ClassUtils
                 .isPresent("org.springframework.security.oauth2.jwt.JwtDecoder", this.getClass().getClassLoader());
@@ -315,13 +315,13 @@ public class FederatedLoginConfigurer
         return (bean != null) ? bean : new DefaultOAuth2UserService();
     }
 
-    private BindUserCheckService getBindUserCheckService() {
-        if (this.userInfoEndpointConfig.bindUserCheckService != null) {
-            return this.userInfoEndpointConfig.bindUserCheckService;
+    private FederatedBindUserCheckService getBindUserCheckService() {
+        if (this.userInfoEndpointConfig.federatedBindUserCheckService != null) {
+            return this.userInfoEndpointConfig.federatedBindUserCheckService;
         }
-        ResolvableType type = ResolvableType.forClass(BindUserCheckService.class);
-        BindUserCheckService bean = getBeanOrNull(type);
-        return (bean != null) ? bean : new DefaultBindUserCheckService();
+        ResolvableType type = ResolvableType.forClass(FederatedBindUserCheckService.class);
+        FederatedBindUserCheckService bean = getBeanOrNull(type);
+        return (bean != null) ? bean : new DefaultFederatedBindUserCheckService();
     }
 
     private OAuth2UserService<OidcUserRequest, OidcUser> getOidcUserService() {
@@ -538,7 +538,7 @@ public class FederatedLoginConfigurer
 
         private String bindUserPage;
 
-        private BindUserCheckService bindUserCheckService;
+        private FederatedBindUserCheckService federatedBindUserCheckService;
 
 
         private UserInfoEndpointConfig() {
@@ -587,9 +587,9 @@ public class FederatedLoginConfigurer
             return this;
         }
 
-        public UserInfoEndpointConfig bindUserCheckService(BindUserCheckService bindUserCheckService) {
-            Assert.notNull(bindUserCheckService, "bindUserCheckService cannot be null");
-            this.bindUserCheckService = bindUserCheckService;
+        public UserInfoEndpointConfig bindUserCheckService(FederatedBindUserCheckService federatedBindUserCheckService) {
+            Assert.notNull(federatedBindUserCheckService, "federatedBindUserCheckService cannot be null");
+            this.federatedBindUserCheckService = federatedBindUserCheckService;
             return this;
         }
 

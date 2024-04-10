@@ -19,13 +19,13 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-public class BindUserCheckProvider implements AuthenticationProvider {
+public class FederatedBindUserCheckProvider implements AuthenticationProvider {
 
 
-    private final BindUserCheckService bindUserCheckService;
+    private final FederatedBindUserCheckService federatedBindUserCheckService;
 
-    public BindUserCheckProvider(BindUserCheckService bindUserCheckService) {
-        this.bindUserCheckService = bindUserCheckService;
+    public FederatedBindUserCheckProvider(FederatedBindUserCheckService federatedBindUserCheckService) {
+        this.federatedBindUserCheckService = federatedBindUserCheckService;
     }
 
     @Override
@@ -33,19 +33,19 @@ public class BindUserCheckProvider implements AuthenticationProvider {
         //check if the user is bind
         //1.需要绑定的话，就返回一个FederatedBindUserAuthenticationToken认证为false
         //1.不需要绑定的话，就返回一个FederatedBindUserAuthenticationToken认证为true
-        BindUserCheckToken bindUserCheckToken = (BindUserCheckToken) authentication;
-        String userNameAttributeName = bindUserCheckToken.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
-        Boolean requireBindUser = bindUserCheckService.requireBindUser(
-                bindUserCheckToken.getPrincipal().getAttributes().get(userNameAttributeName).toString(),
-                bindUserCheckToken.getClientRegistration().getRegistrationId()
+        FederatedBindUserCheckToken federatedBindUserCheckToken = (FederatedBindUserCheckToken) authentication;
+        String userNameAttributeName = federatedBindUserCheckToken.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
+        Boolean requireBindUser = federatedBindUserCheckService.requireBindUser(
+                federatedBindUserCheckToken.getPrincipal().getAttributes().get(userNameAttributeName).toString(),
+                federatedBindUserCheckToken.getClientRegistration().getRegistrationId()
         );
-        bindUserCheckToken.setAuthenticated(requireBindUser);
-        return bindUserCheckToken;
+        federatedBindUserCheckToken.setAuthenticated(requireBindUser);
+        return federatedBindUserCheckToken;
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return BindUserCheckToken.class.isAssignableFrom(authentication);
+        return FederatedBindUserCheckToken.class.isAssignableFrom(authentication);
     }
 
 }
