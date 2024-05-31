@@ -15,12 +15,12 @@
  */
 package com.armorauth.federation.integration.web.configurers;
 
+import com.armorauth.common.util.HttpSecurityFilterOrderRegistrationUtils;
 import com.armorauth.federation.integration.authentication.FederatedBindUserCheckProvider;
 import com.armorauth.federation.integration.authentication.FederatedBindUserCheckService;
 import com.armorauth.federation.integration.authentication.DefaultFederatedBindUserCheckService;
 import com.armorauth.federation.integration.web.FederatedAuthorizationRequestRedirectFilter;
 import com.armorauth.federation.integration.web.FederatedLoginAuthenticationFilter;
-import com.armorauth.federation.integration.web.HttpSecurityFilterOrderRegistrationUtils;
 import com.armorauth.federation.integration.web.OAuth2ClientConfigurerUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;

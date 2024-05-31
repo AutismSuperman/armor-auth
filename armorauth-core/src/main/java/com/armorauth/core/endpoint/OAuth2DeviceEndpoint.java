@@ -15,18 +15,18 @@
  */
 package com.armorauth.core.endpoint;
 
+import com.armorauth.common.annotation.FrameworkEndpoint;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Controller
-public class OAuth2DeviceController {
+@FrameworkEndpoint
+public class OAuth2DeviceEndpoint {
 
     private final AuthorizationServerSettings authorizationServerSettings;
 
-    public OAuth2DeviceController(AuthorizationServerSettings authorizationServerSettings) {
+    public OAuth2DeviceEndpoint(AuthorizationServerSettings authorizationServerSettings) {
         this.authorizationServerSettings = authorizationServerSettings;
     }
 

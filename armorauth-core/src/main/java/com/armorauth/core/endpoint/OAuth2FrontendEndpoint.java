@@ -16,6 +16,7 @@
 package com.armorauth.core.endpoint;
 
 
+import com.armorauth.common.annotation.FrameworkEndpoint;
 import com.armorauth.data.entity.OAuth2Scope;
 import com.armorauth.data.repository.OAuth2ScopeRepository;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
@@ -29,7 +30,6 @@ import org.springframework.security.oauth2.server.authorization.OAuth2Authorizat
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,8 +38,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.security.Principal;
 import java.util.*;
 
-@Controller
-public class OAuth2FrontendController {
+@FrameworkEndpoint
+public class OAuth2FrontendEndpoint {
 
 
     private final RegisteredClientRepository registeredClientRepository;
@@ -50,10 +50,10 @@ public class OAuth2FrontendController {
 
     private final AuthorizationServerSettings authorizationServerSettings;
 
-    public OAuth2FrontendController(RegisteredClientRepository registeredClientRepository,
-                                    OAuth2AuthorizationConsentService authorizationConsentService,
-                                    OAuth2ScopeRepository oAuth2ScopeRepository,
-                                    AuthorizationServerSettings authorizationServerSettings) {
+    public OAuth2FrontendEndpoint(RegisteredClientRepository registeredClientRepository,
+                                  OAuth2AuthorizationConsentService authorizationConsentService,
+                                  OAuth2ScopeRepository oAuth2ScopeRepository,
+                                  AuthorizationServerSettings authorizationServerSettings) {
         this.registeredClientRepository = registeredClientRepository;
         this.authorizationConsentService = authorizationConsentService;
         this.oAuth2ScopeRepository = oAuth2ScopeRepository;

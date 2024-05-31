@@ -5,15 +5,22 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.armorauth</groupId>
-        <artifactId>armorauth-federation</artifactId>
+        <artifactId>armorauth-parent</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>armorauth-federation-core</artifactId>
+    <artifactId>armorauth-common</artifactId>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-client</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -34,10 +41,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
     </dependencies>
 

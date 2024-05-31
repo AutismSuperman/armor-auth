@@ -12,8 +12,6 @@
     <artifactId>armorauth-spring-boot-autoconfigure</artifactId>
 
 
-
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

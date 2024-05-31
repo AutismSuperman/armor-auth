@@ -14,6 +14,11 @@
     <dependencies>
         <dependency>
             <groupId>com.armorauth</groupId>
+            <artifactId>armorauth-common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.armorauth</groupId>
             <artifactId>armorauth-federation-qq</artifactId>
             <version>${revision}</version>
         </dependency>
