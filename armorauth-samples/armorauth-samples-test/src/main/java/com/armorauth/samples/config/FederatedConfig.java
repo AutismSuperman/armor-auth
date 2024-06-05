@@ -17,7 +17,7 @@ package com.armorauth.samples.config;
 
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientPropertiesMapper;
-import com.armorauth.federation.integration.web.configurers.FederatedLoginConfigurer;
+import com.armorauth.federation.integration.web.configurers.FederatedOAuth2LoginConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.annotation.Bean;
@@ -47,9 +47,9 @@ public class FederatedConfig {
                 exceptionHandling
                         .authenticationEntryPoint(authenticationEntryPoint)
         );
-        FederatedLoginConfigurer federatedLoginConfigurer = new FederatedLoginConfigurer();
-        federatedLoginConfigurer.failureHandler(new AuthenticationEntryPointFailureHandler(authenticationEntryPoint));
-        httpSecurity.apply(federatedLoginConfigurer);
+        FederatedOAuth2LoginConfigurer federatedOAuth2LoginConfigurer = new FederatedOAuth2LoginConfigurer();
+        federatedOAuth2LoginConfigurer.failureHandler(new AuthenticationEntryPointFailureHandler(authenticationEntryPoint));
+        httpSecurity.apply(federatedOAuth2LoginConfigurer);
         return httpSecurity.build();
     }
 

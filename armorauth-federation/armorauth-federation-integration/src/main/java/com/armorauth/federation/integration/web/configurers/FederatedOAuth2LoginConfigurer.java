@@ -67,8 +67,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FederatedLoginConfigurer
-        extends AbstractAuthenticationFilterConfigurer<HttpSecurity, FederatedLoginConfigurer, FederatedLoginAuthenticationFilter> {
+public class FederatedOAuth2LoginConfigurer
+        extends AbstractAuthenticationFilterConfigurer<HttpSecurity, FederatedOAuth2LoginConfigurer, FederatedLoginAuthenticationFilter> {
 
 
     private final AuthorizationEndpointConfig authorizationEndpointConfig = new AuthorizationEndpointConfig();
@@ -86,7 +86,7 @@ public class FederatedLoginConfigurer
      * @param clientRegistrationRepository the repository of client registrations
      * @return the {@link OAuth2LoginConfigurer} for further configuration
      */
-    public FederatedLoginConfigurer clientRegistrationRepository(
+    public FederatedOAuth2LoginConfigurer clientRegistrationRepository(
             ClientRegistrationRepository clientRegistrationRepository) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         this.getBuilder().setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
@@ -100,7 +100,7 @@ public class FederatedLoginConfigurer
      * @return the {@link OAuth2LoginConfigurer} for further configuration
      * @since 5.1
      */
-    public FederatedLoginConfigurer authorizedClientRepository(
+    public FederatedOAuth2LoginConfigurer authorizedClientRepository(
             OAuth2AuthorizedClientRepository authorizedClientRepository) {
         Assert.notNull(authorizedClientRepository, "authorizedClientRepository cannot be null");
         this.getBuilder().setSharedObject(OAuth2AuthorizedClientRepository.class, authorizedClientRepository);
@@ -113,7 +113,7 @@ public class FederatedLoginConfigurer
      * @param authorizedClientService the authorized client service
      * @return the {@link OAuth2LoginConfigurer} for further configuration
      */
-    public FederatedLoginConfigurer authorizedClientService(OAuth2AuthorizedClientService authorizedClientService) {
+    public FederatedOAuth2LoginConfigurer authorizedClientService(OAuth2AuthorizedClientService authorizedClientService) {
         Assert.notNull(authorizedClientService, "authorizedClientService cannot be null");
         this.authorizedClientRepository(
                 new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService));
@@ -121,7 +121,7 @@ public class FederatedLoginConfigurer
     }
 
     @Override
-    public FederatedLoginConfigurer loginPage(String loginPage) {
+    public FederatedOAuth2LoginConfigurer loginPage(String loginPage) {
         Assert.hasText(loginPage, "loginPage cannot be empty");
         this.loginPage = loginPage;
         return this;
@@ -129,7 +129,7 @@ public class FederatedLoginConfigurer
 
 
     @Override
-    public FederatedLoginConfigurer loginProcessingUrl(String loginProcessingUrl) {
+    public FederatedOAuth2LoginConfigurer loginProcessingUrl(String loginProcessingUrl) {
         Assert.hasText(loginProcessingUrl, "loginProcessingUrl cannot be empty");
         this.loginProcessingUrl = loginProcessingUrl;
         return this;
@@ -143,7 +143,7 @@ public class FederatedLoginConfigurer
      *                                        options for the {@link OAuth2LoginConfigurer.AuthorizationEndpointConfig}
      * @return the {@link OAuth2LoginConfigurer} for further customizations
      */
-    public FederatedLoginConfigurer authorizationEndpoint(
+    public FederatedOAuth2LoginConfigurer authorizationEndpoint(
             Customizer<AuthorizationEndpointConfig> authorizationEndpointCustomizer) {
         authorizationEndpointCustomizer.customize(this.authorizationEndpointConfig);
         return this;
@@ -156,7 +156,7 @@ public class FederatedLoginConfigurer
      *                                the {@link OAuth2LoginConfigurer.TokenEndpointConfig}
      * @return the {@link OAuth2LoginConfigurer} for further customizations
      */
-    public FederatedLoginConfigurer tokenEndpoint(Customizer<TokenEndpointConfig> tokenEndpointCustomizer) {
+    public FederatedOAuth2LoginConfigurer tokenEndpoint(Customizer<TokenEndpointConfig> tokenEndpointCustomizer) {
         tokenEndpointCustomizer.customize(this.tokenEndpointConfig);
         return this;
     }
@@ -168,7 +168,7 @@ public class FederatedLoginConfigurer
      *                                      for the {@link OAuth2LoginConfigurer.RedirectionEndpointConfig}
      * @return the {@link OAuth2LoginConfigurer} for further customizations
      */
-    public FederatedLoginConfigurer redirectionEndpoint(
+    public FederatedOAuth2LoginConfigurer redirectionEndpoint(
             Customizer<RedirectionEndpointConfig> redirectionEndpointCustomizer) {
         redirectionEndpointCustomizer.customize(this.redirectionEndpointConfig);
         return this;
@@ -181,7 +181,7 @@ public class FederatedLoginConfigurer
      *                                   for the {@link OAuth2LoginConfigurer.UserInfoEndpointConfig}
      * @return the {@link OAuth2LoginConfigurer} for further customizations
      */
-    public FederatedLoginConfigurer userInfoEndpoint(Customizer<UserInfoEndpointConfig> userInfoEndpointCustomizer) {
+    public FederatedOAuth2LoginConfigurer userInfoEndpoint(Customizer<UserInfoEndpointConfig> userInfoEndpointCustomizer) {
         userInfoEndpointCustomizer.customize(this.userInfoEndpointConfig);
         return this;
     }
@@ -594,7 +594,7 @@ public class FederatedLoginConfigurer
          */
         public UserInfoEndpointConfig userAuthoritiesMapper(GrantedAuthoritiesMapper userAuthoritiesMapper) {
             Assert.notNull(userAuthoritiesMapper, "userAuthoritiesMapper cannot be null");
-            FederatedLoginConfigurer.this.getBuilder().setSharedObject(GrantedAuthoritiesMapper.class,
+            FederatedOAuth2LoginConfigurer.this.getBuilder().setSharedObject(GrantedAuthoritiesMapper.class,
                     userAuthoritiesMapper);
             return this;
         }

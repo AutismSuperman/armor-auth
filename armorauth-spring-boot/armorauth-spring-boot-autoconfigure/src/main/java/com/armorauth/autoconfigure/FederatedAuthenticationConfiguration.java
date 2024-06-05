@@ -26,7 +26,7 @@ import com.armorauth.federation.integration.DelegatingAccessTokenResponseClient;
 import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
 import com.armorauth.federation.integration.DelegatingOAuth2UserService;
 import com.armorauth.federation.integration.web.FederatedAuthenticationEntryPoint;
-import com.armorauth.federation.integration.web.configurers.FederatedLoginConfigurer;
+import com.armorauth.federation.integration.web.configurers.FederatedOAuth2LoginConfigurer;
 import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateConverter;
 import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateConverter;
@@ -45,14 +45,10 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,10 +66,10 @@ public class FederatedAuthenticationConfiguration {
                                                             ClientRegistrationRepository clientRegistrationRepository
     ) throws Exception {
 
-        FederatedLoginConfigurer federatedLoginConfigurer = new FederatedLoginConfigurer();
-        RequestMatcher endpointsMatcher = federatedLoginConfigurer.getEndpointsMatcher();
+        FederatedOAuth2LoginConfigurer federatedOAuth2LoginConfigurer = new FederatedOAuth2LoginConfigurer();
+        RequestMatcher endpointsMatcher = federatedOAuth2LoginConfigurer.getEndpointsMatcher();
         http.securityMatcher(endpointsMatcher);
-        http.apply(federatedLoginConfigurer);
+        http.apply(federatedOAuth2LoginConfigurer);
         FederatedAuthenticationEntryPoint authenticationEntryPoint =
                 new FederatedAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE, clientRegistrationRepository);
         http.exceptionHandling(exceptionHandling ->
@@ -97,7 +93,7 @@ public class FederatedAuthenticationConfiguration {
                 authorizationCodeGrantRequestConverters
         );
         //OAuth2LoginConfigurer
-        http.getConfigurer(FederatedLoginConfigurer.class)
+        http.getConfigurer(FederatedOAuth2LoginConfigurer.class)
                 .loginPage(CUSTOM_LOGIN_PAGE)
                 .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
                         .authorizationRequestResolver(delegatingAuthorizationRequestResolver)
