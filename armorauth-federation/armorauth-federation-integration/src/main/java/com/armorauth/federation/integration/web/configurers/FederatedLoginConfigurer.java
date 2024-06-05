@@ -16,6 +16,7 @@
 package com.armorauth.federation.integration.web.configurers;
 
 import com.armorauth.common.util.HttpSecurityFilterOrderRegistrationUtils;
+import com.armorauth.federation.integration.DelegatingOAuth2UserService;
 import com.armorauth.federation.integration.authentication.*;
 import com.armorauth.federation.integration.web.FederatedAuthorizationRequestRedirectFilter;
 import com.armorauth.federation.integration.web.FederatedLoginAuthenticationFilter;
@@ -37,7 +38,6 @@ import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuth
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
-import org.springframework.security.oauth2.client.oidc.authentication.OidcAuthorizationCodeAuthenticationProvider;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -60,8 +60,10 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,11 +71,11 @@ public class FederatedLoginConfigurer
         extends AbstractAuthenticationFilterConfigurer<HttpSecurity, FederatedLoginConfigurer, FederatedLoginAuthenticationFilter> {
 
 
-    private String loginPage;
     private final AuthorizationEndpointConfig authorizationEndpointConfig = new AuthorizationEndpointConfig();
     private final TokenEndpointConfig tokenEndpointConfig = new TokenEndpointConfig();
     private final RedirectionEndpointConfig redirectionEndpointConfig = new RedirectionEndpointConfig();
     private final UserInfoEndpointConfig userInfoEndpointConfig = new UserInfoEndpointConfig();
+    private String loginPage;
     private RequestMatcher endpointsMatcher;
     private String loginProcessingUrl = FederatedLoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI;
 
@@ -304,8 +306,11 @@ public class FederatedLoginConfigurer
 
 
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> getOAuth2UserService() {
-        if (this.userInfoEndpointConfig.userService != null) {
-            return this.userInfoEndpointConfig.userService;
+        if (this.userInfoEndpointConfig.delegatingUserService != null) {
+            if(!CollectionUtils.isEmpty(this.userInfoEndpointConfig.userServices)){
+                this.userInfoEndpointConfig.delegatingUserService.addOAuth2UserServices(this.userInfoEndpointConfig.userServices);
+            }
+            return this.userInfoEndpointConfig.delegatingUserService;
         }
         ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2UserService.class, OAuth2UserRequest.class,
                 OAuth2User.class);
@@ -530,7 +535,9 @@ public class FederatedLoginConfigurer
 
     public final class UserInfoEndpointConfig {
 
-        private OAuth2UserService<OAuth2UserRequest, OAuth2User> userService;
+        private DelegatingOAuth2UserService delegatingUserService;
+
+        private Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new HashMap<>();
 
         private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService;
 
@@ -546,13 +553,20 @@ public class FederatedLoginConfigurer
          * Sets the OAuth 2.0 service used for obtaining the user attributes of the
          * End-User from the UserInfo Endpoint.
          *
-         * @param userService the OAuth 2.0 service used for obtaining the user attributes
-         *                    of the End-User from the UserInfo Endpoint
+         * @param delegatingUserService is Federated DelegatingUserService
          * @return the {@link OAuth2LoginConfigurer.UserInfoEndpointConfig} for further configuration
          */
-        public UserInfoEndpointConfig userService(OAuth2UserService<OAuth2UserRequest, OAuth2User> userService) {
+        public UserInfoEndpointConfig userService(DelegatingOAuth2UserService delegatingUserService) {
+            Assert.notNull(delegatingUserService, "delegatingUserService cannot be null");
+            this.delegatingUserService = delegatingUserService;
+            return this;
+        }
+
+
+        public UserInfoEndpointConfig addUserService(String registrationId, OAuth2UserService<OAuth2UserRequest, OAuth2User> userService) {
+            Assert.notNull(registrationId, "registrationId cannot be null");
             Assert.notNull(userService, "userService cannot be null");
-            this.userService = userService;
+            userServices.put(registrationId, userService);
             return this;
         }
 

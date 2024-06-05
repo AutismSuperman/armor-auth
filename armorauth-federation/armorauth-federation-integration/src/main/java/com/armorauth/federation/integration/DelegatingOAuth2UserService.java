@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
@@ -28,6 +29,10 @@ public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2User
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> defaultOAuth2UserService = new DefaultOAuth2UserService();
 
     private final Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices;
+
+    public DelegatingOAuth2UserService() {
+        this.userServices = new HashMap<>();
+    }
 
     public DelegatingOAuth2UserService(Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices) {
         this.userServices = userServices;
@@ -46,6 +51,10 @@ public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2User
 
     public void addOAuth2UserService(String registrationId, OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService) {
         this.userServices.put(registrationId.toUpperCase(), oAuth2UserService);
+    }
+
+    public void addOAuth2UserServices(Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices) {
+        this.userServices.putAll(userServices);
     }
 
 }

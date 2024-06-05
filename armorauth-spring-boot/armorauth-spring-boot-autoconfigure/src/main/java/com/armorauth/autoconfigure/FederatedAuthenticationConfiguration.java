@@ -96,12 +96,6 @@ public class FederatedAuthenticationConfiguration {
                 restTemplates,
                 authorizationCodeGrantRequestConverters
         );
-        //OAuth 查询用户信息 UserService
-        Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new HashMap<>();
-        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(GITEE), new GiteeOAuth2UserService());
-        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(QQ), new GiteeOAuth2UserService());
-        userServices.put(ExtendedOAuth2ClientProvider.getNameLowerCase(WECHAT), new GiteeOAuth2UserService());
-        DelegatingOAuth2UserService delegatingOAuth2UserService = new DelegatingOAuth2UserService(userServices);
         //OAuth2LoginConfigurer
         http.getConfigurer(FederatedLoginConfigurer.class)
                 .loginPage(CUSTOM_LOGIN_PAGE)
@@ -112,7 +106,10 @@ public class FederatedAuthenticationConfiguration {
                         .accessTokenResponseClient(accessTokenResponseClient)
                 )
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
-                        .userService(delegatingOAuth2UserService)
+                        .addUserService(ExtendedOAuth2ClientProvider.getNameLowerCase(GITEE), new GiteeOAuth2UserService())
+                        .addUserService(ExtendedOAuth2ClientProvider.getNameLowerCase(QQ), new GiteeOAuth2UserService())
+                        .addUserService(ExtendedOAuth2ClientProvider.getNameLowerCase(WECHAT), new GiteeOAuth2UserService())
+                        .userService(new DelegatingOAuth2UserService())
                         .bindUserPage("/bind")
                 )
         ;
