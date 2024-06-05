@@ -16,7 +16,7 @@
 package com.armorauth.federation.qq.endpoint;
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.core.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.core.endpoint.FederatedOAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.qq.QqParameterNames;
 import org.springframework.http.RequestEntity;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -29,7 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
-public class QqAuthorizationCodeGrantRequestConverter implements OAuth2AuthorizationCodeGrantRequestConverter {
+public class QqAuthorizationCodeGrantRequestConverterFederated implements FederatedOAuth2AuthorizationCodeGrantRequestConverter {
 
     @Override
     public RequestEntity<?> convert(OAuth2AuthorizationCodeGrantRequest request) {

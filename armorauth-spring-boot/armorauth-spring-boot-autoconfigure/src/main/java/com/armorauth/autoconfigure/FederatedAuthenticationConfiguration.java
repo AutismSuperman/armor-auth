@@ -18,20 +18,20 @@ package com.armorauth.autoconfigure;
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientPropertiesMapper;
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.core.endpoint.OAuth2AccessTokenRestTemplateConverter;
-import com.armorauth.federation.core.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestTransformer;
+import com.armorauth.federation.core.endpoint.FederatedOAuth2AccessTokenRestTemplate;
+import com.armorauth.federation.core.endpoint.FederatedOAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.core.web.converter.FederatedOAuth2AuthorizationRequestTransformer;
 import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
 import com.armorauth.federation.integration.DelegatingAccessTokenResponseClient;
 import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
 import com.armorauth.federation.integration.DelegatingOAuth2UserService;
 import com.armorauth.federation.integration.web.FederatedAuthenticationEntryPoint;
 import com.armorauth.federation.integration.web.configurers.FederatedOAuth2LoginConfigurer;
-import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateConverter;
-import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateConverter;
-import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformer;
+import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateFederated;
+import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverterFederated;
+import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateFederated;
+import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverterFederated;
+import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformerFederated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.annotation.Bean;
@@ -77,17 +77,17 @@ public class FederatedAuthenticationConfiguration {
                         .authenticationEntryPoint(authenticationEntryPoint)
         );
         //OAuth 授权地址转换 OAuth2AuthorizationRequestTransformer
-        List<OAuth2AuthorizationRequestTransformer> authorizationRequestConverters = new ArrayList<>();
-        authorizationRequestConverters.add(new WechatAuthorizationRequestTransformer());
+        List<FederatedOAuth2AuthorizationRequestTransformer> authorizationRequestConverters = new ArrayList<>();
+        authorizationRequestConverters.add(new WechatAuthorizationRequestTransformerFederated());
         DelegatingAuthorizationRequestResolver delegatingAuthorizationRequestResolver =
                 new DelegatingAuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestConverters);
         //OAuth 请求AccessToken的RestTemplate转换 OAuth2AccessTokenRestTemplateConverter
-        List<OAuth2AccessTokenRestTemplateConverter> restTemplates = new ArrayList<>();
-        List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
-        restTemplates.add(new WechatAccessTokenRestTemplateConverter());
-        authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
-        restTemplates.add(new QqAccessTokenRestTemplateConverter());
-        authorizationCodeGrantRequestConverters.add(new QqAuthorizationCodeGrantRequestConverter());
+        List<FederatedOAuth2AccessTokenRestTemplate> restTemplates = new ArrayList<>();
+        List<FederatedOAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
+        restTemplates.add(new WechatAccessTokenRestTemplateFederated());
+        authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverterFederated());
+        restTemplates.add(new QqAccessTokenRestTemplateFederated());
+        authorizationCodeGrantRequestConverters.add(new QqAuthorizationCodeGrantRequestConverterFederated());
         DelegatingAccessTokenResponseClient accessTokenResponseClient = new DelegatingAccessTokenResponseClient(
                 restTemplates,
                 authorizationCodeGrantRequestConverters

@@ -15,7 +15,7 @@
  */
 package com.armorauth.federation.integration.web;
 
-import com.armorauth.federation.integration.authentication.FederatedBindUserCheckToken;
+import com.armorauth.federation.integration.authentication.bind.FederatedBindUserCheckToken;
 import com.armorauth.federation.integration.authentication.FederatedOAuth2LoginAuthenticationToken;
 import com.armorauth.federation.integration.endpoint.BindUserRequest;
 import com.armorauth.federation.integration.endpoint.BindUserRequestRepository;
@@ -32,10 +32,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationToken;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.*;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
@@ -53,13 +50,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
-public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+/**
+ * @see OAuth2LoginAuthenticationFilter
+ */
+public class FederatedOAuth2LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
 
-    /**
-     * The default {@code URI} where this {@code Filter} processes authentication
-     * requests.
-     */
     public static final String DEFAULT_FILTER_PROCESSES_URI = "/login/federated/code/*";
 
     private static final String AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE = "authorization_request_not_found";
@@ -81,39 +77,22 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
     private String bindUserPage;
 
 
-    public FederatedLoginAuthenticationFilter(ClientRegistrationRepository clientRegistrationRepository,
-                                              OAuth2AuthorizedClientService authorizedClientService) {
+    public FederatedOAuth2LoginAuthenticationFilter(ClientRegistrationRepository clientRegistrationRepository,
+                                                    OAuth2AuthorizedClientService authorizedClientService) {
         this(clientRegistrationRepository, authorizedClientService, DEFAULT_FILTER_PROCESSES_URI);
     }
 
-    /**
-     * Constructs an {@code FederatedLoginAuthenticationFilter} using the provided
-     * parameters.
-     *
-     * @param clientRegistrationRepository the repository of client registrations
-     * @param authorizedClientService      the authorized client service
-     * @param filterProcessesUrl           the {@code URI} where this {@code Filter} will process
-     *                                     the authentication requests
-     */
-    public FederatedLoginAuthenticationFilter(ClientRegistrationRepository clientRegistrationRepository,
-                                              OAuth2AuthorizedClientService authorizedClientService, String filterProcessesUrl) {
+
+    public FederatedOAuth2LoginAuthenticationFilter(ClientRegistrationRepository clientRegistrationRepository,
+                                                    OAuth2AuthorizedClientService authorizedClientService, String filterProcessesUrl) {
         this(clientRegistrationRepository,
                 new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService),
                 filterProcessesUrl);
     }
 
-    /**
-     * Constructs an {@code OAuth2LoginAuthenticationFilter} using the provided
-     * parameters.
-     *
-     * @param clientRegistrationRepository the repository of client registrations
-     * @param authorizedClientRepository   the authorized client repository
-     * @param filterProcessesUrl           the {@code URI} where this {@code Filter} will process
-     *                                     the authentication requests
-     * @since 5.1
-     */
-    public FederatedLoginAuthenticationFilter(ClientRegistrationRepository clientRegistrationRepository,
-                                              OAuth2AuthorizedClientRepository authorizedClientRepository, String filterProcessesUrl) {
+
+    public FederatedOAuth2LoginAuthenticationFilter(ClientRegistrationRepository clientRegistrationRepository,
+                                                    OAuth2AuthorizedClientRepository authorizedClientRepository, String filterProcessesUrl) {
         super(filterProcessesUrl);
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         Assert.notNull(authorizedClientRepository, "authorizedClientRepository cannot be null");
@@ -149,26 +128,28 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
                 .build()
                 .toUriString();
         // @formatter:on
-        OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponseUtils.convert(params,
-                redirectUri);
+        // Authenticate FederatedOAuth2LoginAuthenticationToken
+        OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponseUtils.convert(params, redirectUri);
         Object authenticationDetails = this.authenticationDetailsSource.buildDetails(request);
         FederatedOAuth2LoginAuthenticationToken authenticationRequest = new FederatedOAuth2LoginAuthenticationToken(clientRegistration,
                 new OAuth2AuthorizationExchange(authorizationRequest, authorizationResponse));
         authenticationRequest.setDetails(authenticationDetails);
-        FederatedOAuth2LoginAuthenticationToken authenticationResult =
+        FederatedOAuth2LoginAuthenticationToken federatedOAuth2LoginAuthenticationToken =
                 (FederatedOAuth2LoginAuthenticationToken) this.getAuthenticationManager().authenticate(authenticationRequest);
+        //Convert OAuth2AuthenticationToken
         OAuth2AuthenticationToken oauth2Authentication = this.authenticationResultConverter
-                .convert(authenticationResult);
-        // authenticationManager bind user
+                .convert(federatedOAuth2LoginAuthenticationToken);
         Assert.notNull(oauth2Authentication, "authentication result cannot be null");
+        oauth2Authentication.setDetails(authenticationDetails);
+        //Check BindUser
         FederatedBindUserCheckToken checkBindUserRequest = new FederatedBindUserCheckToken(
                 oauth2Authentication.getPrincipal(),
-                authenticationResult.getClientRegistration()
+                federatedOAuth2LoginAuthenticationToken.getClientRegistration()
         );
         BindUserRequest bindUserRequest =
-                new BindUserRequest(authenticationResult.getPrincipal(),
-                        authenticationResult.getClientRegistration().getRegistrationId(),
-                        authenticationResult
+                new BindUserRequest(federatedOAuth2LoginAuthenticationToken.getPrincipal(),
+                        federatedOAuth2LoginAuthenticationToken.getClientRegistration().getRegistrationId(),
+                        federatedOAuth2LoginAuthenticationToken
                                 .getClientRegistration()
                                 .getProviderDetails()
                                 .getUserInfoEndpoint()
@@ -180,13 +161,15 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
         // if not authenticated, send redirect to bind user page
         if (!checkBindUserResult.isAuthenticated()) {
             //send redirect to bind user page
-            sendBindUser(request, response);
+            sendRedirectForBindUser(request, response);
         }
-        Assert.notNull(oauth2Authentication, "authentication result cannot be null");
-        oauth2Authentication.setDetails(authenticationDetails);
+        //AuthorizedClientRepository saveAuthorizedClient
         OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(
-                authenticationResult.getClientRegistration(), oauth2Authentication.getName(),
-                authenticationResult.getAccessToken(), authenticationResult.getRefreshToken());
+                federatedOAuth2LoginAuthenticationToken.getClientRegistration(),
+                oauth2Authentication.getName(),
+                federatedOAuth2LoginAuthenticationToken.getAccessToken(),
+                federatedOAuth2LoginAuthenticationToken.getRefreshToken()
+        );
         this.authorizedClientRepository.saveAuthorizedClient(authorizedClient, oauth2Authentication, request, response);
         return oauth2Authentication;
     }
@@ -196,7 +179,7 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
         this.bindUserPage = bindUserPage;
     }
 
-    private void sendBindUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void sendRedirectForBindUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         this.redirectStrategy.sendRedirect(request, response, bindUserPage);
     }
 

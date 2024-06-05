@@ -28,7 +28,7 @@ import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCo
  * @see OAuth2AccessTokenResponseClient
  * @see DefaultAuthorizationCodeTokenResponseClient#setRequestEntityConverter(Converter)
  */
-public interface OAuth2AuthorizationCodeGrantRequestConverter extends Converter<OAuth2AuthorizationCodeGrantRequest, RequestEntity<?>> {
+public interface FederatedOAuth2AuthorizationCodeGrantRequestConverter extends Converter<OAuth2AuthorizationCodeGrantRequest, RequestEntity<?>> {
 
 
     /**

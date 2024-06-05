@@ -15,7 +15,7 @@
  */
 package com.armorauth.federation.integration;
 
-import com.armorauth.federation.core.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.core.endpoint.FederatedOAuth2AuthorizationCodeGrantRequestConverter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.RequestEntity;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -28,10 +28,10 @@ public class DelegatingAuthorizationCodeGrantRequestConverter implements Convert
 
     private final OAuth2AuthorizationCodeGrantRequestEntityConverter defaultConverter = new OAuth2AuthorizationCodeGrantRequestEntityConverter();
 
-    private final List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters;
+    private final List<FederatedOAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters;
 
 
-    public DelegatingAuthorizationCodeGrantRequestConverter(List<OAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters) {
+    public DelegatingAuthorizationCodeGrantRequestConverter(List<FederatedOAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters) {
         this.authorizationCodeGrantRequestConverters = authorizationCodeGrantRequestConverters;
     }
 
@@ -40,7 +40,7 @@ public class DelegatingAuthorizationCodeGrantRequestConverter implements Convert
     public RequestEntity<?> convert(OAuth2AuthorizationCodeGrantRequest request) {
         ClientRegistration clientRegistration = request.getClientRegistration();
         String registrationId = clientRegistration.getRegistrationId();
-        for (OAuth2AuthorizationCodeGrantRequestConverter converter : authorizationCodeGrantRequestConverters) {
+        for (FederatedOAuth2AuthorizationCodeGrantRequestConverter converter : authorizationCodeGrantRequestConverters) {
             if (converter.supports(registrationId)) {
                 return converter.convert(request);
             }
@@ -48,7 +48,7 @@ public class DelegatingAuthorizationCodeGrantRequestConverter implements Convert
         return defaultConverter.convert(request);
     }
 
-    public void addAuthorizationCodeGrantRequestConverter(OAuth2AuthorizationCodeGrantRequestConverter auth2AuthorizationCodeGrantRequestConverter) {
+    public void addAuthorizationCodeGrantRequestConverter(FederatedOAuth2AuthorizationCodeGrantRequestConverter auth2AuthorizationCodeGrantRequestConverter) {
         authorizationCodeGrantRequestConverters.add(auth2AuthorizationCodeGrantRequestConverter);
     }
 

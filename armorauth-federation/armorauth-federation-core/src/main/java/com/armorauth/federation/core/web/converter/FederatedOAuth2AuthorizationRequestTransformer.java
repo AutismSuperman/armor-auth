@@ -13,29 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.federation.core.endpoint;
+package com.armorauth.federation.core.web.converter;
 
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
-import org.springframework.web.client.RestOperations;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+
+import java.util.function.Consumer;
 
 /**
- * 针对 请求AccessToken进行RestTemplate的定制化
- *
+ * 针对 OAuth2AuthorizationRequestResolver 处理结果进行第三方适配转换
  * @author AutismSuperman
- * @see OAuth2AccessTokenResponseClient
- * @see DefaultAuthorizationCodeTokenResponseClient#setRestOperations(RestOperations)
+ * @see OAuth2AuthorizationRequestResolver
+ * @see DefaultOAuth2AuthorizationRequestResolver#setAuthorizationRequestCustomizer(Consumer)
  */
-public interface OAuth2AccessTokenRestTemplateConverter {
+public interface FederatedOAuth2AuthorizationRequestTransformer {
 
-
-    RestTemplate getRestTemplate(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest);
+    /**
+     * OAuth2AuthorizationRequest.Builder convert
+     *
+     * @param builder  builder
+     */
+    void convert(OAuth2AuthorizationRequest.Builder builder);
 
 
     /**
-     * Returns <code>true</code> if this <Code>OAuth2AccessTokenRestTemplate</code> supports the
+     * Returns <code>true</code> if this <Code>OAuth2AuthorizationCodeGrantRequestConverter</code> supports the
      * indicated <Code>ClientRegistration</code>.
      *
      * @param registrationId the registration identifier
@@ -43,5 +46,6 @@ public interface OAuth2AccessTokenRestTemplateConverter {
      * <code>ClientRegistration</code>
      */
     boolean supports(String registrationId);
+
 
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.federation.integration.authentication;
+package com.armorauth.federation.integration.authentication.bind;
 
 /**
  * 检测用户是否需要跳转到绑定用户界面

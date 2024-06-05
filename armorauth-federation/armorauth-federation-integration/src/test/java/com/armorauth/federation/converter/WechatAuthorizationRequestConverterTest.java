@@ -15,7 +15,7 @@
  */
 package com.armorauth.federation.converter;
 
-import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformer;
+import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformerFederated;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -25,7 +25,7 @@ public class WechatAuthorizationRequestConverterTest {
 
     @Test
     public void testConvert() {
-        WechatAuthorizationRequestTransformer wechatAuthorizationRequestService = new WechatAuthorizationRequestTransformer();
+        WechatAuthorizationRequestTransformerFederated wechatAuthorizationRequestService = new WechatAuthorizationRequestTransformerFederated();
         OAuth2AuthorizationRequest.Builder builder = OAuth2AuthorizationRequest.authorizationCode();
         builder.clientId("APP_ID");
         builder.authorizationUri("https://open.weixin.qq.com/connect/qrconnect");

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.federation.wechat.endpoint;
+package com.armorauth.federation.qq.endpoint;
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.core.endpoint.OAuth2AccessTokenRestTemplateConverter;
+import com.armorauth.federation.core.endpoint.FederatedOAuth2AccessTokenRestTemplate;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -27,17 +27,18 @@ import org.springframework.security.oauth2.core.endpoint.DefaultMapOAuth2AccessT
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.Map;
 
-public class WechatAccessTokenRestTemplateConverter implements OAuth2AccessTokenRestTemplateConverter {
+public class QqAccessTokenRestTemplateFederated implements FederatedOAuth2AccessTokenRestTemplate {
     @Override
     public RestTemplate getRestTemplate(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         OAuth2AccessTokenResponseHttpMessageConverter tokenResponseHttpMessageConverter =
                 new OAuth2AccessTokenResponseHttpMessageConverter();
-        // 微信返回的 Content-type 是 text-plain
+        // QQ返回的 Content-type 是 text-html
         tokenResponseHttpMessageConverter.setSupportedMediaTypes(Arrays.asList(
                 MediaType.APPLICATION_JSON,
                 MediaType.TEXT_HTML,
@@ -45,9 +46,11 @@ public class WechatAccessTokenRestTemplateConverter implements OAuth2AccessToken
                 new MediaType("application", "*+json"))
         );
         tokenResponseHttpMessageConverter.setAccessTokenResponseConverter(responseParameters -> {
-            // 解决微信没有返回 token_type 导致的空校验异常
+            // 解决QQ没有返回 token_type 导致的空校验异常
             Converter<Map<String, Object>, OAuth2AccessTokenResponse> delegate = new DefaultMapOAuth2AccessTokenResponseConverter();
             responseParameters.put(OAuth2ParameterNames.TOKEN_TYPE, OAuth2AccessToken.TokenType.BEARER.getValue());
+            responseParameters.put(OAuth2ParameterNames.SCOPE,
+                    StringUtils.collectionToCommaDelimitedString(authorizationGrantRequest.getClientRegistration().getScopes()));
             return delegate.convert(responseParameters);
         });
         RestTemplate restTemplate = new RestTemplate(Arrays.asList(new FormHttpMessageConverter(), tokenResponseHttpMessageConverter));
@@ -57,6 +60,6 @@ public class WechatAccessTokenRestTemplateConverter implements OAuth2AccessToken
 
     @Override
     public boolean supports(String registrationId) {
-        return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.WECHAT, registrationId);
+        return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.QQ, registrationId);
     }
 }

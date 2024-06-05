@@ -16,7 +16,7 @@
 package com.armorauth.federation.wechat.endpoint;
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.core.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.core.endpoint.FederatedOAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.wechat.WechatParameterNames;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -35,7 +35,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-public class WechatAuthorizationCodeGrantRequestConverter implements OAuth2AuthorizationCodeGrantRequestConverter {
+public class WechatAuthorizationCodeGrantRequestConverterFederated implements FederatedOAuth2AuthorizationCodeGrantRequestConverter {
 
     /**
      * 微信获取token地址

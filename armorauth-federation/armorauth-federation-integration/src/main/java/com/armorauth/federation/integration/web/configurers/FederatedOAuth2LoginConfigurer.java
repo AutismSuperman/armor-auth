@@ -18,8 +18,11 @@ package com.armorauth.federation.integration.web.configurers;
 import com.armorauth.common.util.HttpSecurityFilterOrderRegistrationUtils;
 import com.armorauth.federation.integration.DelegatingOAuth2UserService;
 import com.armorauth.federation.integration.authentication.*;
-import com.armorauth.federation.integration.web.FederatedAuthorizationRequestRedirectFilter;
-import com.armorauth.federation.integration.web.FederatedLoginAuthenticationFilter;
+import com.armorauth.federation.integration.authentication.bind.DefaultFederatedBindUserCheckService;
+import com.armorauth.federation.integration.authentication.bind.FederatedBindUserCheckProvider;
+import com.armorauth.federation.integration.authentication.bind.FederatedBindUserCheckService;
+import com.armorauth.federation.integration.web.FederatedOAuth2AuthorizationRequestRedirectFilter;
+import com.armorauth.federation.integration.web.FederatedOAuth2LoginAuthenticationFilter;
 import com.armorauth.federation.integration.web.OAuth2ClientConfigurerUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
@@ -68,7 +71,7 @@ import java.util.List;
 import java.util.Map;
 
 public class FederatedOAuth2LoginConfigurer
-        extends AbstractAuthenticationFilterConfigurer<HttpSecurity, FederatedOAuth2LoginConfigurer, FederatedLoginAuthenticationFilter> {
+        extends AbstractAuthenticationFilterConfigurer<HttpSecurity, FederatedOAuth2LoginConfigurer, FederatedOAuth2LoginAuthenticationFilter> {
 
 
     private final AuthorizationEndpointConfig authorizationEndpointConfig = new AuthorizationEndpointConfig();
@@ -77,7 +80,7 @@ public class FederatedOAuth2LoginConfigurer
     private final UserInfoEndpointConfig userInfoEndpointConfig = new UserInfoEndpointConfig();
     private String loginPage;
     private RequestMatcher endpointsMatcher;
-    private String loginProcessingUrl = FederatedLoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI;
+    private String loginProcessingUrl = FederatedOAuth2LoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI;
 
 
     /**
@@ -196,7 +199,7 @@ public class FederatedOAuth2LoginConfigurer
     @Override
     public void init(HttpSecurity http) throws Exception {
         List<RequestMatcher> requestMatchers = new ArrayList<>();
-        FederatedLoginAuthenticationFilter authenticationFilter = new FederatedLoginAuthenticationFilter(
+        FederatedOAuth2LoginAuthenticationFilter authenticationFilter = new FederatedOAuth2LoginAuthenticationFilter(
                 OAuth2ClientConfigurerUtils.getClientRegistrationRepository(this.getBuilder()),
                 OAuth2ClientConfigurerUtils.getAuthorizedClientRepository(this.getBuilder()), this.loginProcessingUrl);
         authenticationFilter.setSecurityContextHolderStrategy(getSecurityContextHolderStrategy());
@@ -254,7 +257,7 @@ public class FederatedOAuth2LoginConfigurer
 
         String authorizationRequestBaseUri = this.authorizationEndpointConfig.authorizationRequestBaseUri;
         if (authorizationRequestBaseUri == null) {
-            authorizationRequestBaseUri = FederatedAuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+            authorizationRequestBaseUri = FederatedOAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
         }
         // add login processing url to request matchers
         requestMatchers.add(new AntPathRequestMatcher(authorizationRequestBaseUri + "/**"));
@@ -264,16 +267,16 @@ public class FederatedOAuth2LoginConfigurer
     @Override
     public void configure(HttpSecurity http) throws Exception {
         // Configure OAuth2AuthorizationRequestRedirectFilter
-        FederatedAuthorizationRequestRedirectFilter authorizationRequestFilter;
+        FederatedOAuth2AuthorizationRequestRedirectFilter authorizationRequestFilter;
         if (this.authorizationEndpointConfig.authorizationRequestResolver != null) {
-            authorizationRequestFilter = new FederatedAuthorizationRequestRedirectFilter(
+            authorizationRequestFilter = new FederatedOAuth2AuthorizationRequestRedirectFilter(
                     this.authorizationEndpointConfig.authorizationRequestResolver);
         } else {
             String authorizationRequestBaseUri = this.authorizationEndpointConfig.authorizationRequestBaseUri;
             if (authorizationRequestBaseUri == null) {
-                authorizationRequestBaseUri = FederatedAuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+                authorizationRequestBaseUri = FederatedOAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
             }
-            authorizationRequestFilter = new FederatedAuthorizationRequestRedirectFilter(
+            authorizationRequestFilter = new FederatedOAuth2AuthorizationRequestRedirectFilter(
                     OAuth2ClientConfigurerUtils.getClientRegistrationRepository(this.getBuilder()),
                     authorizationRequestBaseUri);
         }
@@ -292,7 +295,7 @@ public class FederatedOAuth2LoginConfigurer
         HttpSecurityFilterOrderRegistrationUtils.putIntendedFilterBefore(http,
                 authorizationRequestFilter, OAuth2AuthorizationRequestRedirectFilter.class);
         http.addFilter(this.postProcess(authorizationRequestFilter));
-        FederatedLoginAuthenticationFilter authenticationFilter = this.getAuthenticationFilter();
+        FederatedOAuth2LoginAuthenticationFilter authenticationFilter = this.getAuthenticationFilter();
         if (this.redirectionEndpointConfig.authorizationResponseBaseUri != null) {
             authenticationFilter.setFilterProcessesUrl(this.redirectionEndpointConfig.authorizationResponseBaseUri);
         }

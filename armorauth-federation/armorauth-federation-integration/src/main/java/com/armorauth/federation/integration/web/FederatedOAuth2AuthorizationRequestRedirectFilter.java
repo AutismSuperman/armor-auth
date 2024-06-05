@@ -23,10 +23,7 @@ import org.springframework.core.log.LogMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.*;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.DefaultRedirectStrategy;
@@ -39,12 +36,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * OAuth2AuthorizationRequestRedirectFilter 增强，提供定制化的功能
+ *
+ * @see OAuth2AuthorizationRequestRedirectFilter
+ */
+public class FederatedOAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
 
-public class FederatedAuthorizationRequestRedirectFilter extends OncePerRequestFilter {
 
-    /**
-     * The default base {@code URI} used for authorization requests.
-     */
     public static final String DEFAULT_AUTHORIZATION_REQUEST_BASE_URI = "/federated/authorization";
 
     private final ThrowableAnalyzer throwableAnalyzer = new DefaultThrowableAnalyzer();
@@ -57,26 +56,14 @@ public class FederatedAuthorizationRequestRedirectFilter extends OncePerRequestF
 
     private RequestCache requestCache = new HttpSessionRequestCache();
 
-    /**
-     * Constructs an {@code OAuth2AuthorizationRequestRedirectFilter} using the provided
-     * parameters.
-     *
-     * @param clientRegistrationRepository the repository of client registrations
-     */
-    public FederatedAuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository) {
+
+    public FederatedOAuth2AuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository) {
         this(clientRegistrationRepository, DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
     }
 
-    /**
-     * Constructs an {@code OAuth2AuthorizationRequestRedirectFilter} using the provided
-     * parameters.
-     *
-     * @param clientRegistrationRepository the repository of client registrations
-     * @param authorizationRequestBaseUri  the base {@code URI} used for authorization
-     *                                     requests
-     */
-    public FederatedAuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository,
-                                                       String authorizationRequestBaseUri) {
+
+    public FederatedOAuth2AuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository,
+                                                             String authorizationRequestBaseUri) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         Assert.hasText(authorizationRequestBaseUri, "authorizationRequestBaseUri cannot be empty");
         // Default AuthorizationRequestResolver may result in loss of functionality
@@ -84,47 +71,26 @@ public class FederatedAuthorizationRequestRedirectFilter extends OncePerRequestF
                 authorizationRequestBaseUri);
     }
 
-    /**
-     * Constructs an {@code OAuth2AuthorizationRequestRedirectFilter} using the provided
-     * parameters.
-     *
-     * @param authorizationRequestResolver the resolver used for resolving authorization
-     *                                     requests
-     * @since 5.1
-     */
-    public FederatedAuthorizationRequestRedirectFilter(OAuth2AuthorizationRequestResolver authorizationRequestResolver) {
+
+    public FederatedOAuth2AuthorizationRequestRedirectFilter(OAuth2AuthorizationRequestResolver authorizationRequestResolver) {
         Assert.notNull(authorizationRequestResolver, "authorizationRequestResolver cannot be null");
         this.authorizationRequestResolver = authorizationRequestResolver;
     }
 
-    /**
-     * Sets the redirect strategy for Authorization Endpoint redirect URI.
-     *
-     * @param authorizationRedirectStrategy the redirect strategy
-     */
+
     public void setAuthorizationRedirectStrategy(RedirectStrategy authorizationRedirectStrategy) {
         Assert.notNull(authorizationRedirectStrategy, "authorizationRedirectStrategy cannot be null");
         this.authorizationRedirectStrategy = authorizationRedirectStrategy;
     }
 
-    /**
-     * Sets the repository used for storing {@link OAuth2AuthorizationRequest}'s.
-     *
-     * @param authorizationRequestRepository the repository used for storing
-     *                                       {@link OAuth2AuthorizationRequest}'s
-     */
+
     public final void setAuthorizationRequestRepository(
             AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
         Assert.notNull(authorizationRequestRepository, "authorizationRequestRepository cannot be null");
         this.authorizationRequestRepository = authorizationRequestRepository;
     }
 
-    /**
-     * Sets the {@link RequestCache} used for storing the current request before
-     * redirecting the OAuth 2.0 Authorization Request.
-     *
-     * @param requestCache the cache used for storing the current request
-     */
+
     public final void setRequestCache(RequestCache requestCache) {
         Assert.notNull(requestCache, "requestCache cannot be null");
         this.requestCache = requestCache;

@@ -15,8 +15,8 @@
  */
 package com.armorauth.federation.integration;
 
-import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestTransformer;
-import com.armorauth.federation.integration.web.FederatedAuthorizationRequestRedirectFilter;
+import com.armorauth.federation.core.web.converter.FederatedOAuth2AuthorizationRequestTransformer;
+import com.armorauth.federation.integration.web.FederatedOAuth2AuthorizationRequestRedirectFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -25,24 +25,24 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DelegatingAuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
     private final DefaultOAuth2AuthorizationRequestResolver delegate;
 
-    private final List<OAuth2AuthorizationRequestTransformer> authorizationRequestTransformers;
+    private final List<FederatedOAuth2AuthorizationRequestTransformer> authorizationRequestTransformers;
 
     public DelegatingAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
-                                                  List<OAuth2AuthorizationRequestTransformer> authorizationRequestConverters) {
-        this(clientRegistrationRepository,
-                FederatedAuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI, authorizationRequestConverters);
+                                                  String authorizationRequestBaseUri) {
+        this(clientRegistrationRepository, authorizationRequestBaseUri, new ArrayList<>());
     }
 
 
     public DelegatingAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
                                                   String authorizationRequestBaseUri,
-                                                  List<OAuth2AuthorizationRequestTransformer> authorizationRequestTransformers) {
+                                                  List<FederatedOAuth2AuthorizationRequestTransformer> authorizationRequestTransformers) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         this.authorizationRequestTransformers = authorizationRequestTransformers;
         this.delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
@@ -69,8 +69,12 @@ public class DelegatingAuthorizationRequestResolver implements OAuth2Authorizati
         });
     }
 
-    public void addOAuth2AuthorizationRequestConverter(OAuth2AuthorizationRequestTransformer authorizationRequestConverter) {
+    public void addOAuth2AuthorizationRequestConverter(FederatedOAuth2AuthorizationRequestTransformer authorizationRequestConverter) {
         this.authorizationRequestTransformers.add(authorizationRequestConverter);
+    }
+
+    public void addOAuth2AuthorizationRequestConverters(List<FederatedOAuth2AuthorizationRequestTransformer> authorizationRequestTransformers) {
+        this.authorizationRequestTransformers.addAll(authorizationRequestTransformers);
     }
 
 

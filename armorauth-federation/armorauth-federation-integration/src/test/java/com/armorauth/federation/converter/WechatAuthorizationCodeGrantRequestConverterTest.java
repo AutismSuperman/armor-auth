@@ -16,8 +16,8 @@
 package com.armorauth.federation.converter;
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformer;
+import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverterFederated;
+import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformerFederated;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.RequestEntity;
@@ -34,7 +34,7 @@ public class WechatAuthorizationCodeGrantRequestConverterTest {
 
     @Test
     public void testConvert() {
-        WechatAuthorizationRequestTransformer wechatAuthorizationRequestService = new WechatAuthorizationRequestTransformer();
+        WechatAuthorizationRequestTransformerFederated wechatAuthorizationRequestService = new WechatAuthorizationRequestTransformerFederated();
         OAuth2AuthorizationRequest.Builder builder = OAuth2AuthorizationRequest.authorizationCode();
         builder.clientId("APP_ID");
         builder.authorizationUri("https://open.weixin.qq.com/connect/qrconnect");
@@ -60,7 +60,7 @@ public class WechatAuthorizationCodeGrantRequestConverterTest {
                 clientRegistration,
                 oAuth2AuthorizationExchange
         );
-        WechatAuthorizationCodeGrantRequestConverter codeGrantRequestConverter = new WechatAuthorizationCodeGrantRequestConverter();
+        WechatAuthorizationCodeGrantRequestConverterFederated codeGrantRequestConverter = new WechatAuthorizationCodeGrantRequestConverterFederated();
         RequestEntity<?> convert = codeGrantRequestConverter.convert(codeGrantRequest);
         assert convert != null;
         log.info(convert.toString());

@@ -16,7 +16,7 @@
 package com.armorauth.federation.wechat.web.converter;
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestTransformer;
+import com.armorauth.federation.core.web.converter.FederatedOAuth2AuthorizationRequestTransformer;
 import com.armorauth.federation.wechat.WechatParameterNames;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -32,7 +32,7 @@ import java.util.LinkedHashMap;
  *
  * @author AutismSuperman
  */
-public class WechatAuthorizationRequestTransformer implements OAuth2AuthorizationRequestTransformer {
+public class WechatAuthorizationRequestTransformerFederated implements FederatedOAuth2AuthorizationRequestTransformer {
 
 
     @Override
