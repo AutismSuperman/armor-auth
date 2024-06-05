@@ -16,6 +16,8 @@
 package com.armorauth.federation.integration.web.configurers;
 
 import com.armorauth.common.util.HttpSecurityFilterOrderRegistrationUtils;
+import com.armorauth.federation.core.web.converter.FederatedOAuth2AuthorizationRequestTransformer;
+import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
 import com.armorauth.federation.integration.DelegatingOAuth2UserService;
 import com.armorauth.federation.integration.authentication.*;
 import com.armorauth.federation.integration.authentication.bind.DefaultFederatedBindUserCheckService;
@@ -64,6 +66,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -269,6 +272,10 @@ public class FederatedOAuth2LoginConfigurer
         // Configure OAuth2AuthorizationRequestRedirectFilter
         FederatedOAuth2AuthorizationRequestRedirectFilter authorizationRequestFilter;
         if (this.authorizationEndpointConfig.authorizationRequestResolver != null) {
+            if(!ObjectUtils.isEmpty(this.authorizationEndpointConfig.authorizationRequestTransformers)){
+                this.authorizationEndpointConfig.authorizationRequestResolver
+                        .addOAuth2AuthorizationRequestConverters(this.authorizationEndpointConfig.authorizationRequestTransformers);
+            }
             authorizationRequestFilter = new FederatedOAuth2AuthorizationRequestRedirectFilter(
                     this.authorizationEndpointConfig.authorizationRequestResolver);
         } else {
@@ -310,7 +317,7 @@ public class FederatedOAuth2LoginConfigurer
 
     private OAuth2UserService<OAuth2UserRequest, OAuth2User> getOAuth2UserService() {
         if (this.userInfoEndpointConfig.delegatingUserService != null) {
-            if(!CollectionUtils.isEmpty(this.userInfoEndpointConfig.userServices)){
+            if (!CollectionUtils.isEmpty(this.userInfoEndpointConfig.userServices)) {
                 this.userInfoEndpointConfig.delegatingUserService.addOAuth2UserServices(this.userInfoEndpointConfig.userServices);
             }
             return this.userInfoEndpointConfig.delegatingUserService;
@@ -423,7 +430,9 @@ public class FederatedOAuth2LoginConfigurer
 
         private String authorizationRequestBaseUri;
 
-        private OAuth2AuthorizationRequestResolver authorizationRequestResolver;
+        private  DelegatingAuthorizationRequestResolver authorizationRequestResolver;
+
+        private List<FederatedOAuth2AuthorizationRequestTransformer> authorizationRequestTransformers = new ArrayList<>();
 
         private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
 
@@ -454,9 +463,16 @@ public class FederatedOAuth2LoginConfigurer
          * @since 5.1
          */
         public AuthorizationEndpointConfig authorizationRequestResolver(
-                OAuth2AuthorizationRequestResolver authorizationRequestResolver) {
+                DelegatingAuthorizationRequestResolver authorizationRequestResolver) {
             Assert.notNull(authorizationRequestResolver, "authorizationRequestResolver cannot be null");
             this.authorizationRequestResolver = authorizationRequestResolver;
+            return this;
+        }
+
+        public AuthorizationEndpointConfig addAuthorizationRequestTransformer(
+                FederatedOAuth2AuthorizationRequestTransformer auth2AuthorizationRequestTransformer) {
+            Assert.notNull(auth2AuthorizationRequestTransformer, "auth2AuthorizationRequestTransformer cannot be null");
+            this.authorizationRequestTransformers.add(auth2AuthorizationRequestTransformer);
             return this;
         }
 

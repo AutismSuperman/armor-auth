@@ -41,7 +41,7 @@ public class QqAuthorizationCodeGrantRequestConverterFederated implements Federa
         queryParameters.add(OAuth2ParameterNames.CLIENT_SECRET, clientRegistration.getClientSecret());
         queryParameters.add(OAuth2ParameterNames.CODE, authorizationExchange.getAuthorizationResponse().getCode());
         queryParameters.add(OAuth2ParameterNames.REDIRECT_URI, authorizationExchange.getAuthorizationRequest().getRedirectUri());
-        queryParameters.add(QqParameterNames.FMT, QqParameterNames.FMT_JOSN);
+        queryParameters.add(QqParameterNames.FMT, QqParameterNames.FMT_JSON);
         // 1 is response openid
         queryParameters.add(QqParameterNames.NEED_OPENID, "1");
         String tokenUri = clientRegistration.getProviderDetails().getTokenUri();

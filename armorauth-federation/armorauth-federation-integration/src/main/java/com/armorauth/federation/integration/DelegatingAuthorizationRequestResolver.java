@@ -39,6 +39,9 @@ public class DelegatingAuthorizationRequestResolver implements OAuth2Authorizati
         this(clientRegistrationRepository, authorizationRequestBaseUri, new ArrayList<>());
     }
 
+    public DelegatingAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
+        this(clientRegistrationRepository, FederatedOAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI, new ArrayList<>());
+    }
 
     public DelegatingAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
                                                   String authorizationRequestBaseUri,

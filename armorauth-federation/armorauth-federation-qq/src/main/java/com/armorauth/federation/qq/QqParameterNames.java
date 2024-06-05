@@ -29,7 +29,7 @@ public final class QqParameterNames {
     /**
      * QQ get openid need
      */
-    public static final String FMT_JOSN = "json";
+    public static final String FMT_JSON = "json";
 
     /**
      * QQ get userinfo need

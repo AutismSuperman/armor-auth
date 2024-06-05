@@ -20,7 +20,6 @@ import com.armorauth.federation.core.ExtendedOAuth2ClientPropertiesMapper;
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
 import com.armorauth.federation.core.endpoint.FederatedOAuth2AccessTokenRestTemplate;
 import com.armorauth.federation.core.endpoint.FederatedOAuth2AuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.core.web.converter.FederatedOAuth2AuthorizationRequestTransformer;
 import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
 import com.armorauth.federation.integration.DelegatingAccessTokenResponseClient;
 import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
@@ -33,6 +32,7 @@ import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateFed
 import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverterFederated;
 import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformerFederated;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -76,27 +76,23 @@ public class FederatedAuthenticationConfiguration {
                 exceptionHandling
                         .authenticationEntryPoint(authenticationEntryPoint)
         );
-        //OAuth 授权地址转换 OAuth2AuthorizationRequestTransformer
-        List<FederatedOAuth2AuthorizationRequestTransformer> authorizationRequestConverters = new ArrayList<>();
-        authorizationRequestConverters.add(new WechatAuthorizationRequestTransformerFederated());
-        DelegatingAuthorizationRequestResolver delegatingAuthorizationRequestResolver =
-                new DelegatingAuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestConverters);
         //OAuth 请求AccessToken的RestTemplate转换 OAuth2AccessTokenRestTemplateConverter
-        List<FederatedOAuth2AccessTokenRestTemplate> restTemplates = new ArrayList<>();
+        List<FederatedOAuth2AccessTokenRestTemplate> auth2AccessTokenRestTemplates = new ArrayList<>();
         List<FederatedOAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
-        restTemplates.add(new WechatAccessTokenRestTemplateFederated());
+        auth2AccessTokenRestTemplates.add(new WechatAccessTokenRestTemplateFederated());
         authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverterFederated());
-        restTemplates.add(new QqAccessTokenRestTemplateFederated());
+        auth2AccessTokenRestTemplates.add(new QqAccessTokenRestTemplateFederated());
         authorizationCodeGrantRequestConverters.add(new QqAuthorizationCodeGrantRequestConverterFederated());
         DelegatingAccessTokenResponseClient accessTokenResponseClient = new DelegatingAccessTokenResponseClient(
-                restTemplates,
+                auth2AccessTokenRestTemplates,
                 authorizationCodeGrantRequestConverters
         );
         //OAuth2LoginConfigurer
         http.getConfigurer(FederatedOAuth2LoginConfigurer.class)
                 .loginPage(CUSTOM_LOGIN_PAGE)
                 .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
-                        .authorizationRequestResolver(delegatingAuthorizationRequestResolver)
+                        .addAuthorizationRequestTransformer(new WechatAuthorizationRequestTransformerFederated())
+                        .authorizationRequestResolver(new DelegatingAuthorizationRequestResolver(clientRegistrationRepository))
                 )
                 .tokenEndpoint(tokenEndpoint -> tokenEndpoint
                         .accessTokenResponseClient(accessTokenResponseClient)
@@ -114,6 +110,7 @@ public class FederatedAuthenticationConfiguration {
 
 
     @Bean
+    @ConditionalOnMissingBean
     public ClientRegistrationRepository clientRegistrationRepository(@Autowired(required = false) OAuth2ClientProperties properties) {
         InMemoryClientRegistrationRepository clientRegistrations;
         ExtendedOAuth2ClientPropertiesMapper extendedOAuth2ClientPropertiesMapper = new ExtendedOAuth2ClientPropertiesMapper(properties);
