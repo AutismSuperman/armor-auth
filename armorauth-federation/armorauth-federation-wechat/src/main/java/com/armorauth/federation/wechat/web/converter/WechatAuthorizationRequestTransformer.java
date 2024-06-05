@@ -16,7 +16,7 @@
 package com.armorauth.federation.wechat.web.converter;
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestConverter;
+import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestTransformer;
 import com.armorauth.federation.wechat.WechatParameterNames;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -32,28 +32,26 @@ import java.util.LinkedHashMap;
  *
  * @author AutismSuperman
  */
-public class WechatAuthorizationRequestConverter implements OAuth2AuthorizationRequestConverter {
+public class WechatAuthorizationRequestTransformer implements OAuth2AuthorizationRequestTransformer {
 
 
     @Override
     public void convert(OAuth2AuthorizationRequest.Builder builder) {
-        builder.attributes(attributes ->
-                builder.parameters(parameters -> {
-                    LinkedHashMap<String, Object> linkedParameters = new LinkedHashMap<>();
-                    parameters.forEach((key, value) -> {
-                        if (OAuth2ParameterNames.CLIENT_ID.equals(key)) {
-                            linkedParameters.put(WechatParameterNames.APP_ID, value);
-                        } else {
-                            linkedParameters.put(key, value);
-                        }
-                    });
-                    parameters.clear();
-                    parameters.putAll(linkedParameters);
-                    builder.authorizationRequestUri(uriBuilder ->
-                            uriBuilder.fragment(WechatParameterNames.WECHAT_REDIRECT).build()
-                    );
-                })
-        );
+        builder.parameters(parameters -> {
+            LinkedHashMap<String, Object> linkedParameters = new LinkedHashMap<>();
+            parameters.forEach((key, value) -> {
+                if (OAuth2ParameterNames.CLIENT_ID.equals(key)) {
+                    linkedParameters.put(WechatParameterNames.APP_ID, value);
+                } else {
+                    linkedParameters.put(key, value);
+                }
+            });
+            parameters.clear();
+            parameters.putAll(linkedParameters);
+            builder.authorizationRequestUri(uriBuilder ->
+                    uriBuilder.fragment(WechatParameterNames.WECHAT_REDIRECT).build()
+            );
+        });
     }
 
     @Override

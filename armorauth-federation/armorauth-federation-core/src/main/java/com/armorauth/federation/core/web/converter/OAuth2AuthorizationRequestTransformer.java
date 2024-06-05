@@ -27,12 +27,12 @@ import java.util.function.Consumer;
  * @see OAuth2AuthorizationRequestResolver
  * @see DefaultOAuth2AuthorizationRequestResolver#setAuthorizationRequestCustomizer(Consumer)
  */
-public interface OAuth2AuthorizationRequestConverter {
+public interface OAuth2AuthorizationRequestTransformer {
 
     /**
      * OAuth2AuthorizationRequest.Builder convert
      *
-     * @param builder
+     * @param builder  builder
      */
     void convert(OAuth2AuthorizationRequest.Builder builder);
 

@@ -1,0 +1,211 @@
+package com.armorauth.federation.integration.authentication;
+
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationToken;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResponse;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.util.Assert;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Map;
+
+public class FederatedOidcAuthorizationCodeAuthenticationProvider implements AuthenticationProvider {
+
+	private static final String INVALID_STATE_PARAMETER_ERROR_CODE = "invalid_state_parameter";
+
+	private static final String INVALID_ID_TOKEN_ERROR_CODE = "invalid_id_token";
+
+	private static final String INVALID_NONCE_ERROR_CODE = "invalid_nonce";
+
+	private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient;
+
+	private final OAuth2UserService<OidcUserRequest, OidcUser> userService;
+
+	private JwtDecoderFactory<ClientRegistration> jwtDecoderFactory = new OidcIdTokenDecoderFactory();
+
+	private GrantedAuthoritiesMapper authoritiesMapper = ((authorities) -> authorities);
+
+	/**
+	 * Constructs an {@code FederatedOidcAuthorizationCodeAuthenticationProvider} using the
+	 * provided parameters.
+	 * @param accessTokenResponseClient the client used for requesting the access token
+	 * credential from the Token Endpoint
+	 * @param userService the service used for obtaining the user attributes of the
+	 * End-User from the UserInfo Endpoint
+	 */
+	public FederatedOidcAuthorizationCodeAuthenticationProvider(
+			OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient,
+			OAuth2UserService<OidcUserRequest, OidcUser> userService) {
+		Assert.notNull(accessTokenResponseClient, "accessTokenResponseClient cannot be null");
+		Assert.notNull(userService, "userService cannot be null");
+		this.accessTokenResponseClient = accessTokenResponseClient;
+		this.userService = userService;
+	}
+
+	@Override
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+		OAuth2LoginAuthenticationToken authorizationCodeAuthentication = (OAuth2LoginAuthenticationToken) authentication;
+		// Section 3.1.2.1 Authentication Request -
+		// https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+		// scope
+		// REQUIRED. OpenID Connect requests MUST contain the "openid" scope value.
+		if (!authorizationCodeAuthentication.getAuthorizationExchange().getAuthorizationRequest().getScopes()
+				.contains(OidcScopes.OPENID)) {
+			// This is NOT an OpenID Connect Authentication Request so return null
+			// and let OAuth2LoginAuthenticationProvider handle it instead
+			return null;
+		}
+		OAuth2AuthorizationRequest authorizationRequest = authorizationCodeAuthentication.getAuthorizationExchange()
+				.getAuthorizationRequest();
+		OAuth2AuthorizationResponse authorizationResponse = authorizationCodeAuthentication.getAuthorizationExchange()
+				.getAuthorizationResponse();
+		if (authorizationResponse.statusError()) {
+			throw new OAuth2AuthenticationException(authorizationResponse.getError(),
+					authorizationResponse.getError().toString());
+		}
+		if (!authorizationResponse.getState().equals(authorizationRequest.getState())) {
+			OAuth2Error oauth2Error = new OAuth2Error(INVALID_STATE_PARAMETER_ERROR_CODE);
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+		}
+		OAuth2AccessTokenResponse accessTokenResponse = getResponse(authorizationCodeAuthentication);
+		ClientRegistration clientRegistration = authorizationCodeAuthentication.getClientRegistration();
+		Map<String, Object> additionalParameters = accessTokenResponse.getAdditionalParameters();
+		if (!additionalParameters.containsKey(OidcParameterNames.ID_TOKEN)) {
+			OAuth2Error invalidIdTokenError = new OAuth2Error(INVALID_ID_TOKEN_ERROR_CODE,
+					"Missing (required) ID Token in Token Response for Client Registration: "
+							+ clientRegistration.getRegistrationId(),
+					null);
+			throw new OAuth2AuthenticationException(invalidIdTokenError, invalidIdTokenError.toString());
+		}
+		OidcIdToken idToken = createOidcToken(clientRegistration, accessTokenResponse);
+		validateNonce(authorizationRequest, idToken);
+		OidcUser oidcUser = this.userService.loadUser(new OidcUserRequest(clientRegistration,
+				accessTokenResponse.getAccessToken(), idToken, additionalParameters));
+		Collection<? extends GrantedAuthority> mappedAuthorities = this.authoritiesMapper
+				.mapAuthorities(oidcUser.getAuthorities());
+		OAuth2LoginAuthenticationToken authenticationResult = new OAuth2LoginAuthenticationToken(
+				authorizationCodeAuthentication.getClientRegistration(),
+				authorizationCodeAuthentication.getAuthorizationExchange(), oidcUser, mappedAuthorities,
+				accessTokenResponse.getAccessToken(), accessTokenResponse.getRefreshToken());
+		authenticationResult.setDetails(authorizationCodeAuthentication.getDetails());
+		return authenticationResult;
+	}
+
+	private OAuth2AccessTokenResponse getResponse(OAuth2LoginAuthenticationToken authorizationCodeAuthentication) {
+		try {
+			return this.accessTokenResponseClient.getTokenResponse(
+					new OAuth2AuthorizationCodeGrantRequest(authorizationCodeAuthentication.getClientRegistration(),
+							authorizationCodeAuthentication.getAuthorizationExchange()));
+		}
+		catch (OAuth2AuthorizationException ex) {
+			OAuth2Error oauth2Error = ex.getError();
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
+		}
+	}
+
+	private void validateNonce(OAuth2AuthorizationRequest authorizationRequest, OidcIdToken idToken) {
+		String requestNonce = authorizationRequest.getAttribute(OidcParameterNames.NONCE);
+		if (requestNonce == null) {
+			return;
+		}
+		String nonceHash = getNonceHash(requestNonce);
+		String nonceHashClaim = idToken.getNonce();
+		if (nonceHashClaim == null || !nonceHashClaim.equals(nonceHash)) {
+			OAuth2Error oauth2Error = new OAuth2Error(INVALID_NONCE_ERROR_CODE);
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+		}
+	}
+
+	private String getNonceHash(String requestNonce) {
+		try {
+			return createHash(requestNonce);
+		}
+		catch (NoSuchAlgorithmException ex) {
+			OAuth2Error oauth2Error = new OAuth2Error(INVALID_NONCE_ERROR_CODE);
+			throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
+		}
+	}
+
+	/**
+	 * Sets the {@link JwtDecoderFactory} used for {@link OidcIdToken} signature
+	 * verification. The factory returns a {@link JwtDecoder} associated to the provided
+	 * {@link ClientRegistration}.
+	 * @param jwtDecoderFactory the {@link JwtDecoderFactory} used for {@link OidcIdToken}
+	 * signature verification
+	 * @since 5.2
+	 */
+	public final void setJwtDecoderFactory(JwtDecoderFactory<ClientRegistration> jwtDecoderFactory) {
+		Assert.notNull(jwtDecoderFactory, "jwtDecoderFactory cannot be null");
+		this.jwtDecoderFactory = jwtDecoderFactory;
+	}
+
+	/**
+	 * Sets the {@link GrantedAuthoritiesMapper} used for mapping
+	 * {@link OidcUser#getAuthorities()}} to a new set of authorities which will be
+	 * associated to the {@link OAuth2LoginAuthenticationToken}.
+	 * @param authoritiesMapper the {@link GrantedAuthoritiesMapper} used for mapping the
+	 * user's authorities
+	 */
+	public final void setAuthoritiesMapper(GrantedAuthoritiesMapper authoritiesMapper) {
+		Assert.notNull(authoritiesMapper, "authoritiesMapper cannot be null");
+		this.authoritiesMapper = authoritiesMapper;
+	}
+
+	@Override
+	public boolean supports(Class<?> authentication) {
+		return FederatedOAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
+	}
+
+	private OidcIdToken createOidcToken(ClientRegistration clientRegistration,
+			OAuth2AccessTokenResponse accessTokenResponse) {
+		JwtDecoder jwtDecoder = this.jwtDecoderFactory.createDecoder(clientRegistration);
+		Jwt jwt = getJwt(accessTokenResponse, jwtDecoder);
+		OidcIdToken idToken = new OidcIdToken(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(),
+				jwt.getClaims());
+		return idToken;
+	}
+
+	private Jwt getJwt(OAuth2AccessTokenResponse accessTokenResponse, JwtDecoder jwtDecoder) {
+		try {
+			Map<String, Object> parameters = accessTokenResponse.getAdditionalParameters();
+			return jwtDecoder.decode((String) parameters.get(OidcParameterNames.ID_TOKEN));
+		}
+		catch (JwtException ex) {
+			OAuth2Error invalidIdTokenError = new OAuth2Error(INVALID_ID_TOKEN_ERROR_CODE, ex.getMessage(), null);
+			throw new OAuth2AuthenticationException(invalidIdTokenError, invalidIdTokenError.toString(), ex);
+		}
+	}
+
+	static String createHash(String nonce) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		byte[] digest = md.digest(nonce.getBytes(StandardCharsets.US_ASCII));
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+	}
+
+}

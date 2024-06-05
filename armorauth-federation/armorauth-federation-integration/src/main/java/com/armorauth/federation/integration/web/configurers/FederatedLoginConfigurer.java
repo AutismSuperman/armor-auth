@@ -16,9 +16,7 @@
 package com.armorauth.federation.integration.web.configurers;
 
 import com.armorauth.common.util.HttpSecurityFilterOrderRegistrationUtils;
-import com.armorauth.federation.integration.authentication.FederatedBindUserCheckProvider;
-import com.armorauth.federation.integration.authentication.FederatedBindUserCheckService;
-import com.armorauth.federation.integration.authentication.DefaultFederatedBindUserCheckService;
+import com.armorauth.federation.integration.authentication.*;
 import com.armorauth.federation.integration.web.FederatedAuthorizationRequestRedirectFilter;
 import com.armorauth.federation.integration.web.FederatedLoginAuthenticationFilter;
 import com.armorauth.federation.integration.web.OAuth2ClientConfigurerUtils;
@@ -35,7 +33,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationToken;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
@@ -216,19 +213,20 @@ public class FederatedLoginConfigurer
             super.loginPage(this.loginPage);
             super.init(http);
         }
-        OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient = this.tokenEndpointConfig.accessTokenResponseClient;
+        OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient =
+                this.tokenEndpointConfig.accessTokenResponseClient;
         if (accessTokenResponseClient == null) {
             accessTokenResponseClient = new DefaultAuthorizationCodeTokenResponseClient();
         }
         OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService = getOAuth2UserService();
         //可能要替换掉 OAuth2LoginAuthenticationProvider
-        OAuth2LoginAuthenticationProvider oauth2LoginAuthenticationProvider = new OAuth2LoginAuthenticationProvider(
+        FederatedOAuth2LoginAuthenticationProvider federatedOAuth2LoginAuthenticationProvider = new FederatedOAuth2LoginAuthenticationProvider(
                 accessTokenResponseClient, oauth2UserService);
         GrantedAuthoritiesMapper userAuthoritiesMapper = this.getGrantedAuthoritiesMapper();
         if (userAuthoritiesMapper != null) {
-            oauth2LoginAuthenticationProvider.setAuthoritiesMapper(userAuthoritiesMapper);
+            federatedOAuth2LoginAuthenticationProvider.setAuthoritiesMapper(userAuthoritiesMapper);
         }
-        http.authenticationProvider(this.postProcess(oauth2LoginAuthenticationProvider));
+        http.authenticationProvider(this.postProcess(federatedOAuth2LoginAuthenticationProvider));
         FederatedBindUserCheckService federatedBindUserCheckService = getBindUserCheckService();
         FederatedBindUserCheckProvider federatedBindUserCheckProvider =
                 new FederatedBindUserCheckProvider(federatedBindUserCheckService);
@@ -238,16 +236,16 @@ public class FederatedLoginConfigurer
                 .isPresent("org.springframework.security.oauth2.jwt.JwtDecoder", this.getClass().getClassLoader());
         if (oidcAuthenticationProviderEnabled) {
             OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService = getOidcUserService();
-            OidcAuthorizationCodeAuthenticationProvider oidcAuthorizationCodeAuthenticationProvider = new OidcAuthorizationCodeAuthenticationProvider(
+            FederatedOidcAuthorizationCodeAuthenticationProvider federatedOidcAuthorizationCodeAuthenticationProvider = new FederatedOidcAuthorizationCodeAuthenticationProvider(
                     accessTokenResponseClient, oidcUserService);
             JwtDecoderFactory<ClientRegistration> jwtDecoderFactory = this.getJwtDecoderFactoryBean();
             if (jwtDecoderFactory != null) {
-                oidcAuthorizationCodeAuthenticationProvider.setJwtDecoderFactory(jwtDecoderFactory);
+                federatedOidcAuthorizationCodeAuthenticationProvider.setJwtDecoderFactory(jwtDecoderFactory);
             }
             if (userAuthoritiesMapper != null) {
-                oidcAuthorizationCodeAuthenticationProvider.setAuthoritiesMapper(userAuthoritiesMapper);
+                federatedOidcAuthorizationCodeAuthenticationProvider.setAuthoritiesMapper(userAuthoritiesMapper);
             }
-            http.authenticationProvider(this.postProcess(oidcAuthorizationCodeAuthenticationProvider));
+            http.authenticationProvider(this.postProcess(federatedOidcAuthorizationCodeAuthenticationProvider));
         } else {
             http.authenticationProvider(new OidcAuthenticationRequestChecker());
         }
@@ -408,7 +406,7 @@ public class FederatedLoginConfigurer
 
         @Override
         public boolean supports(Class<?> authentication) {
-            return OAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
+            return FederatedOAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
         }
 
     }

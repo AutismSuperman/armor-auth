@@ -20,7 +20,7 @@ import com.armorauth.federation.core.ExtendedOAuth2ClientPropertiesMapper;
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
 import com.armorauth.federation.core.endpoint.OAuth2AccessTokenRestTemplateConverter;
 import com.armorauth.federation.core.endpoint.OAuth2AuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestConverter;
+import com.armorauth.federation.core.web.converter.OAuth2AuthorizationRequestTransformer;
 import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
 import com.armorauth.federation.integration.DelegatingAccessTokenResponseClient;
 import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
@@ -31,7 +31,7 @@ import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateConverter;
 import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateConverter;
 import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverter;
-import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestConverter;
+import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.context.annotation.Bean;
@@ -80,9 +80,9 @@ public class FederatedAuthenticationConfiguration {
                 exceptionHandling
                         .authenticationEntryPoint(authenticationEntryPoint)
         );
-        //OAuth 授权地址转换 OAuth2AuthorizationRequestConverter
-        List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters = new ArrayList<>();
-        authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
+        //OAuth 授权地址转换 OAuth2AuthorizationRequestTransformer
+        List<OAuth2AuthorizationRequestTransformer> authorizationRequestConverters = new ArrayList<>();
+        authorizationRequestConverters.add(new WechatAuthorizationRequestTransformer());
         DelegatingAuthorizationRequestResolver delegatingAuthorizationRequestResolver =
                 new DelegatingAuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestConverters);
         //OAuth 请求AccessToken的RestTemplate转换 OAuth2AccessTokenRestTemplateConverter

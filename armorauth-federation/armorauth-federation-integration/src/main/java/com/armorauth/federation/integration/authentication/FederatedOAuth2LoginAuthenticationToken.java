@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
 import java.util.Collection;
 import java.util.Collections;
 
-public class FederatedLoginAuthenticationToken  extends AbstractAuthenticationToken {
+public class FederatedOAuth2LoginAuthenticationToken extends AbstractAuthenticationToken {
 
 
     private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
@@ -50,8 +50,8 @@ public class FederatedLoginAuthenticationToken  extends AbstractAuthenticationTo
      * @param clientRegistration the client registration
      * @param authorizationExchange the authorization exchange
      */
-    public FederatedLoginAuthenticationToken(ClientRegistration clientRegistration,
-                                          OAuth2AuthorizationExchange authorizationExchange) {
+    public FederatedOAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
+                                                   OAuth2AuthorizationExchange authorizationExchange) {
         super(Collections.emptyList());
         Assert.notNull(clientRegistration, "clientRegistration cannot be null");
         Assert.notNull(authorizationExchange, "authorizationExchange cannot be null");
@@ -70,9 +70,9 @@ public class FederatedLoginAuthenticationToken  extends AbstractAuthenticationTo
      * @param authorities the authorities granted to the user
      * @param accessToken the access token credential
      */
-    public FederatedLoginAuthenticationToken(ClientRegistration clientRegistration,
-                                          OAuth2AuthorizationExchange authorizationExchange, OAuth2User principal,
-                                          Collection<? extends GrantedAuthority> authorities, OAuth2AccessToken accessToken) {
+    public FederatedOAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
+                                                   OAuth2AuthorizationExchange authorizationExchange, OAuth2User principal,
+                                                   Collection<? extends GrantedAuthority> authorities, OAuth2AccessToken accessToken) {
         this(clientRegistration, authorizationExchange, principal, authorities, accessToken, null);
     }
 
@@ -87,10 +87,10 @@ public class FederatedLoginAuthenticationToken  extends AbstractAuthenticationTo
      * @param accessToken the access token credential
      * @param refreshToken the refresh token credential
      */
-    public FederatedLoginAuthenticationToken(ClientRegistration clientRegistration,
-                                          OAuth2AuthorizationExchange authorizationExchange, OAuth2User principal,
-                                          Collection<? extends GrantedAuthority> authorities, OAuth2AccessToken accessToken,
-                                          @Nullable OAuth2RefreshToken refreshToken) {
+    public FederatedOAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
+                                                   OAuth2AuthorizationExchange authorizationExchange, OAuth2User principal,
+                                                   Collection<? extends GrantedAuthority> authorities, OAuth2AccessToken accessToken,
+                                                   @Nullable OAuth2RefreshToken refreshToken) {
         super(authorities);
         Assert.notNull(clientRegistration, "clientRegistration cannot be null");
         Assert.notNull(authorizationExchange, "authorizationExchange cannot be null");

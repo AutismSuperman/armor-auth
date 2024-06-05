@@ -22,6 +22,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthorizationCodeAuthenticationProvider;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthorizationCodeAuthenticationToken;
+import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -33,8 +34,10 @@ import org.springframework.util.Assert;
 import java.util.Collection;
 import java.util.Map;
 
-
-public class FederatedLoginAuthenticationProvider implements AuthenticationProvider {
+/**
+ * @see OAuth2LoginAuthenticationProvider
+ */
+public class FederatedOAuth2LoginAuthenticationProvider implements AuthenticationProvider {
 
     private final OAuth2AuthorizationCodeAuthenticationProvider authorizationCodeAuthenticationProvider;
 
@@ -43,7 +46,7 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
     private GrantedAuthoritiesMapper authoritiesMapper = ((authorities) -> authorities);
 
     /**
-     * Constructs an {@code FederatedLoginAuthenticationProvider} using the provided
+     * Constructs an {@code FederatedOAuth2LoginAuthenticationProvider} using the provided
      * parameters.
      *
      * @param accessTokenResponseClient the client used for requesting the access token
@@ -51,7 +54,7 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
      * @param userService               the service used for obtaining the user attributes of the
      *                                  End-User from the UserInfo Endpoint
      */
-    public FederatedLoginAuthenticationProvider(
+    public FederatedOAuth2LoginAuthenticationProvider(
             OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient,
             OAuth2UserService<OAuth2UserRequest, OAuth2User> userService
     ) {
@@ -64,14 +67,14 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        FederatedLoginAuthenticationToken loginAuthenticationToken = (FederatedLoginAuthenticationToken) authentication;
+        FederatedOAuth2LoginAuthenticationToken loginAuthenticationToken = (FederatedOAuth2LoginAuthenticationToken) authentication;
         // Section 3.1.2.1 Authentication Request -
         // https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest scope
         // REQUIRED. OpenID Connect requests MUST contain the "openid" scope value.
         if (loginAuthenticationToken.getAuthorizationExchange().getAuthorizationRequest().getScopes()
                 .contains("openid")) {
             // This is an OpenID Connect Authentication Request so return null
-            // and let OidcAuthorizationCodeAuthenticationProvider handle it instead
+            // and let FederatedOidcAuthorizationCodeAuthenticationProvider handle it instead
             return null;
         }
         OAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticationToken;
@@ -91,7 +94,7 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
                 loginAuthenticationToken.getClientRegistration(), accessToken, additionalParameters));
         Collection<? extends GrantedAuthority> mappedAuthorities = this.authoritiesMapper
                 .mapAuthorities(oauth2User.getAuthorities());
-        FederatedLoginAuthenticationToken authenticationResult = new FederatedLoginAuthenticationToken(
+        FederatedOAuth2LoginAuthenticationToken authenticationResult = new FederatedOAuth2LoginAuthenticationToken(
                 loginAuthenticationToken.getClientRegistration(), loginAuthenticationToken.getAuthorizationExchange(),
                 oauth2User, mappedAuthorities, accessToken, authorizationCodeAuthenticationToken.getRefreshToken());
         authenticationResult.setDetails(loginAuthenticationToken.getDetails());
@@ -106,6 +109,6 @@ public class FederatedLoginAuthenticationProvider implements AuthenticationProvi
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return FederatedLoginAuthenticationToken.class.isAssignableFrom(authentication);
+        return FederatedOAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

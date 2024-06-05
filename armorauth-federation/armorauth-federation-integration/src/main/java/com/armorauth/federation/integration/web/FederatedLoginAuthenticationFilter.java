@@ -16,7 +16,7 @@
 package com.armorauth.federation.integration.web;
 
 import com.armorauth.federation.integration.authentication.FederatedBindUserCheckToken;
-import com.armorauth.federation.integration.authentication.FederatedLoginAuthenticationToken;
+import com.armorauth.federation.integration.authentication.FederatedOAuth2LoginAuthenticationToken;
 import com.armorauth.federation.integration.endpoint.BindUserRequest;
 import com.armorauth.federation.integration.endpoint.BindUserRequestRepository;
 import com.armorauth.federation.integration.endpoint.HttpSessionBindUserRequestRepository;
@@ -76,7 +76,7 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
 
     private BindUserRequestRepository<BindUserRequest> bindUserRequestRepository = new HttpSessionBindUserRequestRepository();
 
-    private Converter<FederatedLoginAuthenticationToken, OAuth2AuthenticationToken> authenticationResultConverter = this::createAuthenticationResult;
+    private Converter<FederatedOAuth2LoginAuthenticationToken, OAuth2AuthenticationToken> authenticationResultConverter = this::createAuthenticationResult;
 
     private String bindUserPage;
 
@@ -152,11 +152,11 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponseUtils.convert(params,
                 redirectUri);
         Object authenticationDetails = this.authenticationDetailsSource.buildDetails(request);
-        FederatedLoginAuthenticationToken authenticationRequest = new FederatedLoginAuthenticationToken(clientRegistration,
+        FederatedOAuth2LoginAuthenticationToken authenticationRequest = new FederatedOAuth2LoginAuthenticationToken(clientRegistration,
                 new OAuth2AuthorizationExchange(authorizationRequest, authorizationResponse));
         authenticationRequest.setDetails(authenticationDetails);
-        FederatedLoginAuthenticationToken authenticationResult =
-                (FederatedLoginAuthenticationToken) this.getAuthenticationManager().authenticate(authenticationRequest);
+        FederatedOAuth2LoginAuthenticationToken authenticationResult =
+                (FederatedOAuth2LoginAuthenticationToken) this.getAuthenticationManager().authenticate(authenticationRequest);
         OAuth2AuthenticationToken oauth2Authentication = this.authenticationResultConverter
                 .convert(authenticationResult);
         // authenticationManager bind user
@@ -228,12 +228,12 @@ public class FederatedLoginAuthenticationFilter extends AbstractAuthenticationPr
      * @since 5.6
      */
     public final void setAuthenticationResultConverter(
-            Converter<FederatedLoginAuthenticationToken, OAuth2AuthenticationToken> authenticationResultConverter) {
+            Converter<FederatedOAuth2LoginAuthenticationToken, OAuth2AuthenticationToken> authenticationResultConverter) {
         Assert.notNull(authenticationResultConverter, "authenticationResultConverter cannot be null");
         this.authenticationResultConverter = authenticationResultConverter;
     }
 
-    private OAuth2AuthenticationToken createAuthenticationResult(FederatedLoginAuthenticationToken authenticationResult) {
+    private OAuth2AuthenticationToken createAuthenticationResult(FederatedOAuth2LoginAuthenticationToken authenticationResult) {
         return new OAuth2AuthenticationToken(authenticationResult.getPrincipal(), authenticationResult.getAuthorities(),
                 authenticationResult.getClientRegistration().getRegistrationId());
     }
