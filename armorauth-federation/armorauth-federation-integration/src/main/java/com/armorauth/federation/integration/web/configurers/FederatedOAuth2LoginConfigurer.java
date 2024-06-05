@@ -15,7 +15,7 @@
  */
 package com.armorauth.federation.integration.web.configurers;
 
-import com.armorauth.common.util.HttpSecurityFilterOrderRegistrationUtils;
+import com.armorauth.federation.integration.util.HttpSecurityFilterOrderRegistrationUtils;
 import com.armorauth.federation.core.web.converter.FederatedOAuth2AuthorizationRequestTransformer;
 import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
 import com.armorauth.federation.integration.DelegatingOAuth2UserService;
