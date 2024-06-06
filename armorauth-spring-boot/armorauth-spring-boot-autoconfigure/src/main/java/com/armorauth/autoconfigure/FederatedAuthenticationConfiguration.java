@@ -17,7 +17,6 @@ package com.armorauth.autoconfigure;
 
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientPropertiesMapper;
-import com.armorauth.federation.core.endpoint.FederatedOAuth2AccessTokenRestTemplate;
 import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
 import com.armorauth.federation.integration.DelegatingAccessTokenResponseClient;
 import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
@@ -46,8 +45,6 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 

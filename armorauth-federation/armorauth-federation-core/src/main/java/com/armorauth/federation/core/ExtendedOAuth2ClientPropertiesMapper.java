@@ -107,6 +107,7 @@ public final class ExtendedOAuth2ClientPropertiesMapper {
             builder = extendedProvider.getBuilder(registrationId);
         } else if (commonProvider != null && commonProvider.getBuilder(registrationId) != null) {
             builder = commonProvider.getBuilder(registrationId);
+            builder.redirectUri(ExtendedOAuth2ClientProvider.getDefaultRedirectUrl());
         } else {
             builder = ClientRegistration.withRegistrationId(registrationId);
         }

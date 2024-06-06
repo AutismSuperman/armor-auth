@@ -56,7 +56,7 @@ import java.io.IOException;
 public class FederatedOAuth2LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
 
-    public static final String DEFAULT_FILTER_PROCESSES_URI = "/login/federated/code/*";
+    public static final String DEFAULT_FILTER_PROCESSES_URI = "/login/federated/oauth2/code/*";
 
     private static final String AUTHORIZATION_REQUEST_NOT_FOUND_ERROR_CODE = "authorization_request_not_found";
 

@@ -80,7 +80,19 @@ public enum ExtendedOAuth2ClientProvider {
     };
 
 
-    private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}";
+    private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/federated/oauth2/code/{registrationId}";
+
+    public static boolean matchNameLowerCase(ExtendedOAuth2ClientProvider provider, String registrationId) {
+        return StringUtils.equals(provider.name().toLowerCase(), registrationId.toLowerCase());
+    }
+
+    public static String getNameLowerCase(ExtendedOAuth2ClientProvider provider) {
+        return provider.name().toLowerCase();
+    }
+
+    public static String getDefaultRedirectUrl() {
+        return DEFAULT_REDIRECT_URL;
+    }
 
     protected final ClientRegistration.Builder getBuilder(String registrationId, ClientAuthenticationMethod method,
                                                           String redirectUri) {
@@ -90,16 +102,6 @@ public enum ExtendedOAuth2ClientProvider {
         builder.redirectUri(redirectUri);
         return builder;
     }
-
-    public static boolean matchNameLowerCase(ExtendedOAuth2ClientProvider provider, String registrationId) {
-        return StringUtils.equals(provider.name().toLowerCase(), registrationId.toLowerCase());
-    }
-
-
-    public static String getNameLowerCase(ExtendedOAuth2ClientProvider provider) {
-        return provider.name().toLowerCase();
-    }
-
 
     /**
      * Create a new
