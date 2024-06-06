@@ -15,6 +15,7 @@
  */
 package com.armorauth.federation.integration.web.configurers;
 
+import com.armorauth.federation.core.user.ExtendedOAuth2UserService;
 import com.armorauth.federation.integration.util.HttpSecurityFilterOrderRegistrationUtils;
 import com.armorauth.federation.core.web.converter.FederatedOAuth2AuthorizationRequestTransformer;
 import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
@@ -272,7 +273,7 @@ public class FederatedOAuth2LoginConfigurer
         // Configure OAuth2AuthorizationRequestRedirectFilter
         FederatedOAuth2AuthorizationRequestRedirectFilter authorizationRequestFilter;
         if (this.authorizationEndpointConfig.authorizationRequestResolver != null) {
-            if(!ObjectUtils.isEmpty(this.authorizationEndpointConfig.authorizationRequestTransformers)){
+            if (!ObjectUtils.isEmpty(this.authorizationEndpointConfig.authorizationRequestTransformers)) {
                 this.authorizationEndpointConfig.authorizationRequestResolver
                         .addOAuth2AuthorizationRequestConverters(this.authorizationEndpointConfig.authorizationRequestTransformers);
             }
@@ -430,7 +431,7 @@ public class FederatedOAuth2LoginConfigurer
 
         private String authorizationRequestBaseUri;
 
-        private  DelegatingAuthorizationRequestResolver authorizationRequestResolver;
+        private DelegatingAuthorizationRequestResolver authorizationRequestResolver;
 
         private List<FederatedOAuth2AuthorizationRequestTransformer> authorizationRequestTransformers = new ArrayList<>();
 
@@ -556,7 +557,7 @@ public class FederatedOAuth2LoginConfigurer
 
         private DelegatingOAuth2UserService delegatingUserService;
 
-        private Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new HashMap<>();
+        private List<ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new ArrayList<>();
 
         private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService;
 
@@ -582,10 +583,9 @@ public class FederatedOAuth2LoginConfigurer
         }
 
 
-        public UserInfoEndpointConfig addUserService(String registrationId, OAuth2UserService<OAuth2UserRequest, OAuth2User> userService) {
-            Assert.notNull(registrationId, "registrationId cannot be null");
-            Assert.notNull(userService, "userService cannot be null");
-            userServices.put(registrationId, userService);
+        public UserInfoEndpointConfig addExtendedUserService(ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User> userService) {
+            Assert.notNull(userService, "extendedOAuth2UserService cannot be null");
+            userServices.add(userService);
             return this;
         }
 

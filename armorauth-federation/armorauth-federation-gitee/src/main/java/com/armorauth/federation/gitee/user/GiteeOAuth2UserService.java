@@ -15,6 +15,8 @@
  */
 package com.armorauth.federation.gitee.user;
 
+import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
+import com.armorauth.federation.core.user.ExtendedOAuth2UserService;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.RequestEntity;
@@ -58,7 +60,7 @@ import java.util.Set;
  * @see OAuth2User
  * @see GiteeOAuth2User
  */
-public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+public class GiteeOAuth2UserService implements ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private static final String MISSING_USER_INFO_URI_ERROR_CODE = "missing_user_info_uri";
 
@@ -77,6 +79,11 @@ public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserReque
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
         this.restOperations = restTemplate;
+    }
+
+    @Override
+    public boolean supports(String registrationId) {
+        return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.GITEE, registrationId);
     }
 
     @Override

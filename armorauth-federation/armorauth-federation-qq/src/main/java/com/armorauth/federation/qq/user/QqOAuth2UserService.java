@@ -15,6 +15,8 @@
  */
 package com.armorauth.federation.qq.user;
 
+import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
+import com.armorauth.federation.core.user.ExtendedOAuth2UserService;
 import com.armorauth.federation.qq.QqParameterNames;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
@@ -47,7 +49,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-public class QqOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+public class QqOAuth2UserService implements ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private static final String MISSING_USER_INFO_URI_ERROR_CODE = "missing_user_info_uri";
 
@@ -60,8 +62,7 @@ public class QqOAuth2UserService implements OAuth2UserService<OAuth2UserRequest,
 
     private static final ParameterizedTypeReference<QqOAuth2User> OAUTH2_USER_OBJECT = new ParameterizedTypeReference<>() {
     };
-
-
+    private final RestOperations restOperations;
     private Converter<OAuth2UserRequest, RequestEntity<?>> requestEntityConverter = userRequest -> {
         MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
         queryParameters.add(OAuth2ParameterNames.ACCESS_TOKEN, userRequest.getAccessToken().getTokenValue());
@@ -72,12 +73,15 @@ public class QqOAuth2UserService implements OAuth2UserService<OAuth2UserRequest,
         return RequestEntity.get(uri).build();
     };
 
-    private final RestOperations restOperations;
-
     public QqOAuth2UserService() {
         RestTemplate restTemplate = new RestTemplate(Collections.singletonList(new QqOAuth2UserService.QqOAuth2UserHttpMessageConverter()));
         restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
         this.restOperations = restTemplate;
+    }
+
+    @Override
+    public boolean supports(String registrationId) {
+        return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.QQ, registrationId);
     }
 
     @Override

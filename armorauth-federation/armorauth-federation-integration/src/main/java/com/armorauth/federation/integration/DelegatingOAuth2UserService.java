@@ -15,26 +15,27 @@
  */
 package com.armorauth.federation.integration;
 
+import com.armorauth.federation.core.user.ExtendedOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> defaultOAuth2UserService = new DefaultOAuth2UserService();
 
-    private final Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices;
+    private final List<ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices;
 
     public DelegatingOAuth2UserService() {
-        this.userServices = new HashMap<>();
+        this.userServices = new ArrayList<>();
     }
 
-    public DelegatingOAuth2UserService(Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices) {
+    public DelegatingOAuth2UserService(List<ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices) {
         this.userServices = userServices;
     }
 
@@ -42,19 +43,22 @@ public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2User
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService = userServices.get(registrationId.toLowerCase());
+        OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService = userServices
+                .stream()
+                .filter(p -> p.supports(registrationId.toLowerCase()))
+                .findFirst().orElse(null);
         if (oAuth2UserService == null) {
             oAuth2UserService = defaultOAuth2UserService;
         }
         return oAuth2UserService.loadUser(userRequest);
     }
 
-    public void addOAuth2UserService(String registrationId, OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService) {
-        this.userServices.put(registrationId.toUpperCase(), oAuth2UserService);
+    public void addOAuth2UserService(ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService) {
+        this.userServices.add(oAuth2UserService);
     }
 
-    public void addOAuth2UserServices(Map<String, OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices) {
-        this.userServices.putAll(userServices);
+    public void addOAuth2UserServices(List<ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices) {
+        this.userServices.addAll(userServices);
     }
 
 }

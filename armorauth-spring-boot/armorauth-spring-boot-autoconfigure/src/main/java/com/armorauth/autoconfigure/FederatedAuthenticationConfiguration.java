@@ -98,9 +98,9 @@ public class FederatedAuthenticationConfiguration {
                         .accessTokenResponseClient(accessTokenResponseClient)
                 )
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
-                        .addUserService(ExtendedOAuth2ClientProvider.getNameLowerCase(GITEE), new GiteeOAuth2UserService())
-                        .addUserService(ExtendedOAuth2ClientProvider.getNameLowerCase(QQ), new GiteeOAuth2UserService())
-                        .addUserService(ExtendedOAuth2ClientProvider.getNameLowerCase(WECHAT), new GiteeOAuth2UserService())
+                        .addExtendedUserService(new GiteeOAuth2UserService())
+                        .addExtendedUserService(new GiteeOAuth2UserService())
+                        .addExtendedUserService(new GiteeOAuth2UserService())
                         .userService(new DelegatingOAuth2UserService())
                         .bindUserPage("/bind")
                 )

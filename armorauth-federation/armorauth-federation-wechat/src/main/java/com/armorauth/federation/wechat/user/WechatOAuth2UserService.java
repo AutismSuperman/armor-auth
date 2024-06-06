@@ -15,6 +15,8 @@
  */
 package com.armorauth.federation.wechat.user;
 
+import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
+import com.armorauth.federation.core.user.ExtendedOAuth2UserService;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.http.converter.AbstractHttpMessageConverter;
@@ -49,7 +51,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+public class WechatOAuth2UserService implements ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private static final String MISSING_USER_INFO_URI_ERROR_CODE = "missing_user_info_uri";
     private static final String MISSING_OPENID_ERROR_CODE = "missing_openid_attribute";
@@ -67,6 +69,11 @@ public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         RestTemplate restTemplate = new RestTemplate(Collections.singletonList(new WechatOAuth2UserHttpMessageConverter()));
         restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
         this.restOperations = restTemplate;
+    }
+
+    @Override
+    public boolean supports(String registrationId) {
+        return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.WECHAT, registrationId);
     }
 
     @Override
