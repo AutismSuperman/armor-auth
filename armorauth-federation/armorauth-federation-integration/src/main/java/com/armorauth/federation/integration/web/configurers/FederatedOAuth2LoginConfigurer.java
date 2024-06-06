@@ -15,6 +15,7 @@
  */
 package com.armorauth.federation.integration.web.configurers;
 
+import com.armorauth.federation.core.endpoint.FederatedOAuth2AccessTokenRestTemplate;
 import com.armorauth.federation.core.user.ExtendedOAuth2UserService;
 import com.armorauth.federation.integration.util.HttpSecurityFilterOrderRegistrationUtils;
 import com.armorauth.federation.core.web.converter.FederatedOAuth2AuthorizationRequestTransformer;
@@ -477,6 +478,13 @@ public class FederatedOAuth2LoginConfigurer
             return this;
         }
 
+        public AuthorizationEndpointConfig addAuthorizationRequestTransformers(
+                List<FederatedOAuth2AuthorizationRequestTransformer> authorizationRequestTransformers) {
+            Assert.notNull(authorizationRequestTransformers, "authorizationRequestTransformers cannot be null");
+            this.authorizationRequestTransformers.addAll(authorizationRequestTransformers);
+            return this;
+        }
+
         /**
          * Sets the repository used for storing {@link OAuth2AuthorizationRequest}'s.
          *
@@ -510,6 +518,8 @@ public class FederatedOAuth2LoginConfigurer
 
         private OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient;
 
+        private List<FederatedOAuth2AccessTokenRestTemplate> accessTokenRestTemplates = new ArrayList<>();
+
         private TokenEndpointConfig() {
         }
 
@@ -525,6 +535,18 @@ public class FederatedOAuth2LoginConfigurer
                 OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient) {
             Assert.notNull(accessTokenResponseClient, "accessTokenResponseClient cannot be null");
             this.accessTokenResponseClient = accessTokenResponseClient;
+            return this;
+        }
+
+        public TokenEndpointConfig addAccessRestTemplate(FederatedOAuth2AccessTokenRestTemplate accessTokenRestTemplate) {
+            Assert.notNull(accessTokenRestTemplate, "accessTokenRestTemplate cannot be null");
+            this.accessTokenRestTemplates.add(accessTokenRestTemplate);
+            return this;
+        }
+
+        public TokenEndpointConfig addAccessRestTemplates(List<FederatedOAuth2AccessTokenRestTemplate> accessTokenRestTemplates) {
+            Assert.notNull(accessTokenRestTemplates, "accessTokenRestTemplates cannot be null");
+            this.accessTokenRestTemplates.addAll(accessTokenRestTemplates);
             return this;
         }
 
@@ -585,7 +607,13 @@ public class FederatedOAuth2LoginConfigurer
 
         public UserInfoEndpointConfig addExtendedUserService(ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User> userService) {
             Assert.notNull(userService, "extendedOAuth2UserService cannot be null");
-            userServices.add(userService);
+            this.userServices.add(userService);
+            return this;
+        }
+
+        public UserInfoEndpointConfig addExtendedUserServices(List<ExtendedOAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices) {
+            Assert.notNull(userServices, "extendedOAuth2UserServices cannot be null");
+            this.userServices.addAll(userServices);
             return this;
         }
 

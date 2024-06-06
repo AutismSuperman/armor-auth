@@ -16,7 +16,7 @@
 package com.armorauth.federation.converter;
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
-import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverterFederated;
+import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplate;
 import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformerFederated;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -60,8 +60,8 @@ public class WechatAuthorizationCodeGrantRequestConverterTest {
                 clientRegistration,
                 oAuth2AuthorizationExchange
         );
-        WechatAuthorizationCodeGrantRequestConverterFederated codeGrantRequestConverter = new WechatAuthorizationCodeGrantRequestConverterFederated();
-        RequestEntity<?> convert = codeGrantRequestConverter.convert(codeGrantRequest);
+        WechatAccessTokenRestTemplate wechatAccessTokenRestTemplate = new WechatAccessTokenRestTemplate();
+        RequestEntity<?> convert = wechatAccessTokenRestTemplate.convert(codeGrantRequest);
         assert convert != null;
         log.info(convert.toString());
     }

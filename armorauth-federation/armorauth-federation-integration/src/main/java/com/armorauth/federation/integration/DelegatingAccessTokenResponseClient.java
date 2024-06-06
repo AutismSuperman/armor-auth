@@ -16,10 +16,10 @@
 package com.armorauth.federation.integration;
 
 import com.armorauth.federation.core.endpoint.FederatedOAuth2AccessTokenRestTemplate;
-import com.armorauth.federation.core.endpoint.FederatedOAuth2AuthorizationCodeGrantRequestConverter;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequestEntityConverter;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.util.Assert;
 
@@ -30,58 +30,39 @@ public class DelegatingAccessTokenResponseClient implements OAuth2AccessTokenRes
 
     private final DefaultAuthorizationCodeTokenResponseClient delegate = new DefaultAuthorizationCodeTokenResponseClient();
 
-    private final List<FederatedOAuth2AccessTokenRestTemplate> oAuth2AccessTokenRestTemplates;
-
-    private final List<FederatedOAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters;
+    private final List<FederatedOAuth2AccessTokenRestTemplate> accessTokenRestTemplates;
 
     public DelegatingAccessTokenResponseClient() {
-        this.oAuth2AccessTokenRestTemplates = new ArrayList<>();
-        this.authorizationCodeGrantRequestConverters = new ArrayList<>();
-        this.delegate.setRequestEntityConverter(
-                new DelegatingAuthorizationCodeGrantRequestConverter(authorizationCodeGrantRequestConverters)
-        );
+        this.accessTokenRestTemplates = new ArrayList<>();
     }
 
 
-    public DelegatingAccessTokenResponseClient(
-            List<FederatedOAuth2AccessTokenRestTemplate> restTemplates,
-            List<FederatedOAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters
-    ) {
-        Assert.notNull(restTemplates, "restTemplates cannot be null");
-        Assert.notNull(authorizationCodeGrantRequestConverters, "authorizationCodeGrantRequestConverters cannot be null");
-        this.oAuth2AccessTokenRestTemplates = restTemplates;
-        this.authorizationCodeGrantRequestConverters = authorizationCodeGrantRequestConverters;
-        DelegatingAuthorizationCodeGrantRequestConverter delegatingAuthorizationCodeGrantRequestConverter =
-                new DelegatingAuthorizationCodeGrantRequestConverter(authorizationCodeGrantRequestConverters);
-        this.delegate.setRequestEntityConverter(delegatingAuthorizationCodeGrantRequestConverter);
+    public DelegatingAccessTokenResponseClient(List<FederatedOAuth2AccessTokenRestTemplate> accessTokenRestTemplates) {
+        Assert.notNull(accessTokenRestTemplates, "oAuth2AccessTokenRestTemplates cannot be null");
+        this.accessTokenRestTemplates = accessTokenRestTemplates;
     }
 
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         String registrationId = authorizationGrantRequest.getClientRegistration().getRegistrationId();
-        oAuth2AccessTokenRestTemplates.stream()
+        FederatedOAuth2AccessTokenRestTemplate federatedOAuth2AccessTokenRestTemplate = accessTokenRestTemplates.stream()
                 .filter(f -> f.supports(registrationId))
                 .findFirst()
-                .ifPresent(accessTokenRestTemplate ->
-                        delegate.setRestOperations(accessTokenRestTemplate.getRestTemplate(authorizationGrantRequest))
-                );
+                .orElse(null);
+        if (federatedOAuth2AccessTokenRestTemplate != null) {
+            delegate.setRestOperations(federatedOAuth2AccessTokenRestTemplate.getRestTemplate(authorizationGrantRequest));
+            delegate.setRequestEntityConverter(federatedOAuth2AccessTokenRestTemplate);
+        }
         return delegate.getTokenResponse(authorizationGrantRequest);
     }
 
-    public void addAccessTokenRestTemplate(FederatedOAuth2AccessTokenRestTemplate restTemplate) {
-        oAuth2AccessTokenRestTemplates.add(restTemplate);
+    public void addAccessTokenRestTemplate(FederatedOAuth2AccessTokenRestTemplate accessTokenRestTemplate) {
+        accessTokenRestTemplates.add(accessTokenRestTemplate);
     }
 
-    public void addAccessTokenRestTemplates(List<FederatedOAuth2AccessTokenRestTemplate> oAuth2AccessTokenRestTemplates) {
-        this.oAuth2AccessTokenRestTemplates.addAll(oAuth2AccessTokenRestTemplates);
+    public void addAccessTokenRestTemplates(List<FederatedOAuth2AccessTokenRestTemplate> accessTokenRestTemplates) {
+        this.accessTokenRestTemplates.addAll(accessTokenRestTemplates);
     }
 
-    public void addAuthorizationCodeGrantRequestConverter(FederatedOAuth2AuthorizationCodeGrantRequestConverter auth2AuthorizationCodeGrantRequestConverter) {
-        this.authorizationCodeGrantRequestConverters.add(auth2AuthorizationCodeGrantRequestConverter);
-    }
-
-    public void addAuthorizationCodeGrantRequestConverters(List<FederatedOAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters) {
-        this.authorizationCodeGrantRequestConverters.addAll(authorizationCodeGrantRequestConverters);
-    }
 
 }

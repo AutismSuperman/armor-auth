@@ -36,7 +36,7 @@ public final class FederatedAuthenticationEntryPoint implements AuthenticationEn
 	private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
 	// /oauth2/authorization/{registrationId}
-	private String authorizationRequestUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
+	private String authorizationRequestUri = FederatedOAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
 			+ "/{registrationId}";
 
 	private final AuthenticationEntryPoint delegate;

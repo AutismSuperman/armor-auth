@@ -15,6 +15,8 @@
  */
 package com.armorauth.federation.core.endpoint;
 
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.RequestEntity;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -23,16 +25,16 @@ import org.springframework.web.client.RestTemplate;
 
 /**
  * 针对 请求AccessToken进行RestTemplate的定制化
+ * 并切定制 OAuth2AuthorizationCodeGrantRequest 请求参数的定制
  *
  * @author AutismSuperman
  * @see OAuth2AccessTokenResponseClient
  * @see DefaultAuthorizationCodeTokenResponseClient#setRestOperations(RestOperations)
  */
-public interface FederatedOAuth2AccessTokenRestTemplate {
+public interface FederatedOAuth2AccessTokenRestTemplate extends Converter<OAuth2AuthorizationCodeGrantRequest, RequestEntity<?>> {
 
 
     RestTemplate getRestTemplate(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest);
-
 
     /**
      * Returns <code>true</code> if this <Code>OAuth2AccessTokenRestTemplate</code> supports the

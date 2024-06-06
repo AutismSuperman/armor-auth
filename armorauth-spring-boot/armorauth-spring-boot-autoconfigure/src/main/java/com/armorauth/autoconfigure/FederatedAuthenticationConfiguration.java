@@ -17,20 +17,16 @@ package com.armorauth.autoconfigure;
 
 
 import com.armorauth.federation.core.ExtendedOAuth2ClientPropertiesMapper;
-import com.armorauth.federation.core.ExtendedOAuth2ClientProvider;
 import com.armorauth.federation.core.endpoint.FederatedOAuth2AccessTokenRestTemplate;
-import com.armorauth.federation.core.endpoint.FederatedOAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.gitee.user.GiteeOAuth2UserService;
 import com.armorauth.federation.integration.DelegatingAccessTokenResponseClient;
 import com.armorauth.federation.integration.DelegatingAuthorizationRequestResolver;
 import com.armorauth.federation.integration.DelegatingOAuth2UserService;
 import com.armorauth.federation.integration.web.FederatedAuthenticationEntryPoint;
 import com.armorauth.federation.integration.web.configurers.FederatedOAuth2LoginConfigurer;
-import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateFederated;
-import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverterFederated;
+import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplate;
 import com.armorauth.federation.qq.user.QqOAuth2UserService;
-import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateFederated;
-import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverterFederated;
+import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplate;
 import com.armorauth.federation.wechat.user.WechatOAuth2UserService;
 import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformerFederated;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +50,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.armorauth.federation.core.ExtendedOAuth2ClientProvider.*;
 
 @Configuration(proxyBeanMethods = false)
 public class FederatedAuthenticationConfiguration {
@@ -67,7 +62,6 @@ public class FederatedAuthenticationConfiguration {
     public SecurityFilterChain federatedSecurityFilterChain(HttpSecurity http,
                                                             ClientRegistrationRepository clientRegistrationRepository
     ) throws Exception {
-
         FederatedOAuth2LoginConfigurer federatedOAuth2LoginConfigurer = new FederatedOAuth2LoginConfigurer();
         RequestMatcher endpointsMatcher = federatedOAuth2LoginConfigurer.getEndpointsMatcher();
         http.securityMatcher(endpointsMatcher);
@@ -78,17 +72,6 @@ public class FederatedAuthenticationConfiguration {
                 exceptionHandling
                         .authenticationEntryPoint(authenticationEntryPoint)
         );
-        //OAuth 请求AccessToken的RestTemplate转换 OAuth2AccessTokenRestTemplateConverter
-        List<FederatedOAuth2AccessTokenRestTemplate> auth2AccessTokenRestTemplates = new ArrayList<>();
-        List<FederatedOAuth2AuthorizationCodeGrantRequestConverter> authorizationCodeGrantRequestConverters = new ArrayList<>();
-        auth2AccessTokenRestTemplates.add(new WechatAccessTokenRestTemplateFederated());
-        authorizationCodeGrantRequestConverters.add(new WechatAuthorizationCodeGrantRequestConverterFederated());
-        auth2AccessTokenRestTemplates.add(new QqAccessTokenRestTemplateFederated());
-        authorizationCodeGrantRequestConverters.add(new QqAuthorizationCodeGrantRequestConverterFederated());
-        DelegatingAccessTokenResponseClient accessTokenResponseClient = new DelegatingAccessTokenResponseClient(
-                auth2AccessTokenRestTemplates,
-                authorizationCodeGrantRequestConverters
-        );
         //OAuth2LoginConfigurer
         http.getConfigurer(FederatedOAuth2LoginConfigurer.class)
                 .loginPage(CUSTOM_LOGIN_PAGE)
@@ -97,7 +80,9 @@ public class FederatedAuthenticationConfiguration {
                         .authorizationRequestResolver(new DelegatingAuthorizationRequestResolver(clientRegistrationRepository))
                 )
                 .tokenEndpoint(tokenEndpoint -> tokenEndpoint
-                        .accessTokenResponseClient(accessTokenResponseClient)
+                        .addAccessRestTemplate(new QqAccessTokenRestTemplate())
+                        .addAccessRestTemplate(new WechatAccessTokenRestTemplate())
+                        .accessTokenResponseClient(new DelegatingAccessTokenResponseClient())
                 )
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
                         .addExtendedUserService(new GiteeOAuth2UserService())
