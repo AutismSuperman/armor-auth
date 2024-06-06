@@ -28,8 +28,10 @@ import com.armorauth.federation.integration.web.FederatedAuthenticationEntryPoin
 import com.armorauth.federation.integration.web.configurers.FederatedOAuth2LoginConfigurer;
 import com.armorauth.federation.qq.endpoint.QqAccessTokenRestTemplateFederated;
 import com.armorauth.federation.qq.endpoint.QqAuthorizationCodeGrantRequestConverterFederated;
+import com.armorauth.federation.qq.user.QqOAuth2UserService;
 import com.armorauth.federation.wechat.endpoint.WechatAccessTokenRestTemplateFederated;
 import com.armorauth.federation.wechat.endpoint.WechatAuthorizationCodeGrantRequestConverterFederated;
+import com.armorauth.federation.wechat.user.WechatOAuth2UserService;
 import com.armorauth.federation.wechat.web.converter.WechatAuthorizationRequestTransformerFederated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -99,8 +101,8 @@ public class FederatedAuthenticationConfiguration {
                 )
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
                         .addExtendedUserService(new GiteeOAuth2UserService())
-                        .addExtendedUserService(new GiteeOAuth2UserService())
-                        .addExtendedUserService(new GiteeOAuth2UserService())
+                        .addExtendedUserService(new QqOAuth2UserService())
+                        .addExtendedUserService(new WechatOAuth2UserService())
                         .userService(new DelegatingOAuth2UserService())
                         .bindUserPage("/bind")
                 )
