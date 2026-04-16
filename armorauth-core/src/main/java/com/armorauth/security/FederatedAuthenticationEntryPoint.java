@@ -30,7 +30,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * An {@link AuthenticationEntryPoint} for initiating the login flow to an
@@ -63,7 +63,7 @@ public final class FederatedAuthenticationEntryPoint implements AuthenticationEn
 		if (idp != null) {
 			ClientRegistration clientRegistration = this.clientRegistrationRepository.findByRegistrationId(idp);
 			if (clientRegistration != null) {
-				String redirectUri = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+				String redirectUri = ServletUriComponentsBuilder.fromRequest(request)
 						.replaceQuery(null)
 						.replacePath(this.authorizationRequestUri)
 						.buildAndExpand(clientRegistration.getRegistrationId())

@@ -38,14 +38,14 @@ public class OAuth2FederatedLoginServerConfigurer extends
 
 
     @Override
-    public void init(HttpSecurity httpSecurity) throws Exception {
+    public void init(HttpSecurity httpSecurity) {
         for (AbstractIdentityConfigurer configurer : this.configurers.values()) {
             configurer.init(httpSecurity);
         }
     }
 
     @Override
-    public void configure(HttpSecurity httpSecurity) throws Exception {
+    public void configure(HttpSecurity httpSecurity) {
         for (AbstractIdentityConfigurer configurer : this.configurers.values()) {
             configurer.configure(httpSecurity);
         }

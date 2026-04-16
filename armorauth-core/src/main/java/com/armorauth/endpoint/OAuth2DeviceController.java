@@ -33,18 +33,15 @@ public class OAuth2DeviceController {
     @GetMapping("/activate")
     public String activate(Model model, @RequestParam(value = "user_code", required = false) String userCode) {
         if (userCode != null) {
-            return "redirect:/oauth2/device_verification?user_code=" + userCode;
+            return "redirect:" + authorizationServerSettings.getDeviceVerificationEndpoint() + "?user_code=" + userCode;
         }
-        model.addAttribute("model", "device");
-        model.addAttribute("deviceVerificationEndpoint",
-                authorizationServerSettings.getDeviceVerificationEndpoint());
-        return "index";
+        model.addAttribute("deviceVerificationEndpoint", authorizationServerSettings.getDeviceVerificationEndpoint());
+        return "activate";
     }
 
     @GetMapping("/activated")
     public String activated() {
-        return "index";
+        return "activated";
     }
-
 
 }

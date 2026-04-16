@@ -21,6 +21,7 @@ import org.springframework.security.core.SpringSecurityCoreVersion;
 
 import java.io.Serial;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author fulin
@@ -40,7 +41,7 @@ public class CaptchaAuthenticationToken extends AbstractAuthenticationToken {
      * @param captcha   the captcha
      */
     public CaptchaAuthenticationToken(Object principal, String captcha) {
-        super(null);
+        super(Collections.emptyList());
         this.principal = principal;
         this.captcha = captcha;
         setAuthenticated(false);

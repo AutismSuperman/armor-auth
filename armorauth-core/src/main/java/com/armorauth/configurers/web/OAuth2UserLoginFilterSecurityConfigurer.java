@@ -53,14 +53,14 @@ public class OAuth2UserLoginFilterSecurityConfigurer extends AbstractHttpConfigu
 
 
     @Override
-    public void init(HttpSecurity httpSecurity) throws Exception {
+    public void init(HttpSecurity httpSecurity) {
         for (SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> configurer : this.configurers.values()) {
             configurer.init(httpSecurity);
         }
     }
 
     @Override
-    public void configure(HttpSecurity httpSecurity) throws Exception {
+    public void configure(HttpSecurity httpSecurity) {
         for (SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> configurer : this.configurers.values()) {
             configurer.configure(httpSecurity);
         }

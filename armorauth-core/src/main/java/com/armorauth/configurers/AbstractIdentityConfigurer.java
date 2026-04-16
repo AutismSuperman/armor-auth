@@ -15,7 +15,7 @@
  */
 package com.armorauth.configurers;
 
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 public abstract class AbstractIdentityConfigurer {
@@ -25,9 +25,9 @@ public abstract class AbstractIdentityConfigurer {
         this.objectPostProcessor = objectPostProcessor;
     }
 
-    abstract void init(HttpSecurity httpSecurity) throws Exception;
+    abstract void init(HttpSecurity httpSecurity);
 
-    abstract void configure(HttpSecurity httpSecurity) throws Exception;
+    abstract void configure(HttpSecurity httpSecurity);
 
     protected final <T> T postProcess(T object) {
         return (T) this.objectPostProcessor.postProcess(object);

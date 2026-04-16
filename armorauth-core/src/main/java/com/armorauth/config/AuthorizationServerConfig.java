@@ -36,13 +36,13 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -59,54 +59,56 @@ public class AuthorizationServerConfig {
 
     private static final String CUSTOM_LOGIN_PAGE = "/login";
 
-
-
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(
             HttpSecurity http,
             RegisteredClientRepository registeredClientRepository,
+            OAuth2AuthorizationService authorizationService,
+            OAuth2AuthorizationConsentService authorizationConsentService,
             AuthorizationServerSettings authorizationServerSettings
-
     ) throws Exception {
-        // ExceptionHandlingConfigurer
-        http.exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
-                        new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE),
-                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-                ))
-                .csrf(AbstractHttpConfigurer::disable);
-        // Apply default OAuth2AuthorizationServerConfiguration
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-        // Custom  Device Client
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
+
         DeviceClientAuthenticationConverter deviceClientAuthenticationConverter =
-                new DeviceClientAuthenticationConverter(
-                        authorizationServerSettings.getDeviceAuthorizationEndpoint());
+                new DeviceClientAuthenticationConverter(authorizationServerSettings.getDeviceAuthorizationEndpoint());
         DeviceClientAuthenticationProvider deviceClientAuthenticationProvider =
                 new DeviceClientAuthenticationProvider(registeredClientRepository);
         DeviceVerificationResponseHandler deviceVerificationResponseHandler =
                 new DeviceVerificationResponseHandler(CUSTOM_ACTIVATED_PAGE);
-        // Custom OAuth2AuthorizationServerConfigurer
-        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
-                        deviceAuthorizationEndpoint.verificationUri(CUSTOM_ACTIVATE_PAGE)
+
+        http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
+                .exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+                        new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE),
+                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+                ))
+                .csrf(AbstractHttpConfigurer::disable)
+                .with(authorizationServerConfigurer, authorizationServer -> authorizationServer
+                        .registeredClientRepository(registeredClientRepository)
+                        .authorizationService(authorizationService)
+                        .authorizationConsentService(authorizationConsentService)
+                        .authorizationServerSettings(authorizationServerSettings)
+                        .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
+                                deviceAuthorizationEndpoint.verificationUri(CUSTOM_ACTIVATE_PAGE)
+                        )
+                        .deviceVerificationEndpoint(deviceVerificationEndpoint ->
+                                deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+                                        .deviceVerificationResponseHandler(deviceVerificationResponseHandler)
+                        )
+                        .clientAuthentication(clientAuthentication ->
+                                clientAuthentication
+                                        .authenticationConverter(deviceClientAuthenticationConverter)
+                                        .authenticationProvider(deviceClientAuthenticationProvider)
+                        )
+                        .authorizationEndpoint(authorizationEndpoint ->
+                                authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+                        )
+                        .oidc(Customizer.withDefaults())
                 )
-                .deviceVerificationEndpoint(deviceVerificationEndpoint ->
-                        deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
-                                .deviceVerificationResponseHandler(deviceVerificationResponseHandler)
-                )
-                .clientAuthentication(clientAuthentication ->
-                        clientAuthentication
-                                .authenticationConverter(deviceClientAuthenticationConverter)
-                                .authenticationProvider(deviceClientAuthenticationProvider)
-                )
-                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
-                        .consentPage(CUSTOM_CONSENT_PAGE_URI)
-                )
-                // Enable OpenID Connect 1.0 Provider support
-                .oidc(Customizer.withDefaults());
-        // OAuth2ResourceServerConfigurer
-        http.oauth2ResourceServer(oauth2ResourceServer ->
-                oauth2ResourceServer.jwt(Customizer.withDefaults()));
+                .oauth2ResourceServer(oauth2ResourceServer ->
+                        oauth2ResourceServer.jwt(Customizer.withDefaults()));
+
         return http.build();
     }
 
@@ -114,9 +116,6 @@ public class AuthorizationServerConfig {
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder().build();
     }
-
-
-    //*********************************************Implement core services with JPA*********************************************//
 
     @Bean
     public RegisteredClientRepository registeredClientRepository(OAuth2ClientRepository oAuth2ClientRepository) {
@@ -137,9 +136,6 @@ public class AuthorizationServerConfig {
         return new JpaOAuth2AuthorizationConsentService(authorizationConsentRepository, registeredClientRepository);
     }
 
-
-    //*********************************************Jose*********************************************//
-
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
         RSAKey rsaKey = Jwks.generateRsa();
@@ -151,6 +147,5 @@ public class AuthorizationServerConfig {
     public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
-
 
 }

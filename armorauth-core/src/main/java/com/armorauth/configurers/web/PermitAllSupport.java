@@ -16,7 +16,7 @@
 package com.armorauth.configurers.web;
 
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,8 +37,7 @@ final class PermitAllSupport {
     @SuppressWarnings("unchecked")
     static void permitAll(HttpSecurityBuilder<? extends HttpSecurityBuilder<?>> http,
                           RequestMatcher... requestMatchers) {
-        ExpressionUrlAuthorizationConfigurer<?> configurer = http
-                .getConfigurer(ExpressionUrlAuthorizationConfigurer.class);
+        AuthorizeHttpRequestsConfigurer<?> configurer = http.getConfigurer(AuthorizeHttpRequestsConfigurer.class);
         configurer.getRegistry().requestMatchers(requestMatchers).permitAll();
     }
 

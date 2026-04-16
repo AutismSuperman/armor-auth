@@ -24,7 +24,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.util.Assert;
 
 public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
@@ -33,8 +33,8 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
 
     public static final String SPRING_SECURITY_FORM_CAPTCHA_KEY = "captcha";
 
-    private static final AntPathRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER = new AntPathRequestMatcher("/login/captcha",
-            "POST");
+    private static final PathPatternRequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER =
+            PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/login/captcha");
 
     private String accountParameter = SPRING_SECURITY_FORM_ACCOUNT_KEY;
 
@@ -43,7 +43,6 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
     private Converter<HttpServletRequest, CaptchaAuthenticationToken> captchaAuthenticationTokenConverter;
 
     private boolean postOnly = true;
-
 
     public CaptchaAuthenticationFilter() {
         super(DEFAULT_ANT_PATH_REQUEST_MATCHER);
@@ -56,17 +55,16 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
         if (this.postOnly && !HttpMethod.POST.matches(request.getMethod())) {
             throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
         }
         CaptchaAuthenticationToken authRequest = captchaAuthenticationTokenConverter.convert(request);
-        // Allow subclasses to set the "details" property
         assert authRequest != null;
         setDetails(request, authRequest);
         return this.getAuthenticationManager().authenticate(authRequest);
     }
-
 
     private Converter<HttpServletRequest, CaptchaAuthenticationToken> defaultConverter() {
         return request -> {
@@ -77,7 +75,6 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
             return new CaptchaAuthenticationToken(account, captcha);
         };
     }
-
 
     protected void setDetails(HttpServletRequest request, CaptchaAuthenticationToken authRequest) {
         authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));

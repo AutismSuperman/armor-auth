@@ -15,28 +15,18 @@
  */
 package com.armorauth.security;
 
-import com.armorauth.authentication.CaptchaAuthenticationToken;
-import com.armorauth.web.endpoint.LoginSuccessResponse;
-import com.armorauth.web.http.converter.LoginSuccessResponseHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.server.ServletServerHttpResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.util.Assert;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -48,69 +38,40 @@ import java.util.function.Consumer;
  * @since 0.2.3
  */
 public final class FederatedAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-    private RequestCache requestCache;
-    private String redirect;
-    private static final String defaultTargetUrl = "/";
 
-    private final HttpMessageConverter<LoginSuccessResponse> loginSuccessHttpResponseConverter =
-            new LoginSuccessResponseHttpMessageConverter();
+    private static final String DEFAULT_TARGET_URL = "/";
 
-    private AuthenticationSuccessHandler authenticationSuccessHandler = this::sendLoginSuccessResponse;
+    private final SavedRequestAwareAuthenticationSuccessHandler delegateAuthenticationSuccessHandler =
+            new SavedRequestAwareAuthenticationSuccessHandler();
 
-    private final AuthenticationSuccessHandler delegateAuthenticationSuccessHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+    private AuthenticationSuccessHandler authenticationSuccessHandler = this.delegateAuthenticationSuccessHandler;
 
-    private Consumer<OAuth2User> oauth2UserHandler = (user) -> this.oauth2UserHandler.accept(user);
+    private Consumer<OAuth2User> oauth2UserHandler = (user) -> {
+    };
 
-    private Consumer<OidcUser> oidcUserHandler = (user) -> this.oidcUserHandler.accept(user);
+    private Consumer<OidcUser> oidcUserHandler = (user) -> {
+    };
 
     public FederatedAuthenticationSuccessHandler() {
-        this(defaultTargetUrl, new HttpSessionRequestCache());
+        this(DEFAULT_TARGET_URL, new HttpSessionRequestCache());
     }
 
     public FederatedAuthenticationSuccessHandler(String redirect, RequestCache requestCache) {
         Assert.notNull(requestCache, "requestCache must not be null");
-        this.redirect = redirect;
-        this.requestCache = requestCache;
+        this.delegateAuthenticationSuccessHandler.setDefaultTargetUrl(redirect);
+        this.delegateAuthenticationSuccessHandler.setRequestCache(requestCache);
     }
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        if (authentication instanceof OAuth2AuthenticationToken) {
-            if (authentication.getPrincipal() instanceof OAuth2User) {
-                //this.oidcUserHandler.accept((OidcUser) authentication.getPrincipal());
-                this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
-            } else if (authentication.getPrincipal() instanceof OidcUser) {
-                //this.oauth2UserHandler.accept((OAuth2User) authentication.getPrincipal());
-                this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
-            } else {
-                this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
-            }
-        } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
-        } else if (authentication instanceof CaptchaAuthenticationToken) {
-            this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
-        } else {
-            this.delegateAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException, ServletException {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof OidcUser oidcUser) {
+            this.oidcUserHandler.accept(oidcUser);
+        } else if (principal instanceof OAuth2User oauth2User) {
+            this.oauth2UserHandler.accept(oauth2User);
         }
-    }
-
-    private void sendLoginSuccessResponse(HttpServletRequest request, HttpServletResponse response,
-                                          Authentication authentication) throws IOException {
-        LoginSuccessResponse loginSuccessResponse = new LoginSuccessResponse();
-        SavedRequest savedRequest = this.requestCache.getRequest(request, response);
-        String redirectUrl = savedRequest == null ? this.redirect : savedRequest.getRedirectUrl();
-        clearAuthenticationAttributes(request);
-        loginSuccessResponse.setRedirectUri(redirectUrl);
-        loginSuccessResponse.setDescription("登录成功");
-        ServletServerHttpResponse httpResponse = new ServletServerHttpResponse(response);
-        this.loginSuccessHttpResponseConverter.write(loginSuccessResponse, null, httpResponse);
-    }
-
-    private void clearAuthenticationAttributes(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-        }
+        this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
     }
 
     public void setOAuth2UserHandler(Consumer<OAuth2User> oauth2UserHandler) {
@@ -121,16 +82,13 @@ public final class FederatedAuthenticationSuccessHandler implements Authenticati
         this.oidcUserHandler = oidcUserHandler;
     }
 
-
     public void setAuthenticationSuccessHandler(AuthenticationSuccessHandler authenticationSuccessHandler) {
         Assert.notNull(authenticationSuccessHandler, "authenticationSuccessHandler cannot be null");
         this.authenticationSuccessHandler = authenticationSuccessHandler;
     }
 
-
     public void setRequestCache(RequestCache requestCache) {
-        this.requestCache = requestCache;
+        this.delegateAuthenticationSuccessHandler.setRequestCache(requestCache);
     }
-
 
 }

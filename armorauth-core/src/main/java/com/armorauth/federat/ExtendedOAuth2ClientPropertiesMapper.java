@@ -15,12 +15,10 @@
  */
 package com.armorauth.federat;
 
-
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties.Provider;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesMapper;
-import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.convert.ApplicationConversionService;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties.Provider;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientPropertiesMapper;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -42,56 +40,57 @@ import java.util.Map;
  * @author AutismSuperman
  * @see InMemoryClientRegistrationRepository
  */
-
 public final class ExtendedOAuth2ClientPropertiesMapper {
 
     private final OAuth2ClientProperties properties;
 
-    /**
-     * Creates a new mapper for the given {@code properties}.
-     *
-     * @param properties the properties to map
-     */
     public ExtendedOAuth2ClientPropertiesMapper(OAuth2ClientProperties properties) {
         this.properties = properties;
     }
 
-    /**
-     * Maps the properties to {@link ClientRegistration ClientRegistrations}.
-     *
-     * @return the mapped {@code ClientRegistrations}
-     */
     public Map<String, ClientRegistration> asClientRegistrations() {
         Map<String, ClientRegistration> clientRegistrations = new HashMap<>();
-        this.properties.getRegistration()
-                .forEach((key, value) -> clientRegistrations.put(key,
-                        getClientRegistration(key, value, this.properties.getProvider())));
+        this.properties.getRegistration().forEach((key, value) ->
+                clientRegistrations.put(key, getClientRegistration(key, value, this.properties.getProvider())));
         return clientRegistrations;
     }
 
-    private static ClientRegistration getClientRegistration(String registrationId,
-                                                            OAuth2ClientProperties.Registration properties, Map<String, Provider> providers) {
+    private static ClientRegistration getClientRegistration(
+            String registrationId,
+            OAuth2ClientProperties.Registration properties,
+            Map<String, Provider> providers) {
         Builder builder = getBuilderFromIssuerIfPossible(registrationId, properties.getProvider(), providers);
         if (builder == null) {
             builder = getBuilder(registrationId, properties.getProvider(), providers);
         }
-        PropertyMapper map = PropertyMapper.get().alwaysApplyingWhenNonNull();
-        map.from(properties::getClientId).to(builder::clientId);
-        map.from(properties::getClientSecret).to(builder::clientSecret);
-        map.from(properties::getClientAuthenticationMethod)
-                .as(ClientAuthenticationMethod::new)
-                .to(builder::clientAuthenticationMethod);
-        map.from(properties::getAuthorizationGrantType)
-                .as(AuthorizationGrantType::new)
-                .to(builder::authorizationGrantType);
-        map.from(properties::getRedirectUri).to(builder::redirectUri);
-        map.from(properties::getScope).as(StringUtils::toStringArray).to(builder::scope);
-        map.from(properties::getClientName).to(builder::clientName);
+        if (properties.getClientId() != null) {
+            builder.clientId(properties.getClientId());
+        }
+        if (properties.getClientSecret() != null) {
+            builder.clientSecret(properties.getClientSecret());
+        }
+        if (properties.getClientAuthenticationMethod() != null) {
+            builder.clientAuthenticationMethod(new ClientAuthenticationMethod(properties.getClientAuthenticationMethod()));
+        }
+        if (properties.getAuthorizationGrantType() != null) {
+            builder.authorizationGrantType(new AuthorizationGrantType(properties.getAuthorizationGrantType()));
+        }
+        if (properties.getRedirectUri() != null) {
+            builder.redirectUri(properties.getRedirectUri());
+        }
+        if (properties.getScope() != null) {
+            builder.scope(StringUtils.toStringArray(properties.getScope()));
+        }
+        if (properties.getClientName() != null) {
+            builder.clientName(properties.getClientName());
+        }
         return builder.build();
     }
 
-    private static Builder getBuilderFromIssuerIfPossible(String registrationId, String configuredProviderId,
-                                                          Map<String, Provider> providers) {
+    private static Builder getBuilderFromIssuerIfPossible(
+            String registrationId,
+            String configuredProviderId,
+            Map<String, Provider> providers) {
         String providerId = (configuredProviderId != null) ? configuredProviderId : registrationId;
         if (providers.containsKey(providerId)) {
             Provider provider = providers.get(providerId);
@@ -104,8 +103,10 @@ public final class ExtendedOAuth2ClientPropertiesMapper {
         return null;
     }
 
-    private static Builder getBuilder(String registrationId, String configuredProviderId,
-                                      Map<String, Provider> providers) {
+    private static Builder getBuilder(
+            String registrationId,
+            String configuredProviderId,
+            Map<String, Provider> providers) {
         String providerId = (configuredProviderId != null) ? configuredProviderId : registrationId;
         ExtendedOAuth2ClientProvider extendedProvider = getExtendedOAuth2Provider(providerId);
         CommonOAuth2Provider commonProvider = getCommonOAuth2Provider(providerId);
@@ -132,15 +133,24 @@ public final class ExtendedOAuth2ClientPropertiesMapper {
     }
 
     private static Builder getBuilder(Builder builder, Provider provider) {
-        PropertyMapper map = PropertyMapper.get().alwaysApplyingWhenNonNull();
-        map.from(provider::getAuthorizationUri).to(builder::authorizationUri);
-        map.from(provider::getTokenUri).to(builder::tokenUri);
-        map.from(provider::getUserInfoUri).to(builder::userInfoUri);
-        map.from(provider::getUserInfoAuthenticationMethod)
-                .as(AuthenticationMethod::new)
-                .to(builder::userInfoAuthenticationMethod);
-        map.from(provider::getJwkSetUri).to(builder::jwkSetUri);
-        map.from(provider::getUserNameAttribute).to(builder::userNameAttributeName);
+        if (provider.getAuthorizationUri() != null) {
+            builder.authorizationUri(provider.getAuthorizationUri());
+        }
+        if (provider.getTokenUri() != null) {
+            builder.tokenUri(provider.getTokenUri());
+        }
+        if (provider.getUserInfoUri() != null) {
+            builder.userInfoUri(provider.getUserInfoUri());
+        }
+        if (provider.getUserInfoAuthenticationMethod() != null) {
+            builder.userInfoAuthenticationMethod(new AuthenticationMethod(provider.getUserInfoAuthenticationMethod()));
+        }
+        if (provider.getJwkSetUri() != null) {
+            builder.jwkSetUri(provider.getJwkSetUri());
+        }
+        if (provider.getUserNameAttribute() != null) {
+            builder.userNameAttributeName(provider.getUserNameAttribute());
+        }
         return builder;
     }
 
@@ -159,6 +169,5 @@ public final class ExtendedOAuth2ClientPropertiesMapper {
             return null;
         }
     }
-
 
 }

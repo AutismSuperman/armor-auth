@@ -244,7 +244,7 @@ public abstract class CustomizeAbstractAuthenticationFilterConfigurer<B extends 
     }
 
     @Override
-    public void init(B http) throws Exception {
+    public void init(B http) {
         updateAuthenticationDefaults();
         updateAccessDefaults(http);
         registerDefaultAuthenticationEntryPoint(http);
@@ -280,7 +280,7 @@ public abstract class CustomizeAbstractAuthenticationFilterConfigurer<B extends 
     }
 
     @Override
-    public void configure(B http) throws Exception {
+    public void configure(B http) {
         PortMapper portMapper = http.getSharedObject(PortMapper.class);
         if (portMapper != null) {
             this.authenticationEntryPoint.setPortMapper(portMapper);

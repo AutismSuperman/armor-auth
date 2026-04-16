@@ -22,10 +22,10 @@ import com.armorauth.security.FederatedAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -150,7 +150,7 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
 
     @SuppressWarnings("unchecked")
     @Override
-    void init(HttpSecurity httpSecurity) throws Exception {
+    void init(HttpSecurity httpSecurity) {
         httpSecurity.setSharedObject(ClientRegistrationRepository.class, clientRegistrationRepository);
         ApplicationContext applicationContext = httpSecurity.getSharedObject(ApplicationContext.class);
         // FederatedAuthenticationEntryPoint
@@ -200,7 +200,7 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
     }
 
     @Override
-    void configure(HttpSecurity httpSecurity) throws Exception {
+    void configure(HttpSecurity httpSecurity) {
         if (oauth2LoginCustomizer != null) {
             httpSecurity.oauth2Login(oauth2LoginCustomizer);
         }

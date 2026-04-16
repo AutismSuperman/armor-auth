@@ -15,16 +15,16 @@
  */
 package com.armorauth.configurers.web;
 
-
 import com.armorauth.authentication.CaptchaAuthenticationFilter;
 import com.armorauth.authentication.CaptchaAuthenticationProvider;
 import com.armorauth.authentication.CaptchaVerifyService;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
@@ -40,7 +40,6 @@ public class CaptchaLoginConfigurer<H extends HttpSecurityBuilder<H>>
         accountParameter("account");
         captchaParameter("captcha");
     }
-
 
     @Override
     public CaptchaLoginConfigurer<H> loginPage(String loginPage) {
@@ -67,22 +66,20 @@ public class CaptchaLoginConfigurer<H extends HttpSecurityBuilder<H>>
         return this;
     }
 
-
     @Override
     protected RequestMatcher createLoginProcessingUrlMatcher(String loginProcessingUrl) {
-        return new AntPathRequestMatcher(loginProcessingUrl, "POST");
+        return PathPatternRequestMatcher.pathPattern(HttpMethod.POST, loginProcessingUrl);
     }
 
-
     @Override
-    public void init(H http) throws Exception {
+    public void init(H http) {
         super.init(http);
         AuthenticationProvider authenticationProvider = authenticationProvider(http);
         http.authenticationProvider(postProcess(authenticationProvider));
     }
 
     @Override
-    public void configure(H http) throws Exception {
+    public void configure(H http) {
         super.configure(http);
     }
 
@@ -93,9 +90,13 @@ public class CaptchaLoginConfigurer<H extends HttpSecurityBuilder<H>>
 
     protected AuthenticationProvider authenticationProvider(H http) {
         ApplicationContext applicationContext = http.getSharedObject(ApplicationContext.class);
-        UserDetailsService userDetailsService = this.userDetailsService != null ? this.userDetailsService : getBeanOrNull(applicationContext, UserDetailsService.class);
+        UserDetailsService userDetailsService = this.userDetailsService != null
+                ? this.userDetailsService
+                : getBeanOrNull(applicationContext, UserDetailsService.class);
         Assert.notNull(userDetailsService, "userDetailsService is required");
-        CaptchaVerifyService captchaService = this.captchaVerifyService != null ? this.captchaVerifyService : getBeanOrNull(applicationContext, CaptchaVerifyService.class);
+        CaptchaVerifyService captchaService = this.captchaVerifyService != null
+                ? this.captchaVerifyService
+                : getBeanOrNull(applicationContext, CaptchaVerifyService.class);
         Assert.notNull(captchaService, "captchaService is required");
         return new CaptchaAuthenticationProvider(userDetailsService, captchaService);
     }

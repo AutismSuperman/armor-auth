@@ -15,42 +15,84 @@
  */
 package com.armorauth.federat;
 
-import com.armorauth.federat.converter.DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter;
 import com.armorauth.federat.converter.OAuth2AccessTokenRestTemplate;
+import com.armorauth.federat.converter.OAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federat.qq.QqAccessTokenRestTemplate;
+import com.armorauth.federat.qq.QqOAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federat.wechat.WechatAccessTokenRestTemplate;
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
+import com.armorauth.federat.wechat.WechatAuthorizationCodeGrantRequestConverter;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DelegateAccessTokenResponseClient implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
+public class DelegateAccessTokenResponseClient
+        implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
-    private final DefaultAuthorizationCodeTokenResponseClient delegate = new DefaultAuthorizationCodeTokenResponseClient();
+    private final RestClientAuthorizationCodeTokenResponseClient delegate =
+            new RestClientAuthorizationCodeTokenResponseClient();
 
-    private final List<OAuth2AccessTokenRestTemplate> restTemplates= new ArrayList<>();
+    private final List<OAuth2AccessTokenRestTemplate> restTemplates = new ArrayList<>();
 
+    private final List<OAuth2AuthorizationCodeGrantRequestConverter> requestConverters = new ArrayList<>();
 
     public DelegateAccessTokenResponseClient() {
         this.restTemplates.add(new WechatAccessTokenRestTemplate());
         this.restTemplates.add(new QqAccessTokenRestTemplate());
-        this.delegate.setRequestEntityConverter(new DelegatingOAuth2AuthorizationCodeGrantRequestEntityConverter());
+        this.requestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
+        this.requestConverters.add(new QqOAuth2AuthorizationCodeGrantRequestConverter());
     }
 
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         String registrationId = authorizationGrantRequest.getClientRegistration().getRegistrationId();
-        restTemplates.stream().filter(f -> f.supports(registrationId)).findFirst().ifPresent(accessTokenRestTemplate -> {
-            delegate.setRestOperations(accessTokenRestTemplate.getRestTemplate(authorizationGrantRequest));
-        });
+        for (OAuth2AuthorizationCodeGrantRequestConverter requestConverter : this.requestConverters) {
+            if (requestConverter.supports(registrationId)) {
+                return executeCustomTokenRequest(authorizationGrantRequest, requestConverter);
+            }
+        }
         return delegate.getTokenResponse(authorizationGrantRequest);
     }
 
     public void addAccessTokenRestTemplate(OAuth2AccessTokenRestTemplate restTemplate) {
-        restTemplates.add(restTemplate);
+        this.restTemplates.add(restTemplate);
+    }
+
+    private OAuth2AccessTokenResponse executeCustomTokenRequest(
+            OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest,
+            OAuth2AuthorizationCodeGrantRequestConverter requestConverter) {
+        RequestEntity<?> requestEntity = requestConverter.convert(authorizationGrantRequest);
+        RestTemplate restTemplate = this.restTemplates.stream()
+                .filter(candidate -> candidate.supports(
+                        authorizationGrantRequest.getClientRegistration().getRegistrationId()))
+                .findFirst()
+                .map(candidate -> candidate.getRestTemplate(authorizationGrantRequest))
+                .orElseThrow(() -> new OAuth2AuthenticationException(new OAuth2Error(
+                        OAuth2ErrorCodes.SERVER_ERROR,
+                        "No token client is available for "
+                                + authorizationGrantRequest.getClientRegistration().getRegistrationId(),
+                        null
+                )));
+        ResponseEntity<OAuth2AccessTokenResponse> response =
+                restTemplate.exchange(requestEntity, OAuth2AccessTokenResponse.class);
+        OAuth2AccessTokenResponse body = response.getBody();
+        if (body == null) {
+            throw new OAuth2AuthenticationException(new OAuth2Error(
+                    OAuth2ErrorCodes.SERVER_ERROR,
+                    "Access token response body is empty",
+                    null
+            ));
+        }
+        return body;
     }
 
 }
