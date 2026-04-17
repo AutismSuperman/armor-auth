@@ -10,10 +10,16 @@ ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认
 - 已兼容 `Spring Security 7.0.4`
 - 已迁移到 `Spring Authorization Server 7.0.4`
 - 认证服务端页面已从 Node/Vite 壳子切回服务端 `FreeMarker` 模板
-- 当前仓库已验证通过：
-- `mvn -q -DskipTests compile`
-- `mvn -q test`
-- `mvn -q -pl armorauth-server -am package -DskipTests`
+- 联合登录已支持“自动注册”和“中间页确认”双策略
+- 第三方账号绑定已落到 `user_federated_binding` 事实表
+
+当前仓库已验证通过：
+
+```bash
+mvn -q -DskipTests compile
+mvn -q test
+mvn -q -pl armorauth-server -am package -DskipTests
+```
 
 ## 项目定位
 
@@ -35,6 +41,42 @@ ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认
 - 验证码登录扩展
 - 联邦登录扩展
 - 服务端内嵌 FreeMarker 模板页面
+- 联合登录首次登录双策略
+- `mode=auto` 自动注册本地账号并建立绑定
+- `mode=confirm` 进入中间页，创建新账号或绑定已有账号后才算登录成功
+
+## 联合登录双策略
+
+当前第三方首次登录不再直接把 OAuth2 成功等同于本地登录成功，而是统一经过绑定编排：
+
+- `GET /oauth2/authorization/{registrationId}?mode=auto|confirm`
+- `mode` 缺失时按 `auto` 处理
+- `mode` 非法时会直接终止当前联合登录请求，不再静默回退
+- 第三方唯一绑定键固定为 `registration_id + OAuth2User.getName()`
+- 如果第三方账号已经存在绑定，则无论请求的是 `auto` 还是 `confirm`，都会直接命中本地账号并完成登录
+
+确认页端点：
+
+- `GET /federated/confirm`
+- `POST /federated/confirm/create`
+- `POST /federated/confirm/bind`
+
+确认页行为：
+
+- 创建新账号：写入 `user_info` 和 `user_federated_binding`
+- 绑定已有账号：校验本地用户名密码，通过后只写入 `user_federated_binding`
+- 只有上述成功分支才会写入本地安全上下文并继续原始 SavedRequest 跳转
+
+### 使用方式
+
+登录页本身也支持用 `mode` 参数切换第三方登录策略：
+
+- `GET /login?mode=auto`
+- `GET /login?mode=confirm`
+
+页面上的第三方 provider 链接会自动透传当前模式，最终真正参与判定的入口仍然是：
+
+- `GET /oauth2/authorization/{registrationId}?mode=auto|confirm`
 
 ## 仓库结构
 
@@ -113,6 +155,12 @@ armorauth-server/src/main/resources/sql/sas-data.sql
 ```
 
 建议启动前手动执行这两个 SQL 文件。当前代码中没有看到自动初始化这两份脚本的配置。
+
+联合登录相关的新增表结构在 `sas-schema.sql` 中已经包含：
+
+- `user_federated_binding`
+- 唯一键：`(registration_id, provider_user_id)`
+- 索引：`user_id`
 
 ### 4. 修改本地数据库与第三方登录配置
 
@@ -247,6 +295,7 @@ npm run dev
 当前仓库中存在少量测试，主要集中在：
 
 - 微信 OAuth 转换器相关测试
+- 联合登录模式解析与自动注册用户名生成测试
 - 样例模块中的 JWT / 状态值测试
 
 整体上仍以功能演示为主。

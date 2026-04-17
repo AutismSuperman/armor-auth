@@ -18,12 +18,14 @@ package com.armorauth.federat;
 import com.armorauth.federat.converter.OAuth2AuthorizationRequestConverter;
 import com.armorauth.federat.wechat.WechatAuthorizationRequestConverter;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.web.WebAttributes;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -33,13 +35,18 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
 
     private final DefaultOAuth2AuthorizationRequestResolver delegate;
 
+    private final FederatedSessionContextRepository sessionContextRepository;
+
     private final List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters = new ArrayList<>();
 
     public DelegatingOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
-                                                        String authorizationRequestBaseUri) {
+                                                        String authorizationRequestBaseUri,
+                                                        FederatedSessionContextRepository sessionContextRepository) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
+        Assert.notNull(sessionContextRepository, "sessionContextRepository cannot be null");
         if (authorizationRequestBaseUri == null)
             authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+        this.sessionContextRepository = sessionContextRepository;
         this.authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
         this.delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
         this.delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
@@ -47,12 +54,12 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
 
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-        return delegate.resolve(request);
+        return rememberAuthorizationContext(request, delegate.resolve(request));
     }
 
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-        return delegate.resolve(request, clientRegistrationId);
+        return rememberAuthorizationContext(request, delegate.resolve(request, clientRegistrationId));
     }
 
     public void authorizationRequestCustomizer(OAuth2AuthorizationRequest.Builder builder) {
@@ -67,6 +74,33 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
 
     public void addOAuth2AuthorizationRequestConverter(OAuth2AuthorizationRequestConverter authorizationRequestConverter) {
         this.authorizationRequestConverters.add(authorizationRequestConverter);
+    }
+
+    private OAuth2AuthorizationRequest rememberAuthorizationContext(HttpServletRequest request,
+                                                                    OAuth2AuthorizationRequest authorizationRequest) {
+        if (authorizationRequest == null) {
+            return null;
+        }
+        try {
+            FederatedLoginMode mode = FederatedLoginMode.resolveForAuthorization(request.getParameter("mode"));
+            String registrationId = authorizationRequest.getAttribute(OAuth2ParameterNames.REGISTRATION_ID);
+            this.sessionContextRepository.saveAuthorizationContext(
+                    request,
+                    new FederatedAuthorizationContext(
+                            registrationId,
+                            mode,
+                            request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString() : ""),
+                            System.currentTimeMillis()
+                    )
+            );
+            this.sessionContextRepository.clearPendingContext(request);
+            return authorizationRequest;
+        } catch (IllegalArgumentException ex) {
+            this.sessionContextRepository.clearAll(request);
+            request.getSession(true)
+                    .setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, new BadCredentialsException(ex.getMessage(), ex));
+            throw ex;
+        }
     }
 
 

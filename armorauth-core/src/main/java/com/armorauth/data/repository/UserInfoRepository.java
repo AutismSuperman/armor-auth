@@ -17,9 +17,9 @@ package com.armorauth.data.repository;
 
 import com.armorauth.data.entity.UserInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 /**
  * @author fulin
@@ -32,5 +32,8 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, String> {
 
     UserInfo findOAuth2UserByPhone(String phone);
 
+    Optional<UserInfo> findByUsername(String username);
+
+    boolean existsByUsername(String username);
 
 }

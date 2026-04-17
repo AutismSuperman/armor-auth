@@ -177,10 +177,16 @@ CREATE TABLE `oauth2_token_settings`  (
 DROP TABLE IF EXISTS `user_federated_binding`;
 CREATE TABLE `user_federated_binding`  (
                                            `id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-                                           `user_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
-                                           `unique_identification` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
-                                           `registration_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
-                                           PRIMARY KEY (`id`) USING BTREE
+                                           `user_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+                                           `registration_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+                                           `provider_user_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+                                           `provider_username` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+                                           `provider_attributes` text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+                                           `create_time` datetime NOT NULL,
+                                           `last_login_time` datetime NOT NULL,
+                                           PRIMARY KEY (`id`) USING BTREE,
+                                           UNIQUE INDEX `uk_user_federated_binding_registration_provider`(`registration_id`, `provider_user_id`) USING BTREE,
+                                           INDEX `idx_user_federated_binding_user_id`(`user_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------

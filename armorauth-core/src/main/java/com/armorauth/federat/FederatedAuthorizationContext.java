@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.armorauth.data.repository;
+package com.armorauth.federat;
 
-import com.armorauth.data.entity.UserFederatedBinding;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.io.Serial;
+import java.io.Serializable;
 
-import java.util.Optional;
+public record FederatedAuthorizationContext(
+        String registrationId,
+        FederatedLoginMode mode,
+        String requestUri,
+        long createdAt
+) implements Serializable {
 
-/**
- * @author fulin
- * @since 2022-08-31
- */
-@Repository
-public interface UserFederatedBindingRepository extends JpaRepository<UserFederatedBinding, String> {
-
-    Optional<UserFederatedBinding> findByRegistrationIdAndProviderUserId(String registrationId, String providerUserId);
-
+    @Serial
+    private static final long serialVersionUID = 1L;
 }

@@ -18,6 +18,7 @@ package com.armorauth.configurers;
 import com.armorauth.federat.DelegateAccessTokenResponseClient;
 import com.armorauth.federat.DelegatingOAuth2AuthorizationRequestResolver;
 import com.armorauth.federat.DelegatingOAuth2UserService;
+import com.armorauth.federat.FederatedSessionContextRepository;
 import com.armorauth.security.FederatedAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.context.ApplicationContext;
@@ -163,7 +164,7 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
         }
         // FederatedAuthenticationSuccessHandler
         FederatedAuthenticationSuccessHandler authenticationSuccessHandler =
-                new FederatedAuthenticationSuccessHandler();
+                applicationContext.getBean(FederatedAuthenticationSuccessHandler.class);
         if (this.oauth2UserHandler != null) {
             authenticationSuccessHandler.setOAuth2UserHandler(this.oauth2UserHandler);
         }
@@ -180,7 +181,8 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
         DelegatingOAuth2AuthorizationRequestResolver requestResolver =
                 new DelegatingOAuth2AuthorizationRequestResolver(
                         clientRegistrationRepository,
-                        this.authorizationRequestUri
+                        this.authorizationRequestUri,
+                        applicationContext.getBean(FederatedSessionContextRepository.class)
                 );
         DelegatingOAuth2UserService userService = new DelegatingOAuth2UserService();
         ExceptionHandlingConfigurer<?> exceptionHandling = httpSecurity.getConfigurer(ExceptionHandlingConfigurer.class);

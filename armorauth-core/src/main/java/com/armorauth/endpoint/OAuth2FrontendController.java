@@ -17,6 +17,7 @@ package com.armorauth.endpoint;
 
 import com.armorauth.data.entity.OAuth2Scope;
 import com.armorauth.data.repository.OAuth2ScopeRepository;
+import com.armorauth.federat.FederatedLoginMode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
@@ -88,6 +89,7 @@ public class OAuth2FrontendController {
     public String login(@CurrentSecurityContext(expression = "authentication") Authentication authentication,
                         HttpServletRequest request,
                         Model model,
+                        @RequestParam(name = "mode", required = false) String mode,
                         @RequestParam(name = "error", required = false) String error,
                         @RequestParam(name = "logout", required = false) String logout) {
         if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
@@ -96,6 +98,7 @@ public class OAuth2FrontendController {
 
         model.addAttribute("federatedProviders", getFederatedProviders());
         model.addAttribute("loggedOut", logout != null);
+        model.addAttribute("selectedFederatedMode", FederatedLoginMode.resolveForPage(mode).getParameterValue());
 
         if (error != null) {
             String errorMessage = "用户名、密码或验证码不正确。";

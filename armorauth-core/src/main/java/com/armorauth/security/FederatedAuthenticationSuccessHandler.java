@@ -15,6 +15,7 @@
  */
 package com.armorauth.security;
 
+import com.armorauth.federat.FederatedLoginOrchestrator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -52,6 +53,8 @@ public final class FederatedAuthenticationSuccessHandler implements Authenticati
     private Consumer<OidcUser> oidcUserHandler = (user) -> {
     };
 
+    private FederatedLoginOrchestrator federatedLoginOrchestrator;
+
     public FederatedAuthenticationSuccessHandler() {
         this(DEFAULT_TARGET_URL, new HttpSessionRequestCache());
     }
@@ -71,6 +74,10 @@ public final class FederatedAuthenticationSuccessHandler implements Authenticati
         } else if (principal instanceof OAuth2User oauth2User) {
             this.oauth2UserHandler.accept(oauth2User);
         }
+        if (principal instanceof OAuth2User && this.federatedLoginOrchestrator != null
+                && this.federatedLoginOrchestrator.handleSuccess(request, response, authentication)) {
+            return;
+        }
         this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
     }
 
@@ -89,6 +96,10 @@ public final class FederatedAuthenticationSuccessHandler implements Authenticati
 
     public void setRequestCache(RequestCache requestCache) {
         this.delegateAuthenticationSuccessHandler.setRequestCache(requestCache);
+    }
+
+    public void setFederatedLoginOrchestrator(FederatedLoginOrchestrator federatedLoginOrchestrator) {
+        this.federatedLoginOrchestrator = federatedLoginOrchestrator;
     }
 
 }

@@ -20,6 +20,7 @@ import com.armorauth.configurers.web.OAuth2UserLoginFilterSecurityConfigurer;
 import com.armorauth.data.repository.UserInfoRepository;
 import com.armorauth.details.DelegateUserDetailsService;
 import com.armorauth.federat.ExtendedOAuth2ClientPropertiesMapper;
+import com.armorauth.federat.FederatedLoginOrchestrator;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties;
@@ -34,6 +35,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.JdbcOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -41,6 +44,10 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.Collections;
@@ -58,17 +65,18 @@ public class DefaultSecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http,
-            DelegateUserDetailsService delegateUserDetailsService) throws Exception {
+            DelegateUserDetailsService delegateUserDetailsService,
+            FederatedAuthenticationSuccessHandler federatedAuthenticationSuccessHandler,
+            SecurityContextRepository securityContextRepository) throws Exception {
         SimpleUrlAuthenticationFailureHandler authenticationFailureHandler =
                 new SimpleUrlAuthenticationFailureHandler(CUSTOM_LOGIN_PAGE + "?error");
-        FederatedAuthenticationSuccessHandler federatedAuthenticationSuccessHandler =
-                new FederatedAuthenticationSuccessHandler();
 
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(logout -> logout.logoutSuccessUrl(CUSTOM_LOGIN_PAGE + "?logout"))
+                .securityContext(securityContext -> securityContext.securityContextRepository(securityContextRepository))
                 .userDetailsService(delegateUserDetailsService);
 
         http.apply(new OAuth2UserLoginFilterSecurityConfigurer())
@@ -103,6 +111,31 @@ public class DefaultSecurityConfig {
     @Bean
     public DelegateUserDetailsService delegateUserDetailsService(UserInfoRepository userInfoRepository) {
         return new DelegateUserDetailsService(userInfoRepository);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public RequestCache requestCache() {
+        return new HttpSessionRequestCache();
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
+
+    @Bean
+    public FederatedAuthenticationSuccessHandler federatedAuthenticationSuccessHandler(
+            RequestCache requestCache,
+            FederatedLoginOrchestrator federatedLoginOrchestrator) {
+        FederatedAuthenticationSuccessHandler successHandler =
+                new FederatedAuthenticationSuccessHandler("/", requestCache);
+        successHandler.setFederatedLoginOrchestrator(federatedLoginOrchestrator);
+        return successHandler;
     }
 
     @Bean

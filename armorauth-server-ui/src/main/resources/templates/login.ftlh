@@ -87,11 +87,16 @@
             <#if federatedProviders?has_content>
                 <div class="section-title">
                     <span class="eyebrow">Federated</span>
-                    <p>也可以通过外部身份提供商继续登录。</p>
+                    <p>第三方登录支持两种首次登录策略，默认自动注册，也可以切到中间页确认后再完成 OAuth 成功。</p>
                 </div>
+                <div class="switcher" aria-label="联合登录策略">
+                    <a class="<#if selectedFederatedMode == 'auto'>is-active</#if>" href="/login?mode=auto">自动注册</a>
+                    <a class="<#if selectedFederatedMode == 'confirm'>is-active</#if>" href="/login?mode=confirm">中间页确认</a>
+                </div>
+                <p class="page-note">当前策略：<#if selectedFederatedMode == 'confirm'>拿到第三方资料后先进入确认页<#else>首次登录自动创建本地账号并建立绑定</#if>。</p>
                 <div class="provider-list">
                     <#list federatedProviders as provider>
-                        <a class="provider-link" href="/oauth2/authorization/${provider.registrationId}">
+                        <a class="provider-link" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode!'auto'}">
                             ${provider.clientName!provider.registrationId}
                         </a>
                     </#list>

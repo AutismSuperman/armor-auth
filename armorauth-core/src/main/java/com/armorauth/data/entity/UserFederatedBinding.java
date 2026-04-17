@@ -19,10 +19,14 @@ package com.armorauth.data.entity;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -35,7 +39,14 @@ import java.io.Serializable;
  */
 @Data
 @Entity
-@Table(name = "user_federated_binding")
+@Table(
+        name = "user_federated_binding",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_federated_binding_registration_provider",
+                columnNames = {"registration_id", "provider_user_id"}
+        ),
+        indexes = @Index(name = "idx_user_federated_binding_user_id", columnList = "user_id")
+)
 public class UserFederatedBinding implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -48,10 +59,26 @@ public class UserFederatedBinding implements Serializable {
     @GeneratedValue(generator = "uuid-hex")
     private String id;
 
-    private String user_id;
+    @Column(name = "user_id", nullable = false)
+    private String userId;
 
-    private String uniqueIdentification;
-
+    @Column(name = "registration_id", nullable = false)
     private String registrationId;
+
+    @Column(name = "provider_user_id", nullable = false)
+    private String providerUserId;
+
+    @Column(name = "provider_username")
+    private String providerUsername;
+
+    @Lob
+    @Column(name = "provider_attributes")
+    private String providerAttributes;
+
+    @Column(name = "create_time", nullable = false, columnDefinition = "datetime")
+    private String createTime;
+
+    @Column(name = "last_login_time", nullable = false, columnDefinition = "datetime")
+    private String lastLoginTime;
 
 }
