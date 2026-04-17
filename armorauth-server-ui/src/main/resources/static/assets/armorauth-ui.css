@@ -144,8 +144,14 @@ select {
     padding: 40px;
     display: grid;
     gap: 24px;
-    align-content: center;
+    align-content: start;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(252, 253, 252, 0.96) 100%);
+}
+
+.content-column {
+    width: min(100%, 440px);
+    display: grid;
+    gap: 18px;
 }
 
 .section-title {
@@ -189,6 +195,7 @@ select {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     padding: 8px;
+    width: min(100%, 440px);
     border-radius: 999px;
     background: var(--accent-soft);
 }
@@ -216,6 +223,7 @@ select {
 .auth-form {
     display: grid;
     gap: 14px;
+    width: min(100%, 440px);
 }
 
 .auth-form[hidden] {
@@ -302,6 +310,7 @@ select {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 12px;
+    width: min(100%, 440px);
 }
 
 .provider-link {
@@ -350,6 +359,7 @@ select {
     border-radius: var(--radius-md);
     background: rgba(31, 138, 112, 0.08);
     color: var(--text-soft);
+    width: min(100%, 440px);
 }
 
 .center-card {
@@ -383,6 +393,7 @@ select {
 .footer-copy {
     font-size: 0.9rem;
     color: var(--text-soft);
+    width: min(100%, 440px);
 }
 
 .summary-stack {
@@ -435,5 +446,10 @@ select {
     .auth-main,
     .center-card {
         padding: 28px 22px;
+    }
+
+    .action-row > * {
+        flex: 1 1 100%;
+        justify-content: center;
     }
 }

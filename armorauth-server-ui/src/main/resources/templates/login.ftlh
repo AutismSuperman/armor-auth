@@ -30,76 +30,80 @@
             </div>
         </section>
         <section class="auth-main">
-            <div class="section-title">
-                <span class="eyebrow">Sign In</span>
-                <h1>登录 ArmorAuth</h1>
-                <p>继续访问授权中心、设备验证和联邦登录入口。</p>
+            <div class="content-column">
+                <div class="section-title">
+                    <span class="eyebrow">Sign In</span>
+                    <h1>登录 ArmorAuth</h1>
+                    <p>继续访问授权中心、设备验证和联邦登录入口。</p>
+                </div>
+
+                <#if errorMessage??>
+                    <div class="notice error">${errorMessage}</div>
+                </#if>
+                <#if loggedOut?? && loggedOut>
+                    <div class="notice success">您已成功退出当前会话。</div>
+                </#if>
+
+                <div class="switcher" aria-label="登录模式">
+                    <button type="button" class="is-active" data-target="password-login">账号密码</button>
+                    <button type="button" data-target="captcha-login">短信验证码</button>
+                </div>
+
+                <form id="password-login" class="auth-form" action="/login" method="post">
+                    <div class="field-group">
+                        <label for="username">用户名</label>
+                        <input id="username" name="username" type="text" autocomplete="username" placeholder="请输入用户名" value="admin">
+                    </div>
+                    <div class="field-group">
+                        <label for="password">密码</label>
+                        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码" value="123456">
+                    </div>
+                    <label class="checkbox-row" for="remember-me-password">
+                        <input id="remember-me-password" name="remember-me" type="checkbox" value="true">
+                        <span>记住我</span>
+                    </label>
+                    <div class="action-row">
+                        <button class="button primary" type="submit">登录</button>
+                    </div>
+                </form>
+
+                <form id="captcha-login" class="auth-form" action="/login/captcha" method="post" hidden>
+                    <div class="field-group">
+                        <label for="account">手机号</label>
+                        <input id="account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号" value="13103777777">
+                    </div>
+                    <div class="field-group">
+                        <label for="captcha">验证码</label>
+                        <input id="captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" value="1234">
+                    </div>
+                    <label class="checkbox-row" for="remember-me-captcha">
+                        <input id="remember-me-captcha" name="remember-me" type="checkbox" value="true">
+                        <span>记住我</span>
+                    </label>
+                    <div class="action-row">
+                        <button class="button primary" type="submit">验证并登录</button>
+                    </div>
+                </form>
             </div>
-
-            <#if errorMessage??>
-                <div class="notice error">${errorMessage}</div>
-            </#if>
-            <#if loggedOut?? && loggedOut>
-                <div class="notice success">您已成功退出当前会话。</div>
-            </#if>
-
-            <div class="switcher" aria-label="登录模式">
-                <button type="button" class="is-active" data-target="password-login">账号密码</button>
-                <button type="button" data-target="captcha-login">短信验证码</button>
-            </div>
-
-            <form id="password-login" class="auth-form" action="/login" method="post">
-                <div class="field-group">
-                    <label for="username">用户名</label>
-                    <input id="username" name="username" type="text" autocomplete="username" placeholder="请输入用户名" value="admin">
-                </div>
-                <div class="field-group">
-                    <label for="password">密码</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码" value="123456">
-                </div>
-                <label class="checkbox-row" for="remember-me-password">
-                    <input id="remember-me-password" name="remember-me" type="checkbox" value="true">
-                    <span>记住我</span>
-                </label>
-                <div class="action-row">
-                    <button class="button primary" type="submit">登录</button>
-                </div>
-            </form>
-
-            <form id="captcha-login" class="auth-form" action="/login/captcha" method="post" hidden>
-                <div class="field-group">
-                    <label for="account">手机号</label>
-                    <input id="account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号" value="13103777777">
-                </div>
-                <div class="field-group">
-                    <label for="captcha">验证码</label>
-                    <input id="captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" value="1234">
-                </div>
-                <label class="checkbox-row" for="remember-me-captcha">
-                    <input id="remember-me-captcha" name="remember-me" type="checkbox" value="true">
-                    <span>记住我</span>
-                </label>
-                <div class="action-row">
-                    <button class="button primary" type="submit">验证并登录</button>
-                </div>
-            </form>
 
             <#if federatedProviders?has_content>
-                <div class="section-title">
-                    <span class="eyebrow">Federated</span>
-                    <p>第三方登录支持两种首次登录策略，默认自动注册，也可以切到中间页确认后再完成 OAuth 成功。</p>
-                </div>
-                <div class="switcher" aria-label="联合登录策略">
-                    <a class="<#if selectedFederatedMode == 'auto'>is-active</#if>" href="/login?mode=auto">自动注册</a>
-                    <a class="<#if selectedFederatedMode == 'confirm'>is-active</#if>" href="/login?mode=confirm">中间页确认</a>
-                </div>
-                <p class="page-note">当前策略：<#if selectedFederatedMode == 'confirm'>拿到第三方资料后先进入确认页<#else>首次登录自动创建本地账号并建立绑定</#if>。</p>
-                <div class="provider-list">
-                    <#list federatedProviders as provider>
-                        <a class="provider-link" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode!'auto'}">
-                            ${provider.clientName!provider.registrationId}
-                        </a>
-                    </#list>
+                <div class="content-column">
+                    <div class="section-title">
+                        <span class="eyebrow">Federated</span>
+                        <p>第三方登录支持两种首次登录策略，默认自动注册，也可以切到中间页确认后再完成 OAuth 成功。</p>
+                    </div>
+                    <div class="switcher" aria-label="联合登录策略">
+                        <a class="<#if selectedFederatedMode == 'auto'>is-active</#if>" href="/login?mode=auto">自动注册</a>
+                        <a class="<#if selectedFederatedMode == 'confirm'>is-active</#if>" href="/login?mode=confirm">中间页确认</a>
+                    </div>
+                    <p class="page-note">当前策略：<#if selectedFederatedMode == 'confirm'>拿到第三方资料后先进入确认页<#else>首次登录自动创建本地账号并建立绑定</#if>。</p>
+                    <div class="provider-list">
+                        <#list federatedProviders as provider>
+                            <a class="provider-link" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode!'auto'}">
+                                ${provider.clientName!provider.registrationId}
+                            </a>
+                        </#list>
+                    </div>
                 </div>
             </#if>
 

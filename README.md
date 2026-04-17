@@ -9,7 +9,7 @@ ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认
 - 已升级到 `Spring Boot 4.0.5`
 - 已兼容 `Spring Security 7.0.4`
 - 已迁移到 `Spring Authorization Server 7.0.4`
-- 认证服务端页面已从 Node/Vite 壳子切回服务端 `FreeMarker` 模板
+- 认证服务端页面已完全收敛为服务端 `FreeMarker` 模板，`armorauth-server-ui` 不再保留 Node/Vite 构建残留
 - 联合登录已支持“自动注册”和“中间页确认”双策略
 - 第三方账号绑定已落到 `user_federated_binding` 事实表
 
@@ -85,7 +85,7 @@ mvn -q -pl armorauth-server -am package -DskipTests
 | `armorauth-core` | 核心认证授权能力，包含配置、JPA 持久化、设备授权、验证码登录、联邦登录扩展等 | 核心模块 |
 | `armorauth` | 对 `armorauth-core` 的简单聚合封装 | 可用但很薄 |
 | `armorauth-server` | 独立运行的认证服务端，默认端口 `9000` | 可运行示例 |
-| `armorauth-server-ui` | 服务端内嵌 UI 资源模块，提供 FreeMarker 模板和静态资源 | 可运行示例 |
+| `armorauth-server-ui` | 服务端内嵌 UI 资源模块，仅保留 FreeMarker 模板和静态资源 | 可运行示例 |
 | `armorauth-spring-boot` | Spring Boot 聚合模块 | 占位模块 |
 | `armorauth-spring-boot/armorauth-spring-boot-starter` | 预留 starter 模块 | 当前只有 `pom.xml`，暂无源码实现 |
 | `armorauth-samples/armorauth-samples-oidc-login` | OIDC 登录样例，默认端口 `8083` | 可演示 |
@@ -117,7 +117,7 @@ mvn -q -pl armorauth-server -am package -DskipTests
 说明：
 
 - 父 POM 现在已经切换到 Java 21。
-- `armorauth-server-ui` 不再依赖 Node/Vite 构建链，直接由 Spring Boot 加载 FreeMarker 模板和静态资源。
+- `armorauth-server-ui` 现在只保留服务端模板和静态资源，不再包含 Node/Vite 构建配置或前端依赖。
 
 ### 2. 配置本地域名
 

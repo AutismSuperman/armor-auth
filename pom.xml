@@ -46,7 +46,6 @@
         <maven.flatten.version>1.5.0</maven.flatten.version>
         <maven.spotless.version>2.25.0</maven.spotless.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <frontend-maven-plugin.version>1.14.0</frontend-maven-plugin.version>
         <!-- CheckStyle -->
         <spotless.license-header.file>
             license-header.txt
@@ -192,11 +191,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>com.github.eirslett</groupId>
-                    <artifactId>frontend-maven-plugin</artifactId>
-                    <version>${frontend-maven-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
