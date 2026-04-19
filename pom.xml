@@ -34,7 +34,7 @@
         <java.source.version>21</java.source.version>
         <java.target.version>21</java.target.version>
         <java.encoding>UTF-8</java.encoding>
-        <maven.compiler.version>3.14.1</maven.compiler.version>
+        <maven.compiler.version>3.13.0</maven.compiler.version>
         <maven.surefire.version>3.5.4</maven.surefire.version>
         <maven.source.version>3.0.1</maven.source.version>
         <maven.javadoc.version>3.0.1</maven.javadoc.version>
@@ -54,8 +54,11 @@
 
     <modules>
         <module>armorauth</module>
+        <module>armorauth-common</module>
         <module>armorauth-core</module>
+        <module>armorauth-model</module>
         <module>armorauth-admin</module>
+        <module>armorauth-federation</module>
         <module>armorauth-spring-boot</module>
         <module>armorauth-samples</module>
         <module>armorauth-server</module>

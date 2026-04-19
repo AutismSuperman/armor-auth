@@ -15,9 +15,6 @@
  */
 package com.armorauth.federat.qq;
 
-import com.armorauth.federat.gitee.GiteeOAuth2User;
-import com.armorauth.federat.wechat.WechatOAuth2User;
-import com.armorauth.federat.wechat.WechatOAuth2UserService;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.*;

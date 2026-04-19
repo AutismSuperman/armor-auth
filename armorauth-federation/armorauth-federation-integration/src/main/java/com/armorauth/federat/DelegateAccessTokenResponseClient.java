@@ -23,6 +23,7 @@ import com.armorauth.federat.wechat.WechatAccessTokenRestTemplate;
 import com.armorauth.federat.wechat.WechatAuthorizationCodeGrantRequestConverter;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
@@ -30,6 +31,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -46,6 +48,9 @@ public class DelegateAccessTokenResponseClient
     private final List<OAuth2AuthorizationCodeGrantRequestConverter> requestConverters = new ArrayList<>();
 
     public DelegateAccessTokenResponseClient() {
+        this.delegate.setRestClient(RestClient.builder()
+                .requestFactory(new SimpleClientHttpRequestFactory())
+                .build());
         this.restTemplates.add(new WechatAccessTokenRestTemplate());
         this.restTemplates.add(new QqAccessTokenRestTemplate());
         this.requestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());

@@ -17,11 +17,10 @@ package com.armorauth.samples.filter;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -55,7 +54,7 @@ public class LoopbackIpRedirectFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		if (request.getServerName().equals("localhost") && request.getHeader("host") != null) {
-			UriComponents uri = UriComponentsBuilder.fromHttpRequest(new ServletServerHttpRequest(request))
+			UriComponents uri = ServletUriComponentsBuilder.fromRequest(request)
 					.host("127.0.0.1").build();
 			response.sendRedirect(uri.toUriString());
 			return;

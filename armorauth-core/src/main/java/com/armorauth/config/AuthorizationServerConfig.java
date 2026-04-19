@@ -36,10 +36,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -83,8 +83,10 @@ public class AuthorizationServerConfig {
                         new LoginUrlAuthenticationEntryPoint(CUSTOM_LOGIN_PAGE),
                         new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                 ))
-                .csrf(AbstractHttpConfigurer::disable)
-                .with(authorizationServerConfigurer, authorizationServer -> authorizationServer
+                .csrf(AbstractHttpConfigurer::disable);
+
+        http.with(authorizationServerConfigurer, authorizationServer ->
+                authorizationServer
                         .registeredClientRepository(registeredClientRepository)
                         .authorizationService(authorizationService)
                         .authorizationConsentService(authorizationConsentService)
@@ -104,8 +106,9 @@ public class AuthorizationServerConfig {
                         .authorizationEndpoint(authorizationEndpoint ->
                                 authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
                         )
-                        .oidc(Customizer.withDefaults())
-                )
+                        .oidc(Customizer.withDefaults()));
+
+        http
                 .oauth2ResourceServer(oauth2ResourceServer ->
                         oauth2ResourceServer.jwt(Customizer.withDefaults()));
 

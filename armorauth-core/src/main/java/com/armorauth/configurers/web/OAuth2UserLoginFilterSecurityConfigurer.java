@@ -55,14 +55,22 @@ public class OAuth2UserLoginFilterSecurityConfigurer extends AbstractHttpConfigu
     @Override
     public void init(HttpSecurity httpSecurity) {
         for (SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> configurer : this.configurers.values()) {
-            configurer.init(httpSecurity);
+            try {
+                configurer.init(httpSecurity);
+            } catch (Exception ex) {
+                throw new IllegalStateException("Failed to initialize login filter configurer", ex);
+            }
         }
     }
 
     @Override
     public void configure(HttpSecurity httpSecurity) {
         for (SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> configurer : this.configurers.values()) {
-            configurer.configure(httpSecurity);
+            try {
+                configurer.configure(httpSecurity);
+            } catch (Exception ex) {
+                throw new IllegalStateException("Failed to configure login filter configurer", ex);
+            }
         }
     }
 

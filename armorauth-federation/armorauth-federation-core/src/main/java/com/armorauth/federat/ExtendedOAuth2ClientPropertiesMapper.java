@@ -18,7 +18,6 @@ package com.armorauth.federat;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties.Provider;
-import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientPropertiesMapper;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -35,7 +34,7 @@ import java.util.Map;
 
 /**
  * Maps {@link OAuth2ClientProperties} to {@link ClientRegistration ClientRegistrations}.
- * Extended {@link OAuth2ClientPropertiesMapper}
+ * Extended Spring Boot OAuth2 client properties mapper.
  *
  * @author AutismSuperman
  * @see InMemoryClientRegistrationRepository

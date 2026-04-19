@@ -102,17 +102,16 @@ public class SecurityConfiguration {
 
     @Bean
     OAuth2AccessTokenResponseClient<OAuth2ClientCredentialsGrantRequest> accessTokenResponseClient(Function<ClientRegistration, JWK> jwkResolver) {
-        OAuth2ClientCredentialsGrantRequestEntityConverter requestEntityConverter = new OAuth2ClientCredentialsGrantRequestEntityConverter();
+        RestClientClientCredentialsTokenResponseClient tokenResponseClient =
+                new RestClientClientCredentialsTokenResponseClient();
         NimbusJwtClientAuthenticationParametersConverter<OAuth2ClientCredentialsGrantRequest>
                 converter = new NimbusJwtClientAuthenticationParametersConverter<>(jwkResolver);
-        requestEntityConverter.addParametersConverter(converter);
-        requestEntityConverter.addParametersConverter((authorizationGrantRequest -> {
+        tokenResponseClient.addParametersConverter(converter);
+        tokenResponseClient.addParametersConverter((authorizationGrantRequest -> {
             MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
             parameters.add(OAuth2ParameterNames.CLIENT_ID, authorizationGrantRequest.getClientRegistration().getClientId());
             return parameters;
         }));
-        DefaultClientCredentialsTokenResponseClient tokenResponseClient = new DefaultClientCredentialsTokenResponseClient();
-        tokenResponseClient.setRequestEntityConverter(requestEntityConverter);
         return tokenResponseClient;
     }
 

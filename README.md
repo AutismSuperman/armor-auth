@@ -1,98 +1,51 @@
 # ArmorAuth
 
-ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认证授权实验项目。仓库当前同时包含核心能力、服务端示例、前端页面、Spring Boot 集成占位模块以及多个 OAuth2/OIDC 样例应用。
+ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认证授权实验项目。当前仓库已经切到 `Spring Boot 4.0.5`、`Spring Security 7.0.4`、`Spring Authorization Server 7.0.4`，并完成了一轮联合登录相关代码的 Maven 模块拆分。
 
-从代码现状看，这个项目更接近“可演示的认证框架原型”而不是已经收敛完成的通用产品：核心认证流程、JPA 持久化、设备授权、联邦登录和前端页面已经具备雏形，但部分模块仍处于占位或开发中状态。
+项目现在更接近“可演示、可继续开发的认证框架原型”而不是已经封装完成的成品。核心认证授权、JPA 持久化、设备授权、验证码登录、联合登录扩展和服务端页面都在，但管理端、starter 抽象和部分运行时适配仍在收敛中。
 
 ## 最近更新
 
 - 已升级到 `Spring Boot 4.0.5`
-- 已兼容 `Spring Security 7.0.4`
-- 已迁移到 `Spring Authorization Server 7.0.4`
-- 认证服务端页面已完全收敛为服务端 `FreeMarker` 模板，`armorauth-server-ui` 不再保留 Node/Vite 构建残留
-- 联合登录已支持“自动注册”和“中间页确认”双策略
-- 第三方账号绑定已落到 `user_federated_binding` 事实表
+- 已统一到 `Java 21`
+- 已按 `federat-fix` 风格完成联合登录的 Maven 分包
+- 已新增 `armorauth-common`、`armorauth-model`、`armorauth-federation` 模块树
+- 已为 `armorauth-server` 补充本地 `local` profile，用于无 MySQL 时的 H2 调试
 
-当前仓库已验证通过：
+## 模块结构
 
-```bash
-mvn -q -DskipTests compile
-mvn -q test
-mvn -q -pl armorauth-server -am package -DskipTests
-```
+| 模块 | 说明 |
+| --- | --- |
+| `armorauth-common` | 通用基础能力 |
+| `armorauth-model` | JPA 实体与 Repository |
+| `armorauth-core` | 认证授权主配置、设备授权、验证码登录等核心能力 |
+| `armorauth-federation` | 联合登录聚合模块 |
+| `armorauth-federation/armorauth-federation-core` | 联合登录基础抽象与属性映射 |
+| `armorauth-federation/armorauth-federation-integration` | 联合登录编排、确认页、配置器、安全处理器 |
+| `armorauth-federation/armorauth-federation-qq` | QQ provider 适配 |
+| `armorauth-federation/armorauth-federation-wechat` | 微信 provider 适配 |
+| `armorauth-federation/armorauth-federation-gitee` | Gitee provider 适配 |
+| `armorauth` | 对核心模块的聚合封装 |
+| `armorauth-server` | 可独立启动的认证服务端 |
+| `armorauth-server-ui` | 服务端模板和静态资源 |
+| `armorauth-spring-boot` | Spring Boot 聚合模块 |
+| `armorauth-spring-boot/armorauth-spring-boot-starter` | 预留 starter 模块 |
+| `armorauth-samples` | OIDC、PKCE、`client_credentials` 等样例 |
+| `armorauth-admin` | 管理端后端，占位中 |
+| `armorauth-admin-ui` | 管理端前端原型，不在 Maven Reactor 中 |
 
-## 项目定位
+## 当前能力
 
-- 基于 Spring Authorization Server 实现 OAuth2 Authorization Server 和 OIDC 1.0 能力
-- 提供基于 JPA 的客户端、授权记录、授权同意信息存储
-- 提供登录页、授权确认页、设备激活页等前端页面
-- 集成第三方联邦登录扩展，当前代码中已包含 GitHub、Gitee、QQ、微信相关适配
-- 提供 OIDC 登录、PKCE、`client_credentials` 等样例工程
-
-## 当前已实现的能力
-
-- OAuth2/OIDC 服务端基础配置
+- OAuth2 Authorization Server / OIDC 基础能力
 - JPA 版 `RegisteredClientRepository`
 - JPA 版 `OAuth2AuthorizationService`
 - JPA 版 `OAuth2AuthorizationConsentService`
-- 自定义授权确认页 `/consent`
 - 自定义登录页 `/login`
+- 自定义授权确认页 `/consent`
 - Device Authorization Flow 页面 `/activate`、`/activated`
 - 验证码登录扩展
-- 联邦登录扩展
-- 服务端内嵌 FreeMarker 模板页面
-- 联合登录首次登录双策略
-- `mode=auto` 自动注册本地账号并建立绑定
-- `mode=confirm` 进入中间页，创建新账号或绑定已有账号后才算登录成功
-
-## 联合登录双策略
-
-当前第三方首次登录不再直接把 OAuth2 成功等同于本地登录成功，而是统一经过绑定编排：
-
-- `GET /oauth2/authorization/{registrationId}?mode=auto|confirm`
-- `mode` 缺失时按 `auto` 处理
-- `mode` 非法时会直接终止当前联合登录请求，不再静默回退
-- 第三方唯一绑定键固定为 `registration_id + OAuth2User.getName()`
-- 如果第三方账号已经存在绑定，则无论请求的是 `auto` 还是 `confirm`，都会直接命中本地账号并完成登录
-
-确认页端点：
-
-- `GET /federated/confirm`
-- `POST /federated/confirm/create`
-- `POST /federated/confirm/bind`
-
-确认页行为：
-
-- 创建新账号：写入 `user_info` 和 `user_federated_binding`
-- 绑定已有账号：校验本地用户名密码，通过后只写入 `user_federated_binding`
-- 只有上述成功分支才会写入本地安全上下文并继续原始 SavedRequest 跳转
-
-### 使用方式
-
-登录页本身也支持用 `mode` 参数切换第三方登录策略：
-
-- `GET /login?mode=auto`
-- `GET /login?mode=confirm`
-
-页面上的第三方 provider 链接会自动透传当前模式，最终真正参与判定的入口仍然是：
-
-- `GET /oauth2/authorization/{registrationId}?mode=auto|confirm`
-
-## 仓库结构
-
-| 模块 | 说明 | 当前状态 |
-| --- | --- | --- |
-| `armorauth-core` | 核心认证授权能力，包含配置、JPA 持久化、设备授权、验证码登录、联邦登录扩展等 | 核心模块 |
-| `armorauth` | 对 `armorauth-core` 的简单聚合封装 | 可用但很薄 |
-| `armorauth-server` | 独立运行的认证服务端，默认端口 `9000` | 可运行示例 |
-| `armorauth-server-ui` | 服务端内嵌 UI 资源模块，仅保留 FreeMarker 模板和静态资源 | 可运行示例 |
-| `armorauth-spring-boot` | Spring Boot 聚合模块 | 占位模块 |
-| `armorauth-spring-boot/armorauth-spring-boot-starter` | 预留 starter 模块 | 当前只有 `pom.xml`，暂无源码实现 |
-| `armorauth-samples/armorauth-samples-oidc-login` | OIDC 登录样例，默认端口 `8083` | 可演示 |
-| `armorauth-samples/armorauth-samples-client` | `client_credentials` 样例，覆盖 `client_secret_basic`、`client_secret_jwt`、`private_key_jwt` | 可演示 |
-| `armorauth-samples/armorauth-samples-pkce` | PKCE 授权码流程样例，默认端口 `8085` | 可演示 |
-| `armorauth-admin` | 管理端后端模块 | 当前只有 `Hello world` 占位代码 |
-| `armorauth-admin-ui` | 独立管理端前端，基于 Vue 3 + Vite + Ant Design Vue | 前端原型，未接入 Maven Reactor |
+- 联合登录自动注册 / 中间页确认双策略
+- 第三方账号绑定表 `user_federated_binding`
 
 ## 技术栈
 
@@ -102,67 +55,29 @@ mvn -q -pl armorauth-server -am package -DskipTests
 - Spring Authorization Server 7.0.4
 - Spring Data JPA
 - MariaDB / MySQL
+- H2（仅本地 `local` profile 调试）
 - FreeMarker
 - Ant Design Vue
 
-## 快速开始
+## 构建
 
-### 1. 环境要求
+环境要求：
 
 - JDK 21
-- Maven 3.9+
-- Node.js 18+（仅构建 `armorauth-admin-ui` 时需要）
-- MariaDB / MySQL
+- Maven 3.9+ 优先
+- Node.js 18+ 仅在开发 `armorauth-admin-ui` 时需要
 
-说明：
+根目录编译：
 
-- 父 POM 现在已经切换到 Java 21。
-- `armorauth-server-ui` 现在只保留服务端模板和静态资源，不再包含 Node/Vite 构建配置或前端依赖。
-
-### 2. 配置本地域名
-
-样例工程没有直接使用 `localhost`，而是使用了固定域名：
-
-- `armorauth-server`
-- `armorauth-demo`
-
-可直接参考仓库中的文件：
-
-```text
-armorauth-samples/hosts/armorauth-hosts
+```bash
+mvn -DskipTests compile
 ```
 
-内容如下：
+如果你的系统 Maven 太旧，至少需要切到支持 Java 21 和 Spring Boot 4 的 Maven 版本。
 
-```text
-127.0.0.1 armorauth-demo
-127.0.0.1 armorauth-server
-```
+## 启动服务端
 
-### 3. 初始化数据库
-
-服务端默认启用 `mysql` profile，数据库名为：
-
-```text
-identity_server
-```
-
-数据库脚本位于：
-
-```text
-armorauth-server/src/main/resources/sql/sas-schema.sql
-armorauth-server/src/main/resources/sql/sas-data.sql
-```
-
-建议启动前手动执行这两个 SQL 文件。当前代码中没有看到自动初始化这两份脚本的配置。
-
-联合登录相关的新增表结构在 `sas-schema.sql` 中已经包含：
-
-- `user_federated_binding`
-- 唯一键：`(registration_id, provider_user_id)`
-- 索引：`user_id`
-
-### 4. 修改本地数据库与第三方登录配置
+### MySQL 模式
 
 默认配置文件：
 
@@ -173,141 +88,126 @@ armorauth-server/src/main/resources/application-mysql.yml
 
 默认行为：
 
-- 服务端端口为 `9000`
+- 服务端端口 `9000`
 - 默认激活 `mysql` profile
-- 数据源指向本地 MariaDB
+- 数据源指向本地 MariaDB / MySQL
 
-启动前建议至少检查并修改以下内容：
+数据库脚本：
+
+```text
+armorauth-server/src/main/resources/sql/sas-schema.sql
+armorauth-server/src/main/resources/sql/sas-data.sql
+```
+
+启动前请先确认：
 
 - 数据库地址、用户名、密码
 - 第三方 OAuth 客户端配置
-- 生产环境下的敏感密钥
+- JDK 版本为 21
 
-### 5. 启动认证服务端
-
-在仓库根目录执行：
+启动示例：
 
 ```bash
-mvn -pl armorauth-server -am clean package -DskipTests
-java -jar armorauth-server/target/armorauth-server-0.0.1.jar
+mvn -pl armorauth-server -am -DskipTests spring-boot:run
 ```
 
-如果只是本地调试，也可以使用：
+### 本地 `local` profile
 
-```bash
-mvn -pl armorauth-server -am spring-boot:run
+仓库额外提供了：
+
+```text
+armorauth-server/src/main/resources/application-local.yml
 ```
 
-说明：
+用途：
 
-- `armorauth-server` 依赖 `armorauth-server-ui`
-- 构建服务端时会一起打包 FreeMarker 页面和静态资源，不再执行 Node 构建
+- 使用 H2 文件数据库替代 MySQL
+- 仅用于本地调试和兼容验证
+- 当前配置里默认关闭了联合登录编排链：
 
-### 6. 启动样例工程
-
-OIDC 登录样例：
-
-```bash
-mvn -pl armorauth-samples/armorauth-samples-oidc-login -am spring-boot:run
+```yaml
+armorauth:
+  federation:
+    enabled: false
 ```
 
-`client_credentials` 样例：
+原因：
 
-```bash
-mvn -pl armorauth-samples/armorauth-samples-client -am spring-boot:run
-```
+- 当前桌面环境里 JDK / Windows socket 栈异常时，联合登录默认 token client 会在初始化阶段失败
+- `local` profile 的目标是先让服务端基础页面和主流程能单机调试
 
-PKCE 样例：
+## 样例工程
 
-```bash
-mvn -pl armorauth-samples/armorauth-samples-pkce -am spring-boot:run
-```
+可运行样例：
 
-对应端口：
+- `armorauth-samples/armorauth-samples-oidc-login`
+- `armorauth-samples/armorauth-samples-client`
+- `armorauth-samples/armorauth-samples-pkce`
+
+默认端口：
 
 - `armorauth-server`: `9000`
 - `armorauth-samples-oidc-login`: `8083`
 - `armorauth-samples-client`: `8084`
 - `armorauth-samples-pkce`: `8085`
 
-### 7. 单独启动管理端前端
+样例域名仍建议通过 hosts 绑定：
 
-`armorauth-admin-ui` 不在根 POM 的模块列表中，需要单独启动：
-
-```bash
-cd armorauth-admin-ui
-npm install
-npm run dev
+```text
+127.0.0.1 armorauth-demo
+127.0.0.1 armorauth-server
 ```
 
-## 样例说明
+参考文件：
 
-### `armorauth-samples-oidc-login`
+```text
+armorauth-samples/hosts/armorauth-hosts
+```
 
-- 演示标准 OIDC 登录
-- 通过授权码流程完成登录
-- 默认回调地址是 `http://armorauth-demo:8083/login/oauth2/code/autism`
+## 当前注意事项
 
-### `armorauth-samples-pkce`
+### 1. 项目仍偏 demo / prototype
 
-- 演示公有客户端 + PKCE 授权码流程
-- 默认回调地址是 `http://armorauth-demo:8085/login/oauth2/code/clever`
+以下模块仍处于占位或未收敛状态：
 
-### `armorauth-samples-client`
-
-- 演示 `client_credentials`
-- 当前代码里覆盖了三种客户端认证方式：
-- `client_secret_basic`
-- `client_secret_jwt`
-- `private_key_jwt`
-
-## 与代码现状一致的注意事项
-
-### 1. 项目当前偏 demo / prototype
-
-以下模块仍然明显处于未完成状态：
-
-- `armorauth-spring-boot-starter`
 - `armorauth-admin`
+- `armorauth-spring-boot-starter`
 
 ### 2. 验证码校验仍是 mock
 
-在 `armorauth-core` 的默认安全配置中，验证码校验逻辑当前是硬编码 mock，验证码值为：
+默认安全配置中的验证码校验目前仍是硬编码 mock，值为：
 
 ```text
 1234
 ```
 
-这适合本地联调，不适合生产环境。
+### 3. JWK 仍为运行时动态生成
 
-### 3. JWK 是运行时动态生成的
+当前 `AuthorizationServerConfig` 启动时会生成 RSA Key，更适合本地演示，不适合生产直接使用。
 
-当前 `AuthorizationServerConfig` 会在应用启动时动态生成 RSA Key。  
-这意味着服务端重启后，之前签发的 JWT 在很多场景下将不再可验证，更适合本地演示，不适合作为生产配置直接使用。
+### 4. `local` profile 不是生产配置
 
-### 4. 默认配置中包含示例凭据
+`application-local.yml` 的目标是便于本地调试，不用于生产环境：
 
-仓库中的示例配置和 SQL 数据带有本地开发用途的数据库连接信息、示例客户端信息和第三方登录配置。  
-在公开部署或继续开发前，建议统一替换为你自己的安全配置。
+- 使用 H2
+- 为了本地兼容验证关闭了 federated login 编排链
+- 只适合作为临时调试入口
 
-### 5. 测试覆盖还不高
+### 5. 当前机器可能存在系统级网络栈问题
 
-当前仓库中存在少量测试，主要集中在：
+在本次适配过程中，服务端最终启动受过一次环境级阻塞：
 
-- 微信 OAuth 转换器相关测试
-- 联合登录模式解析与自动注册用户名生成测试
-- 样例模块中的 JWT / 状态值测试
+- Windows socket 错误 `10106`
+- JDK `HttpClient` loopback / Tomcat 端口绑定均可能受影响
 
-整体上仍以功能演示为主。
+如果你在本机遇到这类错误，优先检查系统网络栈，而不是继续怀疑业务代码。
 
 ## 推荐阅读顺序
 
-如果你准备继续开发这个项目，建议按下面顺序阅读代码：
-
 1. `armorauth-core/src/main/java/com/armorauth/config/AuthorizationServerConfig.java`
 2. `armorauth-core/src/main/java/com/armorauth/config/DefaultSecurityConfig.java`
-3. `armorauth-core/src/main/java/com/armorauth/endpoint/`
-4. `armorauth-core/src/main/java/com/armorauth/authorization/`
+3. `armorauth-federation/armorauth-federation-integration/src/main/java/com/armorauth/configurers/`
+4. `armorauth-model/src/main/java/com/armorauth/data/`
 5. `armorauth-server/src/main/resources/application*.yml`
 6. `armorauth-server/src/main/resources/sql/`
 7. `armorauth-samples/`

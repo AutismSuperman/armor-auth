@@ -24,7 +24,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -71,8 +70,7 @@ public class UserFederatedBinding implements Serializable {
     @Column(name = "provider_username")
     private String providerUsername;
 
-    @Lob
-    @Column(name = "provider_attributes")
+    @Column(name = "provider_attributes", columnDefinition = "text")
     private String providerAttributes;
 
     @Column(name = "create_time", nullable = false, columnDefinition = "datetime")

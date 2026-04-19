@@ -187,24 +187,32 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
         DelegatingOAuth2UserService userService = new DelegatingOAuth2UserService();
         ExceptionHandlingConfigurer<?> exceptionHandling = httpSecurity.getConfigurer(ExceptionHandlingConfigurer.class);
         exceptionHandling.authenticationEntryPoint(authenticationEntryPoint);
-        httpSecurity.oauth2Login(
-                oauth2Login -> oauth2Login
-                        .loginPage(loginPageUrl)
-                        .successHandler(authenticationSuccessHandler)
-                        .clientRegistrationRepository(clientRegistrationRepository)
-                        .authorizedClientService(authorizedClientService)
-                        .tokenEndpoint(token -> token.accessTokenResponseClient(oAuth2AccessTokenResponseClient))
-                        .authorizationEndpoint(authorization ->
-                                authorization.authorizationRequestResolver(requestResolver)
-                        )
-                        .userInfoEndpoint(userInfo -> userInfo.userService(userService))
-        );
+        try {
+            httpSecurity.oauth2Login(
+                    oauth2Login -> oauth2Login
+                            .loginPage(loginPageUrl)
+                            .successHandler(authenticationSuccessHandler)
+                            .clientRegistrationRepository(clientRegistrationRepository)
+                            .authorizedClientService(authorizedClientService)
+                            .tokenEndpoint(token -> token.accessTokenResponseClient(oAuth2AccessTokenResponseClient))
+                            .authorizationEndpoint(authorization ->
+                                    authorization.authorizationRequestResolver(requestResolver)
+                            )
+                            .userInfoEndpoint(userInfo -> userInfo.userService(userService))
+            );
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to configure federated oauth2 login", ex);
+        }
     }
 
     @Override
     void configure(HttpSecurity httpSecurity) {
         if (oauth2LoginCustomizer != null) {
-            httpSecurity.oauth2Login(oauth2LoginCustomizer);
+            try {
+                httpSecurity.oauth2Login(oauth2LoginCustomizer);
+            } catch (Exception ex) {
+                throw new IllegalStateException("Failed to apply oauth2Login customizer", ex);
+            }
         }
     }
 

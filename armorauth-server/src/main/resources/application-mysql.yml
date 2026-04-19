@@ -24,4 +24,7 @@ spring:
       max-lifetime: 55000
       maximum-pool-size: 100
       minimum-idle: 50
+  jpa:
+    hibernate:
+      ddl-auto: validate
 

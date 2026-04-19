@@ -1,0 +1,40 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration
+      - org.springframework.boot.security.oauth2.client.autoconfigure.servlet.OAuth2ClientWebSecurityAutoConfiguration
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: 1221e876540cca8ae5f9
+            client-secret: 162a98e9e71b29606a3c5f8e5e66a78e7b6a50e5
+          gitee:
+            client-id: 6117b6e01c09e53cd5b28c04492e1bb7c8eb33c343492e69f599160b464ef971
+            client-secret: bf1d6812ee3f1e97f2f87e49d4d39224247e9c3ebbaac2bbf089b22140dfdd72
+          qq:
+            client-id: 102061483
+            client-secret: DLGxQfgT2NUP7bst
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./.runtime/h2/identity_server;MODE=MySQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER,AUTHORIZATION
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    generate-ddl: true
+    open-in-view: false
+    database: h2
+    hibernate:
+      ddl-auto: update
+armorauth:
+  federation:
+    enabled: false

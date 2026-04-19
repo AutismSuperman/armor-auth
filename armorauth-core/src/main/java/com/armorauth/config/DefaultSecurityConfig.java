@@ -22,7 +22,11 @@ import com.armorauth.details.DelegateUserDetailsService;
 import com.armorauth.federat.ExtendedOAuth2ClientPropertiesMapper;
 import com.armorauth.federat.FederatedLoginOrchestrator;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,6 +58,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @EnableWebSecurity
+@EnableConfigurationProperties(OAuth2ClientProperties.class)
 @Configuration(proxyBeanMethods = false)
 public class DefaultSecurityConfig {
 
@@ -67,7 +72,8 @@ public class DefaultSecurityConfig {
             HttpSecurity http,
             DelegateUserDetailsService delegateUserDetailsService,
             FederatedAuthenticationSuccessHandler federatedAuthenticationSuccessHandler,
-            SecurityContextRepository securityContextRepository) throws Exception {
+            SecurityContextRepository securityContextRepository,
+            @Value("${armorauth.federation.enabled:true}") boolean federationEnabled) throws Exception {
         SimpleUrlAuthenticationFailureHandler authenticationFailureHandler =
                 new SimpleUrlAuthenticationFailureHandler(CUSTOM_LOGIN_PAGE + "?error");
 
@@ -79,27 +85,32 @@ public class DefaultSecurityConfig {
                 .securityContext(securityContext -> securityContext.securityContextRepository(securityContextRepository))
                 .userDetailsService(delegateUserDetailsService);
 
-        http.apply(new OAuth2UserLoginFilterSecurityConfigurer())
-                .formLogin(formLogin -> formLogin
-                        .loginPage(CUSTOM_LOGIN_PAGE).permitAll()
-                        .successHandler(federatedAuthenticationSuccessHandler)
-                        .failureHandler(authenticationFailureHandler)
-                )
-                .captchaLogin(captchaLogin -> captchaLogin
-                        .captchaVerifyService(this::verifyCaptchaMock)
-                        .userDetailsService(delegateUserDetailsService)
-                        .successHandler(federatedAuthenticationSuccessHandler)
-                        .failureHandler(authenticationFailureHandler)
-                )
-                .rememberMe(rememberMe -> rememberMe
-                        .rememberMeCookieName(REMEMBER_ME_COOKIE_NAME)
-                        .userDetailsService(delegateUserDetailsService)
-                );
+        http.with(new OAuth2UserLoginFilterSecurityConfigurer(), oauth2UserLogin ->
+                oauth2UserLogin
+                        .formLogin(formLogin -> formLogin
+                                .loginPage(CUSTOM_LOGIN_PAGE).permitAll()
+                                .successHandler(federatedAuthenticationSuccessHandler)
+                                .failureHandler(authenticationFailureHandler)
+                        )
+                        .captchaLogin(captchaLogin -> captchaLogin
+                                .captchaVerifyService(this::verifyCaptchaMock)
+                                .userDetailsService(delegateUserDetailsService)
+                                .successHandler(federatedAuthenticationSuccessHandler)
+                                .failureHandler(authenticationFailureHandler)
+                        )
+                        .rememberMe(rememberMe -> rememberMe
+                                .rememberMeCookieName(REMEMBER_ME_COOKIE_NAME)
+                                .userDetailsService(delegateUserDetailsService)
+                        )
+        );
 
-        http.apply(new OAuth2FederatedLoginServerConfigurer())
-                .federatedAuthorization(federatedAuthorization ->
-                        federatedAuthorization.loginPageUrl(CUSTOM_LOGIN_PAGE)
-                );
+        if (federationEnabled) {
+            http.with(new OAuth2FederatedLoginServerConfigurer(), federatedLogin ->
+                    federatedLogin.federatedAuthorization(federatedAuthorization ->
+                            federatedAuthorization.loginPageUrl(CUSTOM_LOGIN_PAGE)
+                    )
+            );
+        }
 
         return http.build();
     }
@@ -116,6 +127,11 @@ public class DefaultSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     @Bean

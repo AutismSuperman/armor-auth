@@ -16,7 +16,6 @@
 package com.armorauth.federat;
 
 import com.armorauth.data.entity.UserInfo;
-import com.armorauth.details.DelegateUserDetailsService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -37,16 +37,16 @@ import java.io.IOException;
 @Service
 public class FederatedLoginCompletionService {
 
-    private final DelegateUserDetailsService delegateUserDetailsService;
+    private final UserDetailsService userDetailsService;
 
     private final SecurityContextRepository securityContextRepository;
 
     private final SavedRequestAwareAuthenticationSuccessHandler successHandler;
 
-    public FederatedLoginCompletionService(DelegateUserDetailsService delegateUserDetailsService,
+    public FederatedLoginCompletionService(UserDetailsService userDetailsService,
                                            RequestCache requestCache,
                                            SecurityContextRepository securityContextRepository) {
-        this.delegateUserDetailsService = delegateUserDetailsService;
+        this.userDetailsService = userDetailsService;
         this.securityContextRepository = securityContextRepository;
         this.successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
         this.successHandler.setDefaultTargetUrl("/");
@@ -55,7 +55,7 @@ public class FederatedLoginCompletionService {
 
     public void complete(HttpServletRequest request, HttpServletResponse response, UserInfo userInfo)
             throws IOException, ServletException {
-        UserDetails userDetails = this.delegateUserDetailsService.loadUserByUsername(userInfo.getUsername());
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(userInfo.getUsername());
         Authentication authentication =
                 UsernamePasswordAuthenticationToken.authenticated(userDetails, null, userDetails.getAuthorities());
         if (authentication instanceof AbstractAuthenticationToken authenticationToken) {
