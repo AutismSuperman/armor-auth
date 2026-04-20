@@ -37,10 +37,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -107,11 +104,6 @@ public class SecurityConfiguration {
         NimbusJwtClientAuthenticationParametersConverter<OAuth2ClientCredentialsGrantRequest>
                 converter = new NimbusJwtClientAuthenticationParametersConverter<>(jwkResolver);
         tokenResponseClient.addParametersConverter(converter);
-        tokenResponseClient.addParametersConverter((authorizationGrantRequest -> {
-            MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-            parameters.add(OAuth2ParameterNames.CLIENT_ID, authorizationGrantRequest.getClientRegistration().getClientId());
-            return parameters;
-        }));
         return tokenResponseClient;
     }
 

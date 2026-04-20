@@ -15,15 +15,24 @@
  */
 package com.armorauth.samples.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
@@ -38,7 +47,8 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain customSecurityFilterChain(
             HttpSecurity http,
-            OAuth2AuthorizationRequestResolver pkceResolver
+            OAuth2AuthorizationRequestResolver pkceResolver,
+            LogoutSuccessHandler logoutSuccessHandler
     ) throws Exception {
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .anyRequest().authenticated()
@@ -49,6 +59,7 @@ public class SecurityConfiguration {
                         )
                         .loginPage("/oauth2/authorization/clever-client-pkce")
                 )
+                .logout(logout -> logout.logoutSuccessHandler(logoutSuccessHandler))
         ;
         return http.build();
     }
@@ -61,6 +72,69 @@ public class SecurityConfiguration {
                         "/oauth2/authorization");
         resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
         return resolver;
+    }
+
+    @Bean
+    LogoutSuccessHandler logoutSuccessHandler(
+            ClientRegistrationRepository clientRegistrationRepository,
+            OAuth2AuthorizedClientService authorizedClientService
+    ) {
+        return (request, response, authentication) -> {
+            if (!(authentication instanceof OAuth2AuthenticationToken authenticationToken)) {
+                response.sendRedirect(resolvePostLogoutRedirectUri(request));
+                return;
+            }
+
+            authorizedClientService.removeAuthorizedClient(
+                    authenticationToken.getAuthorizedClientRegistrationId(),
+                    authenticationToken.getName()
+            );
+
+            String redirectUri = resolvePostLogoutRedirectUri(request);
+            if (!(authenticationToken.getPrincipal() instanceof OidcUser oidcUser)) {
+                response.sendRedirect(redirectUri);
+                return;
+            }
+
+            ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(
+                    authenticationToken.getAuthorizedClientRegistrationId()
+            );
+            response.sendRedirect(buildEndSessionEndpoint(clientRegistration, oidcUser, redirectUri));
+        };
+    }
+
+    private String buildEndSessionEndpoint(
+            ClientRegistration clientRegistration,
+            OidcUser oidcUser,
+            String postLogoutRedirectUri
+    ) {
+        return UriComponentsBuilder.fromUriString(resolveAuthorizationServerBaseUri(clientRegistration))
+                .path("/connect/logout")
+                .queryParam("id_token_hint", oidcUser.getIdToken().getTokenValue())
+                .queryParam("post_logout_redirect_uri", postLogoutRedirectUri)
+                .build(true)
+                .toUriString();
+    }
+
+    private String resolveAuthorizationServerBaseUri(ClientRegistration clientRegistration) {
+        URI authorizationUri = URI.create(clientRegistration.getProviderDetails().getAuthorizationUri());
+        return UriComponentsBuilder.newInstance()
+                .scheme(authorizationUri.getScheme())
+                .host(authorizationUri.getHost())
+                .port(authorizationUri.getPort())
+                .build()
+                .toUriString();
+    }
+
+    private String resolvePostLogoutRedirectUri(HttpServletRequest request) {
+        return UriComponentsBuilder.newInstance()
+                .scheme(request.getScheme())
+                .host(request.getServerName())
+                .port(request.getServerPort())
+                .path(request.getContextPath())
+                .path("/")
+                .build()
+                .toUriString();
     }
 
 

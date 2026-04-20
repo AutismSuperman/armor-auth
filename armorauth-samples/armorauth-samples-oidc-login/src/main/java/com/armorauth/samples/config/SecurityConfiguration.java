@@ -15,11 +15,21 @@
  */
 package com.armorauth.samples.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
@@ -32,15 +42,82 @@ public class SecurityConfiguration {
      * @throws Exception exception
      */
     @Bean
-    SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain customSecurityFilterChain(
+            HttpSecurity http,
+            LogoutSuccessHandler logoutSuccessHandler
+    ) throws Exception {
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2Login -> oauth2Login
                         .loginPage("/oauth2/authorization/autism-client-oidc")
                 )
+                .logout(logout -> logout.logoutSuccessHandler(logoutSuccessHandler))
         ;
         return http.build();
+    }
+
+    @Bean
+    LogoutSuccessHandler logoutSuccessHandler(
+            ClientRegistrationRepository clientRegistrationRepository,
+            OAuth2AuthorizedClientService authorizedClientService
+    ) {
+        return (request, response, authentication) -> {
+            if (!(authentication instanceof OAuth2AuthenticationToken authenticationToken)) {
+                response.sendRedirect(resolvePostLogoutRedirectUri(request));
+                return;
+            }
+
+            authorizedClientService.removeAuthorizedClient(
+                    authenticationToken.getAuthorizedClientRegistrationId(),
+                    authenticationToken.getName()
+            );
+
+            String redirectUri = resolvePostLogoutRedirectUri(request);
+            if (!(authenticationToken.getPrincipal() instanceof OidcUser oidcUser)) {
+                response.sendRedirect(redirectUri);
+                return;
+            }
+
+            ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(
+                    authenticationToken.getAuthorizedClientRegistrationId()
+            );
+            response.sendRedirect(buildEndSessionEndpoint(clientRegistration, oidcUser, redirectUri));
+        };
+    }
+
+    private String buildEndSessionEndpoint(
+            ClientRegistration clientRegistration,
+            OidcUser oidcUser,
+            String postLogoutRedirectUri
+    ) {
+        return UriComponentsBuilder.fromUriString(resolveAuthorizationServerBaseUri(clientRegistration))
+                .path("/connect/logout")
+                .queryParam("id_token_hint", oidcUser.getIdToken().getTokenValue())
+                .queryParam("post_logout_redirect_uri", postLogoutRedirectUri)
+                .build(true)
+                .toUriString();
+    }
+
+    private String resolveAuthorizationServerBaseUri(ClientRegistration clientRegistration) {
+        URI authorizationUri = URI.create(clientRegistration.getProviderDetails().getAuthorizationUri());
+        return UriComponentsBuilder.newInstance()
+                .scheme(authorizationUri.getScheme())
+                .host(authorizationUri.getHost())
+                .port(authorizationUri.getPort())
+                .build()
+                .toUriString();
+    }
+
+    private String resolvePostLogoutRedirectUri(HttpServletRequest request) {
+        return UriComponentsBuilder.newInstance()
+                .scheme(request.getScheme())
+                .host(request.getServerName())
+                .port(request.getServerPort())
+                .path(request.getContextPath())
+                .path("/")
+                .build()
+                .toUriString();
     }
 
 
