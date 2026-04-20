@@ -78,6 +78,7 @@ public class DefaultSecurityConfig {
                 new SimpleUrlAuthenticationFailureHandler(CUSTOM_LOGIN_PAGE + "?error");
 
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .requestMatchers("/login/captcha/send").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)

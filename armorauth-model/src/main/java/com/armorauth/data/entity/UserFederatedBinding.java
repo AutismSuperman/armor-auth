@@ -17,15 +17,13 @@ package com.armorauth.data.entity;
 
 
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -38,14 +36,7 @@ import java.io.Serializable;
  */
 @Data
 @Entity
-@Table(
-        name = "user_federated_binding",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_user_federated_binding_registration_provider",
-                columnNames = {"registration_id", "provider_user_id"}
-        ),
-        indexes = @Index(name = "idx_user_federated_binding_user_id", columnList = "user_id")
-)
+@Table(name = "user_federated_binding")
 public class UserFederatedBinding implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -54,8 +45,7 @@ public class UserFederatedBinding implements Serializable {
      * id
      */
     @Id
-    @GenericGenerator(name = "uuid-hex", strategy = "uuid.hex")
-    @GeneratedValue(generator = "uuid-hex")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @Column(name = "user_id", nullable = false)

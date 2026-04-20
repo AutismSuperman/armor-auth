@@ -1,0 +1,21 @@
+<svg width="960" height="280" viewBox="0 0 960 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="32" y1="24" x2="220" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#122033"/>
+      <stop offset="1" stop-color="#0A5C91"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="74" y1="54" x2="170" y2="182" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#82D6FF"/>
+      <stop offset="1" stop-color="#35B8A6"/>
+    </linearGradient>
+  </defs>
+  <rect x="20" y="20" width="204" height="204" rx="54" fill="url(#bg)"/>
+  <path d="M122 52L174 74V130C174 170 151 206 122 220C93 206 70 170 70 130V74L122 52Z" fill="white" fill-opacity="0.04" stroke="url(#shield)" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M122 88L154 159H136L122 127L108 159H90L122 88Z" fill="white"/>
+  <path d="M99 171H145" stroke="white" stroke-width="12" stroke-linecap="round"/>
+  <path d="M76 194C95 211 108 218 122 224C137 218 150 211 168 194" stroke="#7DE2CF" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+  <text x="268" y="122" fill="#102033" font-size="74" font-weight="800" font-family="'Segoe UI', 'Inter', Arial, sans-serif" letter-spacing="1.5">Armor</text>
+  <text x="539" y="122" fill="#0A5C91" font-size="74" font-weight="800" font-family="'Segoe UI', 'Inter', Arial, sans-serif" letter-spacing="1.5">Auth</text>
+  <text x="270" y="168" fill="#48627B" font-size="28" font-weight="600" font-family="'Segoe UI', 'Inter', Arial, sans-serif" letter-spacing="2.8">IDENTITY  .  AUTHORIZATION  .  FEDERATION</text>
+  <text x="270" y="212" fill="#6A7E90" font-size="22" font-weight="500" font-family="'Segoe UI', 'Inter', Arial, sans-serif">Shield-first identity infrastructure for modern Spring Security workflows.</text>
+</svg>

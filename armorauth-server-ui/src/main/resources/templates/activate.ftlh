@@ -3,33 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ArmorAuth 设备激活</title>
+    <title>连接设备 - ArmorAuth</title>
     <link rel="stylesheet" href="/assets/armorauth-ui.css">
 </head>
 <body>
 <div class="page-shell">
-    <main class="center-card">
-        <div class="section-title">
-            <span class="eyebrow">Device Flow</span>
-            <h1>输入设备激活码</h1>
-            <p>在电视、CLI 或 IoT 设备上获取到的激活码，输入后即可继续完成授权确认。</p>
-        </div>
-
-        <div class="meta-block">
-            当前验证端点：${deviceVerificationEndpoint}
-        </div>
-
-        <form class="auth-form" action="${deviceVerificationEndpoint}" method="post">
-            <div class="field-group">
-                <label for="user_code">激活码</label>
-                <input id="user_code" name="user_code" type="text" placeholder="例如：ABCD-EFGH" autofocus required>
+    <main class="panel-frame">
+        <section class="visual-panel">
+            <div class="brand-row">
+                <div class="brand-chip">
+                    <span class="brand-mark">A</span>
+                    <span class="brand-copy">
+                        <strong>ArmorAuth</strong>
+                        <span>设备激活</span>
+                    </span>
+                </div>
+                <div class="top-actions">
+                    <span class="status-pill">设备登录</span>
+                    <button class="theme-toggle" type="button" data-theme-toggle>
+                        <span class="theme-toggle-icon" data-theme-icon>☼</span>
+                        <span data-theme-text>浅色</span>
+                    </button>
+                </div>
             </div>
-            <div class="action-row">
-                <button class="button primary" type="submit">继续验证</button>
-                <a class="button secondary" href="/login">返回登录</a>
+
+            <div class="hero-copy">
+                <span class="eyebrow">设备激活</span>
+                <h1>输入激活码，继续完成设备登录。</h1>
+                <p>适用于电视、命令行和其他需要确认登录的设备场景。</p>
             </div>
-        </form>
+
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span>验证地址</span>
+                    <strong>${deviceVerificationEndpoint}</strong>
+                </div>
+                <div class="summary-item">
+                    <span>输入示例</span>
+                    <strong>例如 ABCD-EFGH</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-panel">
+            <div class="content-column">
+                <div class="section-title">
+                    <span class="eyebrow">输入激活码</span>
+                    <h1>连接设备</h1>
+                    <p>验证成功后，设备将继续完成登录。</p>
+                </div>
+
+                <form class="auth-form" action="${deviceVerificationEndpoint}" method="post">
+                    <div class="field-group">
+                        <label for="user_code">激活码</label>
+                        <input id="user_code" name="user_code" type="text" placeholder="例如：ABCD-EFGH" autofocus required>
+                    </div>
+                    <div class="action-row">
+                        <button class="button primary" type="submit">继续验证</button>
+                        <a class="button secondary" href="/login">返回登录</a>
+                    </div>
+                </form>
+            </div>
+        </section>
     </main>
 </div>
+<script src="/assets/armorauth-ui.js"></script>
 </body>
 </html>

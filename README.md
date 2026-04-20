@@ -1,6 +1,14 @@
+<p align="center">
+  <img src="./armorauth-admin-ui/public/brand/logo.svg" alt="ArmorAuth logo" width="720">
+</p>
+
 # ArmorAuth
 
+> Shield-first identity infrastructure for modern Spring Security workflows.
+
 ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认证授权实验项目。当前仓库已经切到 `Spring Boot 4.0.5`、`Spring Security 7.0.4`、`Spring Authorization Server 7.0.4`，并完成了一轮联合登录相关代码的 Maven 模块拆分。
+
+目前仓库已更新一套新的品牌识别：logo 采用“盾牌 + A 字母 + 授权通路”的组合，强调认证、授权和联合登录三层语义。
 
 项目现在更接近“可演示、可继续开发的认证框架原型”而不是已经封装完成的成品。核心认证授权、JPA 持久化、设备授权、验证码登录、联合登录扩展和服务端页面都在，但管理端、starter 抽象和部分运行时适配仍在收敛中。
 

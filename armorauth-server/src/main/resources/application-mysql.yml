@@ -13,8 +13,8 @@ spring:
             client-id: 102061483
             client-secret: DLGxQfgT2NUP7bst
   datasource:
-    driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://127.0.0.1:3306/identity_server
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/identity_server
     username: root
     password: wangle
     hikari:

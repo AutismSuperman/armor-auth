@@ -3,38 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ArmorAuth 登录</title>
+    <title>欢迎登录 - ArmorAuth</title>
     <link rel="stylesheet" href="/assets/armorauth-ui.css">
 </head>
 <body>
 <div class="page-shell">
-    <main class="auth-card">
-        <section class="auth-aside">
-            <div class="brand-chip">
-                <span class="brand-dot"></span>
-                <span>ArmorAuth Identity Hub</span>
-            </div>
-            <div class="aside-copy">
-                <h1>统一登录入口，回到服务端模板流。</h1>
-                <p>当前页面已经从 Node/Vite 壳子切回 Spring MVC + FreeMarker。登录、授权、设备激活都由服务端直接渲染。</p>
-            </div>
-            <div class="aside-points">
-                <div class="aside-point">
-                    <strong>密码登录</strong>
-                    <p>标准表单提交流程，认证成功后按 Spring Security 默认保存请求跳转。</p>
+    <main class="panel-frame">
+        <section class="visual-panel">
+            <div class="brand-row">
+                <div class="brand-chip">
+                    <span class="brand-mark">A</span>
+                    <span class="brand-copy">
+                        <strong>ArmorAuth</strong>
+                        <span>账号与授权中心</span>
+                    </span>
                 </div>
-                <div class="aside-point">
-                    <strong>验证码登录</strong>
-                    <p>保留原有验证码入口，不再返回前端专用 JSON 响应。</p>
+                <div class="top-actions">
+                    <span class="status-pill">在线服务</span>
+                    <button class="theme-toggle" type="button" data-theme-toggle>
+                        <span class="theme-toggle-icon" data-theme-icon>☼</span>
+                        <span data-theme-text>浅色</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="hero-copy">
+                <span class="eyebrow">统一入口</span>
+                <h1>安全、统一、清晰的身份入口。</h1>
+                <p>在一个界面完成登录、授权确认与设备激活。</p>
+            </div>
+
+            <div class="hero-stage" aria-hidden="true">
+                <div class="dashboard-illus">
+                    <div class="dashboard-layer top"></div>
+                    <div class="dashboard-layer main"></div>
+                    <div class="dashboard-layer side"></div>
+                </div>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <span>登录方式</span>
+                    <strong>支持密码与验证码登录</strong>
+                </div>
+                <div class="metric-card">
+                    <span>覆盖场景</span>
+                    <strong>统一覆盖授权、设备与联邦流程</strong>
+                </div>
+                <div class="metric-card">
+                    <span>产品体验</span>
+                    <strong>保持一致的认证体验</strong>
                 </div>
             </div>
         </section>
-        <section class="auth-main">
+        <section class="content-panel">
             <div class="content-column">
                 <div class="section-title">
-                    <span class="eyebrow">Sign In</span>
-                    <h1>登录 ArmorAuth</h1>
-                    <p>继续访问授权中心、设备验证和联邦登录入口。</p>
+                    <span class="eyebrow">账号登录</span>
+                    <h1>欢迎登录</h1>
+                    <p>登录后即可继续访问你的账号与服务。</p>
                 </div>
 
                 <#if errorMessage??>
@@ -44,85 +71,78 @@
                     <div class="notice success">您已成功退出当前会话。</div>
                 </#if>
 
-                <div class="switcher" aria-label="登录模式">
-                    <button type="button" class="is-active" data-target="password-login">账号密码</button>
-                    <button type="button" data-target="captcha-login">短信验证码</button>
+                <div data-tab-group>
+                    <div class="switcher" aria-label="登录模式">
+                        <button type="button" class="is-active" data-tab-target="password-login">账号密码</button>
+                        <button type="button" data-tab-target="captcha-login">短信验证码</button>
+                    </div>
+
+                    <form id="password-login" class="auth-form" action="/login" method="post" data-tab-panel>
+                        <div class="field-group">
+                            <label for="username">用户名</label>
+                            <input id="username" name="username" type="text" autocomplete="username" placeholder="请输入用户名" value="admin">
+                        </div>
+                        <div class="field-group">
+                            <label for="password">密码</label>
+                            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码" value="123456">
+                        </div>
+                        <label class="checkbox-row" for="remember-me-password">
+                            <input id="remember-me-password" name="remember-me" type="checkbox" value="true">
+                            <span>记住我</span>
+                        </label>
+                        <div class="action-row">
+                            <button class="button primary" type="submit">登录</button>
+                        </div>
+                    </form>
+
+                    <form id="captcha-login" class="auth-form" action="/login/captcha" method="post" hidden data-tab-panel>
+                        <div class="notice success" hidden data-captcha-feedback></div>
+                        <div class="field-group">
+                            <label for="account">手机号</label>
+                            <input id="account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号" value="13103777777">
+                        </div>
+                        <div class="field-group field-inline">
+                            <label for="captcha">验证码</label>
+                            <input id="captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" value="1234">
+                            <button class="button secondary inline-button" type="button" data-captcha-send>获取验证码</button>
+                        </div>
+                        <label class="checkbox-row" for="remember-me-captcha">
+                            <input id="remember-me-captcha" name="remember-me" type="checkbox" value="true">
+                            <span>记住我</span>
+                        </label>
+                        <div class="action-row">
+                            <button class="button primary" type="submit">验证并登录</button>
+                        </div>
+                    </form>
                 </div>
-
-                <form id="password-login" class="auth-form" action="/login" method="post">
-                    <div class="field-group">
-                        <label for="username">用户名</label>
-                        <input id="username" name="username" type="text" autocomplete="username" placeholder="请输入用户名" value="admin">
-                    </div>
-                    <div class="field-group">
-                        <label for="password">密码</label>
-                        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码" value="123456">
-                    </div>
-                    <label class="checkbox-row" for="remember-me-password">
-                        <input id="remember-me-password" name="remember-me" type="checkbox" value="true">
-                        <span>记住我</span>
-                    </label>
-                    <div class="action-row">
-                        <button class="button primary" type="submit">登录</button>
-                    </div>
-                </form>
-
-                <form id="captcha-login" class="auth-form" action="/login/captcha" method="post" hidden>
-                    <div class="field-group">
-                        <label for="account">手机号</label>
-                        <input id="account" name="account" type="text" autocomplete="tel" placeholder="请输入手机号" value="13103777777">
-                    </div>
-                    <div class="field-group">
-                        <label for="captcha">验证码</label>
-                        <input id="captcha" name="captcha" type="text" autocomplete="one-time-code" placeholder="请输入验证码" value="1234">
-                    </div>
-                    <label class="checkbox-row" for="remember-me-captcha">
-                        <input id="remember-me-captcha" name="remember-me" type="checkbox" value="true">
-                        <span>记住我</span>
-                    </label>
-                    <div class="action-row">
-                        <button class="button primary" type="submit">验证并登录</button>
-                    </div>
-                </form>
             </div>
 
             <#if federatedProviders?has_content>
                 <div class="content-column">
                     <div class="section-title">
-                        <span class="eyebrow">Federated</span>
-                        <p>第三方登录支持两种首次登录策略，默认自动注册，也可以切到中间页确认后再完成 OAuth 成功。</p>
+                        <span class="eyebrow">快捷登录</span>
+                        <p>使用你常用的平台快速进入。</p>
                     </div>
                     <div class="switcher" aria-label="联合登录策略">
                         <a class="<#if selectedFederatedMode == 'auto'>is-active</#if>" href="/login?mode=auto">自动注册</a>
                         <a class="<#if selectedFederatedMode == 'confirm'>is-active</#if>" href="/login?mode=confirm">中间页确认</a>
                     </div>
-                    <p class="page-note">当前策略：<#if selectedFederatedMode == 'confirm'>拿到第三方资料后先进入确认页<#else>首次登录自动创建本地账号并建立绑定</#if>。</p>
+                    <p class="page-note">当前方式：<#if selectedFederatedMode == 'confirm'>首次登录需要确认账号<#else>首次登录将自动完成接入</#if>。</p>
                     <div class="provider-list">
                         <#list federatedProviders as provider>
-                            <a class="provider-link" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode!'auto'}">
-                                ${provider.clientName!provider.registrationId}
+                            <a class="provider-link provider-${provider.registrationId?lower_case} provider-default" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode!'auto'}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录">
+                                <span class="provider-icon" aria-hidden="true"></span>
+                                <span class="provider-label">${provider.clientName!provider.registrationId}</span>
                             </a>
                         </#list>
                     </div>
                 </div>
             </#if>
 
-            <p class="footer-copy">Spring Boot 4 + Spring Security 7 + FreeMarker</p>
+            <p class="footer-copy">ArmorAuth 统一身份平台</p>
         </section>
     </main>
 </div>
-<script>
-    const switcherButtons = document.querySelectorAll('.switcher button');
-    const forms = document.querySelectorAll('.auth-form');
-    switcherButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-            switcherButtons.forEach((item) => item.classList.remove('is-active'));
-            forms.forEach((form) => {
-                form.hidden = form.id !== button.dataset.target;
-            });
-            button.classList.add('is-active');
-        });
-    });
-</script>
+<script src="/assets/armorauth-ui.js"></script>
 </body>
 </html>

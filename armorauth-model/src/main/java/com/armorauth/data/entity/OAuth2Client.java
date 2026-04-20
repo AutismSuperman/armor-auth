@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.GenericGenerator;
 
 import jakarta.persistence.*;
 
@@ -47,8 +46,7 @@ public class OAuth2Client implements Serializable {
      * id
      */
     @Id
-    @GenericGenerator(name = "uuid-hex", strategy = "uuid.hex")
-    @GeneratedValue(generator = "uuid-hex")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     /**
      * 客户端id

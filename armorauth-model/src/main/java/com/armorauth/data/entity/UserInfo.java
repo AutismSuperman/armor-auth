@@ -17,7 +17,6 @@ package com.armorauth.data.entity;
 
 
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 
 import jakarta.persistence.*;
 
@@ -41,8 +40,7 @@ public class UserInfo implements Serializable {
      * id
      */
     @Id
-    @GenericGenerator(name = "uuid-hex", strategy = "uuid.hex")
-    @GeneratedValue(generator = "uuid-hex")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
 

@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
@@ -46,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Controller
@@ -114,6 +117,17 @@ public class OAuth2FrontendController {
         }
 
         return "login";
+    }
+
+    @PostMapping(path = "/login/captcha/send", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, String>> sendCaptcha(@RequestParam("account") String account) {
+        if (!StringUtils.hasText(account)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "请输入手机号后再获取验证码。"));
+        }
+        return ResponseEntity.ok(Map.of(
+                "message", "验证码已发送，当前演示环境固定验证码为 1234。",
+                "captcha", "1234"
+        ));
     }
 
     @GetMapping(path = "/consent", produces = MediaType.TEXT_HTML_VALUE)
