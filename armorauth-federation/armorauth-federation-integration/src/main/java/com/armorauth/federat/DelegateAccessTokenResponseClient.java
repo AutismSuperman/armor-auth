@@ -17,6 +17,8 @@ package com.armorauth.federat;
 
 import com.armorauth.federat.converter.OAuth2AccessTokenRestTemplate;
 import com.armorauth.federat.converter.OAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federat.gitee.GiteeAccessTokenRestTemplate;
+import com.armorauth.federat.gitee.GiteeOAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federat.qq.QqAccessTokenRestTemplate;
 import com.armorauth.federat.qq.QqOAuth2AuthorizationCodeGrantRequestConverter;
 import com.armorauth.federat.wechat.WechatAccessTokenRestTemplate;
@@ -51,8 +53,10 @@ public class DelegateAccessTokenResponseClient
         this.delegate.setRestClient(RestClient.builder()
                 .requestFactory(new SimpleClientHttpRequestFactory())
                 .build());
+        this.restTemplates.add(new GiteeAccessTokenRestTemplate());
         this.restTemplates.add(new WechatAccessTokenRestTemplate());
         this.restTemplates.add(new QqAccessTokenRestTemplate());
+        this.requestConverters.add(new GiteeOAuth2AuthorizationCodeGrantRequestConverter());
         this.requestConverters.add(new WechatAuthorizationCodeGrantRequestConverter());
         this.requestConverters.add(new QqOAuth2AuthorizationCodeGrantRequestConverter());
     }
@@ -62,10 +66,13 @@ public class DelegateAccessTokenResponseClient
         String registrationId = authorizationGrantRequest.getClientRegistration().getRegistrationId();
         for (OAuth2AuthorizationCodeGrantRequestConverter requestConverter : this.requestConverters) {
             if (requestConverter.supports(registrationId)) {
-                return executeCustomTokenRequest(authorizationGrantRequest, requestConverter);
+                return validateAccessTokenResponse(
+                        executeCustomTokenRequest(authorizationGrantRequest, requestConverter),
+                        registrationId
+                );
             }
         }
-        return delegate.getTokenResponse(authorizationGrantRequest);
+        return validateAccessTokenResponse(delegate.getTokenResponse(authorizationGrantRequest), registrationId);
     }
 
     public void addAccessTokenRestTemplate(OAuth2AccessTokenRestTemplate restTemplate) {
@@ -98,6 +105,19 @@ public class DelegateAccessTokenResponseClient
             ));
         }
         return body;
+    }
+
+    private OAuth2AccessTokenResponse validateAccessTokenResponse(
+            OAuth2AccessTokenResponse response,
+            String registrationId) {
+        if (response == null || response.getAccessToken() == null) {
+            throw new OAuth2AuthenticationException(new OAuth2Error(
+                    OAuth2ErrorCodes.SERVER_ERROR,
+                    "Access token is missing in token response for " + registrationId,
+                    null
+            ));
+        }
+        return response;
     }
 
 }

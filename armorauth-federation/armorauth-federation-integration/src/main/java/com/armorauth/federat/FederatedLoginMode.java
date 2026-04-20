@@ -33,8 +33,12 @@ public enum FederatedLoginMode {
     }
 
     public static FederatedLoginMode resolveForAuthorization(String mode) {
+        return resolveForAuthorization(mode, AUTO);
+    }
+
+    public static FederatedLoginMode resolveForAuthorization(String mode, FederatedLoginMode defaultMode) {
         if (!StringUtils.hasText(mode)) {
-            return AUTO;
+            return defaultMode != null ? defaultMode : AUTO;
         }
         for (FederatedLoginMode candidate : values()) {
             if (candidate.parameterValue.equalsIgnoreCase(mode)) {
@@ -45,14 +49,22 @@ public enum FederatedLoginMode {
     }
 
     public static FederatedLoginMode resolveForPage(String mode) {
+        return resolveForPage(mode, AUTO);
+    }
+
+    public static FederatedLoginMode resolveForPage(String mode, FederatedLoginMode defaultMode) {
         if (!StringUtils.hasText(mode)) {
-            return AUTO;
+            return defaultMode != null ? defaultMode : AUTO;
         }
         for (FederatedLoginMode candidate : values()) {
             if (candidate.parameterValue.equalsIgnoreCase(mode)) {
                 return candidate;
             }
         }
-        return AUTO;
+        return defaultMode != null ? defaultMode : AUTO;
+    }
+
+    public static FederatedLoginMode resolveConfiguredDefault(String mode) {
+        return resolveForPage(mode, AUTO);
     }
 }

@@ -3,8 +3,6 @@ server:
   servlet:
     session:
       tracking-modes: cookie
-  error:
-    include-message: always
 spring:
   profiles:
     active: mysql
@@ -20,5 +18,7 @@ spring:
     database: mysql
     hibernate:
       ddl-auto: update
-  thymeleaf:
-    suffix: .html
+
+armorauth:
+  federation:
+    default-login-mode: confirm

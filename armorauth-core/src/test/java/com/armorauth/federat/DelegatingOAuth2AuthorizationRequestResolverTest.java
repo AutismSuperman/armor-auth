@@ -35,7 +35,8 @@ class DelegatingOAuth2AuthorizationRequestResolverTest {
         DelegatingOAuth2AuthorizationRequestResolver resolver = new DelegatingOAuth2AuthorizationRequestResolver(
                 new InMemoryClientRegistrationRepository(clientRegistration()),
                 "/oauth2/authorization",
-                sessionContextRepository
+                sessionContextRepository,
+                FederatedLoginMode.AUTO
         );
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/oauth2/authorization/gitee");
         request.addParameter("mode", "confirm");
@@ -58,7 +59,8 @@ class DelegatingOAuth2AuthorizationRequestResolverTest {
         DelegatingOAuth2AuthorizationRequestResolver resolver = new DelegatingOAuth2AuthorizationRequestResolver(
                 new InMemoryClientRegistrationRepository(clientRegistration()),
                 "/oauth2/authorization",
-                sessionContextRepository
+                sessionContextRepository,
+                FederatedLoginMode.AUTO
         );
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/oauth2/authorization/gitee");
         request.setServletPath("/oauth2/authorization/gitee");
@@ -78,7 +80,8 @@ class DelegatingOAuth2AuthorizationRequestResolverTest {
         DelegatingOAuth2AuthorizationRequestResolver resolver = new DelegatingOAuth2AuthorizationRequestResolver(
                 new InMemoryClientRegistrationRepository(clientRegistration()),
                 "/oauth2/authorization",
-                sessionContextRepository
+                sessionContextRepository,
+                FederatedLoginMode.AUTO
         );
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/oauth2/authorization/gitee");
         request.addParameter("mode", "unexpected");
@@ -93,6 +96,27 @@ class DelegatingOAuth2AuthorizationRequestResolverTest {
         assertThat(request.getSession(false)).isNotNull();
         assertThat(request.getSession(false).getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION))
                 .isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    void shouldUseConfiguredDefaultModeWhenMissingRequestParameter() {
+        FederatedSessionContextRepository sessionContextRepository = new FederatedSessionContextRepository();
+        DelegatingOAuth2AuthorizationRequestResolver resolver = new DelegatingOAuth2AuthorizationRequestResolver(
+                new InMemoryClientRegistrationRepository(clientRegistration()),
+                "/oauth2/authorization",
+                sessionContextRepository,
+                FederatedLoginMode.CONFIRM
+        );
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/oauth2/authorization/gitee");
+        request.setServletPath("/oauth2/authorization/gitee");
+        request.setScheme("http");
+        request.setServerName("armorauth-server");
+        request.setServerPort(9000);
+
+        resolver.resolve(request);
+
+        FederatedAuthorizationContext context = sessionContextRepository.loadAuthorizationContext(request).orElseThrow();
+        assertThat(context.mode()).isEqualTo(FederatedLoginMode.CONFIRM);
     }
 
     private ClientRegistration clientRegistration() {

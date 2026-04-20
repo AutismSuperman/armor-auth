@@ -37,16 +37,20 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
 
     private final FederatedSessionContextRepository sessionContextRepository;
 
+    private final FederatedLoginMode defaultLoginMode;
+
     private final List<OAuth2AuthorizationRequestConverter> authorizationRequestConverters = new ArrayList<>();
 
     public DelegatingOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
                                                         String authorizationRequestBaseUri,
-                                                        FederatedSessionContextRepository sessionContextRepository) {
+                                                        FederatedSessionContextRepository sessionContextRepository,
+                                                        FederatedLoginMode defaultLoginMode) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
         Assert.notNull(sessionContextRepository, "sessionContextRepository cannot be null");
         if (authorizationRequestBaseUri == null)
             authorizationRequestBaseUri = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
         this.sessionContextRepository = sessionContextRepository;
+        this.defaultLoginMode = defaultLoginMode != null ? defaultLoginMode : FederatedLoginMode.AUTO;
         this.authorizationRequestConverters.add(new WechatAuthorizationRequestConverter());
         this.delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, authorizationRequestBaseUri);
         this.delegate.setAuthorizationRequestCustomizer(this::authorizationRequestCustomizer);
@@ -82,7 +86,8 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
             return null;
         }
         try {
-            FederatedLoginMode mode = FederatedLoginMode.resolveForAuthorization(request.getParameter("mode"));
+            FederatedLoginMode mode =
+                    FederatedLoginMode.resolveForAuthorization(request.getParameter("mode"), this.defaultLoginMode);
             String registrationId = authorizationRequest.getAttribute(OAuth2ParameterNames.REGISTRATION_ID);
             this.sessionContextRepository.saveAuthorizationContext(
                     request,

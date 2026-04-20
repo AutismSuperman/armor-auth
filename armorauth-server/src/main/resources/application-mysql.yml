@@ -12,6 +12,11 @@ spring:
           qq:
             client-id: 102061483
             client-secret: DLGxQfgT2NUP7bst
+          wechat:
+            client-id: your-wechat-app-id
+            client-secret: your-wechat-app-secret
+            scope:
+              - snsapi_login
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/identity_server

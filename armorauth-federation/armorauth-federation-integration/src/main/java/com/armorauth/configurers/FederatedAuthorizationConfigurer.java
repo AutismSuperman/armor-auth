@@ -15,9 +15,11 @@
  */
 package com.armorauth.configurers;
 
+import com.armorauth.config.FederationProperties;
 import com.armorauth.federat.DelegateAccessTokenResponseClient;
 import com.armorauth.federat.DelegatingOAuth2AuthorizationRequestResolver;
 import com.armorauth.federat.DelegatingOAuth2UserService;
+import com.armorauth.federat.FederatedLoginMode;
 import com.armorauth.federat.FederatedSessionContextRepository;
 import com.armorauth.security.FederatedAuthenticationEntryPoint;
 import com.armorauth.security.FederatedAuthenticationSuccessHandler;
@@ -177,12 +179,16 @@ public class FederatedAuthorizationConfigurer extends AbstractIdentityConfigurer
 
         DelegateAccessTokenResponseClient oAuth2AccessTokenResponseClient =
                 new DelegateAccessTokenResponseClient();
+        FederationProperties federationProperties = applicationContext.getBean(FederationProperties.class);
+        FederatedLoginMode defaultLoginMode =
+                FederatedLoginMode.resolveConfiguredDefault(federationProperties.getDefaultLoginMode());
 
         DelegatingOAuth2AuthorizationRequestResolver requestResolver =
                 new DelegatingOAuth2AuthorizationRequestResolver(
                         clientRegistrationRepository,
                         this.authorizationRequestUri,
-                        applicationContext.getBean(FederatedSessionContextRepository.class)
+                        applicationContext.getBean(FederatedSessionContextRepository.class),
+                        defaultLoginMode
                 );
         DelegatingOAuth2UserService userService = new DelegatingOAuth2UserService();
         ExceptionHandlingConfigurer<?> exceptionHandling = httpSecurity.getConfigurer(ExceptionHandlingConfigurer.class);

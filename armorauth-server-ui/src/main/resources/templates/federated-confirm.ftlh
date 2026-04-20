@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>账号确认 - ArmorAuth</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="shortcut icon" href="/favicon.svg">
     <link rel="stylesheet" href="/assets/armorauth-ui.css">
 </head>
 <body>
@@ -36,20 +38,20 @@
             <div class="summary-grid">
                 <div class="summary-item">
                     <span>登录来源</span>
-                    <strong>${pending.registrationId}</strong>
+                    <strong>${pending.registrationId()}</strong>
                 </div>
                 <div class="summary-item">
                     <span>第三方昵称</span>
-                    <strong>${pending.displayName!pending.providerUsername!'未提供'}</strong>
+                    <strong>${pending.displayName()!pending.providerUsername()!'未提供'}</strong>
                 </div>
                 <div class="summary-item">
                     <span>第三方标识</span>
                     <strong>${providerUserIdSummary}</strong>
                 </div>
             </div>
-            <#if pending.avatarUrl?? && pending.avatarUrl?has_content>
+            <#if pending.avatarUrl()?? && pending.avatarUrl()?has_content>
                 <div class="avatar-card">
-                    <img src="${pending.avatarUrl}" alt="第三方头像">
+                    <img src="${pending.avatarUrl()}" alt="第三方头像">
                 </div>
             </#if>
         </section>
@@ -76,7 +78,7 @@
                     <form id="create-account" class="auth-form" action="/federated/confirm/create" method="post" <#if selectedTab != 'create'>hidden</#if> data-tab-panel>
                         <div class="field-group">
                             <label for="create-username">用户名</label>
-                            <input id="create-username" name="username" type="text" autocomplete="username" value="${createUsername!pending.suggestedUsername}" placeholder="请输入本地用户名">
+                            <input id="create-username" name="username" type="text" autocomplete="username" value="${createUsername!pending.suggestedUsername()}" placeholder="请输入本地用户名">
                         </div>
                         <div class="field-group">
                             <label for="create-password">密码</label>

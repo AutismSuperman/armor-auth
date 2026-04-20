@@ -137,6 +137,7 @@ armorauth-server/src/main/resources/application-local.yml
 armorauth:
   federation:
     enabled: false
+    default-login-mode: auto
 ```
 
 原因：

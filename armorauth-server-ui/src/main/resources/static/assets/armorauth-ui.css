@@ -613,15 +613,31 @@ body[data-theme="light"] .notice.warning {
 .provider-icon {
     width: 38px;
     height: 38px;
-    border-radius: 12px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: transparent;
+    color: var(--text-main);
+    line-height: 1;
+}
+
+.provider-symbol {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.provider-fallback {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
     display: grid;
     place-items: center;
     background: var(--panel-elevated);
-    color: var(--text-main);
-    font-weight: 800;
-    font-size: 1rem;
-    line-height: 1;
     box-shadow: inset 0 0 0 1px var(--line);
+    font-weight: 800;
+    font-size: 0.86rem;
 }
 
 .provider-label {
@@ -630,45 +646,20 @@ body[data-theme="light"] .notice.warning {
 }
 
 .provider-github .provider-icon {
-    background: #17191d;
-    color: #fff;
-}
-
-.provider-github .provider-icon::before {
-    content: "GH";
+    border-radius: 50%;
 }
 
 .provider-gitee .provider-icon {
-    background: #c71d23;
-    color: #fff;
-}
-
-.provider-gitee .provider-icon::before {
-    content: "G";
+    border-radius: 50%;
 }
 
 .provider-qq .provider-icon {
-    background: #12a1ff;
-    color: #fff;
-}
-
-.provider-qq .provider-icon::before {
-    content: "Q";
+    border-radius: 50%;
 }
 
 .provider-wechat .provider-icon,
 .provider-weixin .provider-icon {
-    background: #21b85b;
-    color: #fff;
-}
-
-.provider-wechat .provider-icon::before,
-.provider-weixin .provider-icon::before {
-    content: "W";
-}
-
-.provider-default .provider-icon::before {
-    content: "ID";
+    border-radius: 50%;
 }
 
 .scope-list {

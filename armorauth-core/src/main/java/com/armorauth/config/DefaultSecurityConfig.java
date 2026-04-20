@@ -79,6 +79,9 @@ public class DefaultSecurityConfig {
 
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/login/captcha/send").permitAll()
+                        .requestMatchers("/federated/confirm").permitAll()
+                        .requestMatchers("/federated/confirm/create").permitAll()
+                        .requestMatchers("/federated/confirm/bind").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
@@ -189,9 +192,11 @@ public class DefaultSecurityConfig {
         return web -> web.ignoring()
                 .requestMatchers("/error")
                 .requestMatchers("/favicon.ico")
+                .requestMatchers("/favicon.svg")
                 .requestMatchers("/static/**")
                 .requestMatchers("/resources/**")
                 .requestMatchers("/assets/**")
+                .requestMatchers("/oauth/**")
                 .requestMatchers("/webjars/**")
                 .requestMatchers("/h2-console/**")
                 .requestMatchers("/actuator/health")

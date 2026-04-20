@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>欢迎登录 - ArmorAuth</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="shortcut icon" href="/favicon.svg">
     <link rel="stylesheet" href="/assets/armorauth-ui.css">
+    <script src="/oauth/js/iconfont.js"></script>
 </head>
 <body>
 <div class="page-shell">
@@ -119,19 +122,35 @@
 
             <#if federatedProviders?has_content>
                 <div class="content-column">
-                    <div class="section-title">
-                        <span class="eyebrow">快捷登录</span>
-                        <p>使用你常用的平台快速进入。</p>
-                    </div>
-                    <div class="switcher" aria-label="联合登录策略">
-                        <a class="<#if selectedFederatedMode == 'auto'>is-active</#if>" href="/login?mode=auto">自动注册</a>
-                        <a class="<#if selectedFederatedMode == 'confirm'>is-active</#if>" href="/login?mode=confirm">中间页确认</a>
-                    </div>
-                    <p class="page-note">当前方式：<#if selectedFederatedMode == 'confirm'>首次登录需要确认账号<#else>首次登录将自动完成接入</#if>。</p>
+                <div class="section-title">
+                    <span class="eyebrow">快捷登录</span>
+                    <p>使用你常用的平台快速进入。</p>
+                </div>
                     <div class="provider-list">
                         <#list federatedProviders as provider>
-                            <a class="provider-link provider-${provider.registrationId?lower_case} provider-default" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode!'auto'}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录">
-                                <span class="provider-icon" aria-hidden="true"></span>
+                            <#assign providerId = provider.registrationId?lower_case>
+                            <a class="provider-link provider-${providerId}" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录">
+                                <span class="provider-icon" aria-hidden="true">
+                                    <#if providerId == 'gitee'>
+                                        <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
+                                            <use href="#icon-gitee"></use>
+                                        </svg>
+                                    <#elseif providerId == 'qq'>
+                                        <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
+                                            <use href="#icon-QQ1"></use>
+                                        </svg>
+                                    <#elseif providerId == 'wechat' || providerId == 'weixin'>
+                                        <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
+                                            <use href="#icon-weixin"></use>
+                                        </svg>
+                                    <#elseif providerId == 'github'>
+                                        <svg class="provider-symbol" viewBox="0 0 1049 1024" focusable="false">
+                                            <use href="#icon-GitHub"></use>
+                                        </svg>
+                                    <#else>
+                                        <span class="provider-fallback">${providerId?upper_case?substring(0, 2)}</span>
+                                    </#if>
+                                </span>
                                 <span class="provider-label">${provider.clientName!provider.registrationId}</span>
                             </a>
                         </#list>

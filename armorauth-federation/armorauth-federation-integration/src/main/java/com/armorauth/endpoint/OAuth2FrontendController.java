@@ -15,6 +15,7 @@
  */
 package com.armorauth.endpoint;
 
+import com.armorauth.config.FederationProperties;
 import com.armorauth.data.entity.OAuth2Scope;
 import com.armorauth.data.repository.OAuth2ScopeRepository;
 import com.armorauth.federat.FederatedLoginMode;
@@ -64,16 +65,21 @@ public class OAuth2FrontendController {
 
     private final AuthorizationServerSettings authorizationServerSettings;
 
+    private final FederatedLoginMode defaultFederatedLoginMode;
+
     public OAuth2FrontendController(RegisteredClientRepository registeredClientRepository,
                                     ClientRegistrationRepository clientRegistrationRepository,
                                     OAuth2AuthorizationConsentService authorizationConsentService,
                                     OAuth2ScopeRepository oAuth2ScopeRepository,
-                                    AuthorizationServerSettings authorizationServerSettings) {
+                                    AuthorizationServerSettings authorizationServerSettings,
+                                    FederationProperties federationProperties) {
         this.registeredClientRepository = registeredClientRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.authorizationConsentService = authorizationConsentService;
         this.oAuth2ScopeRepository = oAuth2ScopeRepository;
         this.authorizationServerSettings = authorizationServerSettings;
+        this.defaultFederatedLoginMode =
+                FederatedLoginMode.resolveConfiguredDefault(federationProperties.getDefaultLoginMode());
     }
 
     @GetMapping(path = "/", produces = MediaType.TEXT_HTML_VALUE)
@@ -101,7 +107,8 @@ public class OAuth2FrontendController {
 
         model.addAttribute("federatedProviders", getFederatedProviders());
         model.addAttribute("loggedOut", logout != null);
-        model.addAttribute("selectedFederatedMode", FederatedLoginMode.resolveForPage(mode).getParameterValue());
+        model.addAttribute("selectedFederatedMode",
+                FederatedLoginMode.resolveForPage(mode, defaultFederatedLoginMode).getParameterValue());
 
         if (error != null) {
             String errorMessage = "用户名、密码或验证码不正确。";
