@@ -8,7 +8,7 @@
 
 ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认证授权实验项目。当前仓库已经切到 `Spring Boot 4.0.5`、`Spring Security 7.0.4`、`Spring Authorization Server 7.0.4`，并完成了一轮联合登录相关代码的 Maven 模块拆分。
 
-目前仓库已更新一套新的品牌识别：logo 采用“盾牌 + A 字母 + 授权通路”的组合，强调认证、授权和联合登录三层语义。
+目前仓库已统一使用新的品牌识别：logo 采用“盾牌 + 橡果”组合，强调安全防护、身份认证和项目名里“坚果认证”的主题语义。
 
 项目现在更接近“可演示、可继续开发的认证框架原型”而不是已经封装完成的成品。核心认证授权、JPA 持久化、设备授权、验证码登录、联合登录扩展和服务端页面都在，但管理端、starter 抽象和部分运行时适配仍在收敛中。
 
@@ -19,6 +19,7 @@ ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认
 - 已按 `federat-fix` 风格完成联合登录的 Maven 分包
 - 已新增 `armorauth-common`、`armorauth-model`、`armorauth-federation` 模块树
 - 已为 `armorauth-server` 补充本地 `local` profile，用于无 MySQL 时的 H2 调试
+- 已统一服务端与管理端品牌资源，采用最终版橡果盾牌 logo
 
 ## 模块结构
 

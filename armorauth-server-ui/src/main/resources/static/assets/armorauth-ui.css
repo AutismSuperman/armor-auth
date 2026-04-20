@@ -156,14 +156,16 @@ select {
 }
 
 .brand-chip-logo {
-    align-items: flex-start;
+    align-items: center;
+    gap: 10px;
 }
 
 .brand-logo {
-    width: 156px;
-    max-width: 100%;
-    height: auto;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
     display: block;
+    object-fit: contain;
 }
 
 .brand-mark {
@@ -186,8 +188,9 @@ select {
 }
 
 .brand-chip-logo .brand-copy {
-    gap: 6px;
-    padding-top: 6px;
+    gap: 2px;
+    padding-top: 0;
+    align-content: center;
 }
 
 .brand-chip-logo .brand-copy strong {

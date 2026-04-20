@@ -15,7 +15,7 @@
         <section class="visual-panel">
             <div class="brand-row">
                 <div class="brand-chip brand-chip-logo">
-                    <img class="brand-logo" src="/brand/logo.svg" alt="ArmorAuth logo">
+                    <img class="brand-logo" src="/brand/icon.svg" alt="ArmorAuth logo">
                     <span class="brand-copy">
                         <span>账号与授权中心</span>
                     </span>
