@@ -14,7 +14,7 @@
         <section class="visual-panel">
             <div class="brand-row">
                 <div class="brand-chip">
-                    <span class="brand-mark">A</span>
+                    <img class="brand-mark" src="/favicon.svg" alt="ArmorAuth logo">
                     <span class="brand-copy">
                         <strong>ArmorAuth</strong>
                         <span>设备激活</span>
@@ -68,6 +68,17 @@
             </div>
         </section>
     </main>
+    <footer class="page-footer">
+        <div class="page-footer-brand">
+            <strong>ArmorAuth</strong>
+            <span>统一身份与授权平台</span>
+        </div>
+        <div class="page-footer-nav" aria-label="页面信息">
+            <span>设备激活</span>
+            <span>验证码确认</span>
+            <span>安全连接</span>
+        </div>
+    </footer>
 </div>
 <script src="/assets/armorauth-ui.js"></script>
 </body>

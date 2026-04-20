@@ -13,10 +13,9 @@
     <main class="panel-frame">
         <section class="visual-panel">
             <div class="brand-row">
-                <div class="brand-chip">
-                    <span class="brand-mark">A</span>
+                <div class="brand-chip brand-chip-logo">
+                    <img class="brand-logo" src="/brand/logo.svg" alt="ArmorAuth logo">
                     <span class="brand-copy">
-                        <strong>ArmorAuth</strong>
                         <span>第三方账号确认</span>
                     </span>
                 </div>
@@ -35,25 +34,48 @@
                 <p>确认后即可继续进入账号服务。</p>
             </div>
 
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <span>登录来源</span>
-                    <strong>${pending.registrationId()}</strong>
-                </div>
-                <div class="summary-item">
-                    <span>第三方昵称</span>
+            <div class="confirm-stage">
+                <div class="confirm-badge">
+                    <span class="confirm-badge-label">待确认账号</span>
                     <strong>${pending.displayName()!pending.providerUsername()!'未提供'}</strong>
+                    <p>确认当前第三方账号与本地身份的绑定关系后继续。</p>
                 </div>
-                <div class="summary-item">
-                    <span>第三方标识</span>
-                    <strong>${providerUserIdSummary}</strong>
+
+                <div class="confirm-bridge" aria-hidden="true">
+                    <div class="confirm-bridge-node">
+                        <span>第三方</span>
+                        <strong>${pending.registrationId()}</strong>
+                    </div>
+                    <div class="confirm-bridge-link"></div>
+                    <div class="confirm-bridge-node">
+                        <span>本地账号</span>
+                        <strong>ArmorAuth</strong>
+                    </div>
+                </div>
+
+                <div class="confirm-summary" aria-label="第三方账号摘要">
+                    <#if pending.avatarUrl()?? && pending.avatarUrl()?has_content>
+                        <div class="confirm-summary-row confirm-summary-row-avatar">
+                            <span class="confirm-summary-label">第三方头像</span>
+                            <div class="avatar-card">
+                                <img src="${pending.avatarUrl()}" alt="第三方头像">
+                            </div>
+                        </div>
+                    </#if>
+                    <div class="confirm-summary-row">
+                        <span class="confirm-summary-label">登录来源</span>
+                        <strong>${pending.registrationId()}</strong>
+                    </div>
+                    <div class="confirm-summary-row">
+                        <span class="confirm-summary-label">第三方昵称</span>
+                        <strong>${pending.displayName()!pending.providerUsername()!'未提供'}</strong>
+                    </div>
+                    <div class="confirm-summary-row">
+                        <span class="confirm-summary-label">第三方标识</span>
+                        <strong>${providerUserIdSummary}</strong>
+                    </div>
                 </div>
             </div>
-            <#if pending.avatarUrl()?? && pending.avatarUrl()?has_content>
-                <div class="avatar-card">
-                    <img src="${pending.avatarUrl()}" alt="第三方头像">
-                </div>
-            </#if>
         </section>
         <section class="content-panel">
             <div class="content-column">
@@ -88,7 +110,7 @@
                             <label for="confirm-password">确认密码</label>
                             <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" placeholder="请再次输入密码">
                         </div>
-                        <div class="action-row">
+                        <div class="action-row action-row-between">
                             <button class="button primary" type="submit">创建并完成登录</button>
                             <a class="button secondary" href="/login?mode=confirm">返回登录页</a>
                         </div>
@@ -103,7 +125,7 @@
                             <label for="bind-password">密码</label>
                             <input id="bind-password" name="password" type="password" autocomplete="current-password" placeholder="请输入已有账号密码">
                         </div>
-                        <div class="action-row">
+                        <div class="action-row action-row-between">
                             <button class="button primary" type="submit">绑定并完成登录</button>
                             <a class="button secondary" href="/login?mode=confirm">返回登录页</a>
                         </div>
@@ -114,6 +136,17 @@
             <p class="footer-copy">ArmorAuth 第三方接入</p>
         </section>
     </main>
+    <footer class="page-footer">
+        <div class="page-footer-brand">
+            <strong>ArmorAuth</strong>
+            <span>统一身份与授权平台</span>
+        </div>
+        <div class="page-footer-nav" aria-label="页面信息">
+            <span>第三方登录</span>
+            <span>身份确认</span>
+            <span>绑定安全</span>
+        </div>
+    </footer>
 </div>
 <script src="/assets/armorauth-ui.js"></script>
 </body>

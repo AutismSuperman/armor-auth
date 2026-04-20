@@ -196,6 +196,7 @@ public class DefaultSecurityConfig {
                 .requestMatchers("/static/**")
                 .requestMatchers("/resources/**")
                 .requestMatchers("/assets/**")
+                .requestMatchers("/brand/**")
                 .requestMatchers("/oauth/**")
                 .requestMatchers("/webjars/**")
                 .requestMatchers("/h2-console/**")

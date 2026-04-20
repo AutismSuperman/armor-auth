@@ -14,10 +14,9 @@
     <main class="panel-frame">
         <section class="visual-panel">
             <div class="brand-row">
-                <div class="brand-chip">
-                    <span class="brand-mark">A</span>
+                <div class="brand-chip brand-chip-logo">
+                    <img class="brand-logo" src="/brand/logo.svg" alt="ArmorAuth logo">
                     <span class="brand-copy">
-                        <strong>ArmorAuth</strong>
                         <span>账号与授权中心</span>
                     </span>
                 </div>
@@ -32,30 +31,35 @@
 
             <div class="hero-copy">
                 <span class="eyebrow">统一入口</span>
-                <h1>安全、统一、清晰的身份入口。</h1>
+                <h1>统一身份认证</h1>
                 <p>在一个界面完成登录、授权确认与设备激活。</p>
             </div>
 
             <div class="hero-stage" aria-hidden="true">
-                <div class="dashboard-illus">
-                    <div class="dashboard-layer top"></div>
-                    <div class="dashboard-layer main"></div>
-                    <div class="dashboard-layer side"></div>
+                <div class="showcase-panel">
+                    <div class="showcase-logo-shell">
+                        <img class="showcase-logo" src="/brand/logo.svg" alt="ArmorAuth logo">
+                    </div>
+                    <div class="showcase-orbit">
+                        <div class="showcase-node showcase-node-top">统一登录</div>
+                        <div class="showcase-node showcase-node-left">授权确认</div>
+                        <div class="showcase-node showcase-node-right">设备激活</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <span>登录方式</span>
-                    <strong>支持密码与验证码登录</strong>
+            <div class="signal-board" aria-label="平台能力">
+                <div class="signal-line">
+                    <span class="signal-tag">多方式登录</span>
+                    <strong>账号密码与短信验证码统一接入</strong>
                 </div>
-                <div class="metric-card">
-                    <span>覆盖场景</span>
-                    <strong>统一覆盖授权、设备与联邦流程</strong>
+                <div class="signal-line">
+                    <span class="signal-tag">流程统一</span>
+                    <strong>登录、授权、设备激活保持同一套界面语言</strong>
                 </div>
-                <div class="metric-card">
-                    <span>产品体验</span>
-                    <strong>保持一致的认证体验</strong>
+                <div class="signal-line">
+                    <span class="signal-tag">品牌一致</span>
+                    <strong>认证入口与平台身份体系保持清晰且连续</strong>
                 </div>
             </div>
         </section>
@@ -93,7 +97,7 @@
                             <input id="remember-me-password" name="remember-me" type="checkbox" value="true">
                             <span>记住我</span>
                         </label>
-                        <div class="action-row">
+                        <div class="action-row action-row-stacked">
                             <button class="button primary" type="submit">登录</button>
                         </div>
                     </form>
@@ -113,7 +117,7 @@
                             <input id="remember-me-captcha" name="remember-me" type="checkbox" value="true">
                             <span>记住我</span>
                         </label>
-                        <div class="action-row">
+                        <div class="action-row action-row-stacked">
                             <button class="button primary" type="submit">验证并登录</button>
                         </div>
                     </form>
@@ -161,6 +165,17 @@
             <p class="footer-copy">ArmorAuth 统一身份平台</p>
         </section>
     </main>
+    <footer class="page-footer">
+        <div class="page-footer-brand">
+            <strong>ArmorAuth</strong>
+            <span>统一身份与授权平台</span>
+        </div>
+        <div class="page-footer-nav" aria-label="页面信息">
+            <span>简体中文</span>
+            <span>安全登录</span>
+            <span>隐私保护</span>
+        </div>
+    </footer>
 </div>
 <script src="/assets/armorauth-ui.js"></script>
 </body>

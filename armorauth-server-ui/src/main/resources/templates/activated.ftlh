@@ -15,7 +15,7 @@
             <div class="surface-inner">
                 <div class="toolbar">
                     <div class="brand-chip">
-                        <span class="brand-mark">A</span>
+                        <img class="brand-mark" src="/favicon.svg" alt="ArmorAuth logo">
                         <span class="brand-copy">
                             <strong>ArmorAuth</strong>
                             <span>设备已连接</span>
@@ -57,6 +57,17 @@
             </div>
         </section>
     </main>
+    <footer class="page-footer">
+        <div class="page-footer-brand">
+            <strong>ArmorAuth</strong>
+            <span>统一身份与授权平台</span>
+        </div>
+        <div class="page-footer-nav" aria-label="页面信息">
+            <span>设备已连接</span>
+            <span>继续登录</span>
+            <span>会话已确认</span>
+        </div>
+    </footer>
 </div>
 <script src="/assets/armorauth-ui.js"></script>
 </body>
