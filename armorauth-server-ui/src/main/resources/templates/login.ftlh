@@ -7,7 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
     <link rel="stylesheet" href="/assets/armorauth-ui.css">
-    <script src="/oauth/js/iconfont.js"></script>
+    <script src="/assets/iconfont.js"></script>
 </head>
 <body>
 <div class="page-shell">
