@@ -157,6 +157,12 @@ armorauth:
 - `armorauth-samples-client`: `8084`
 - `armorauth-samples-pkce`: `8085`
 
+样例访问与回调 host 需要保持一致：
+
+- 如果通过 `http://armorauth-demo:8083` 或 `http://armorauth-demo:8085` 访问 sample
+- 那么 `redirect_uri` 也必须使用 `armorauth-demo`
+- 不要混用 `armorauth-demo` 和 `127.0.0.1`，否则 OAuth2 `state` 对应的 session cookie 会丢失，回调阶段会失败
+
 样例域名仍建议通过 hosts 绑定：
 
 ```text
