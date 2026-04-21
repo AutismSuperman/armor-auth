@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.armorauth.security;
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -29,7 +27,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@Slf4j
 public class FailureAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
 

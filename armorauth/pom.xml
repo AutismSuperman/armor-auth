@@ -25,17 +25,17 @@
         </dependency>
         <dependency>
             <groupId>com.armorauth</groupId>
-            <artifactId>armorauth-model</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.armorauth</groupId>
             <artifactId>armorauth-core</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.armorauth</groupId>
-            <artifactId>armorauth-federation-integration</artifactId>
+            <artifactId>armorauth-federation</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.armorauth</groupId>
+            <artifactId>armorauth-federation-providers</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>

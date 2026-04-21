@@ -20,16 +20,6 @@
             <version>${revision}</version>
         </dependency>
         <dependency>
-            <groupId>com.armorauth</groupId>
-            <artifactId>armorauth-federation-core</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.armorauth</groupId>
-            <artifactId>armorauth-federation-integration</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>

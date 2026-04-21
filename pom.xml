@@ -59,6 +59,7 @@
         <module>armorauth-model</module>
         <module>armorauth-admin</module>
         <module>armorauth-federation</module>
+        <module>armorauth-federation-providers</module>
         <module>armorauth-spring-boot</module>
         <module>armorauth-samples</module>
         <module>armorauth-server</module>

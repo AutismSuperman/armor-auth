@@ -16,8 +16,8 @@ ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认
 
 - 已升级到 `Spring Boot 4.0.5`
 - 已统一到 `Java 21`
-- 已按 `federat-fix` 风格完成联合登录的 Maven 分包
-- 已新增 `armorauth-common`、`armorauth-model`、`armorauth-federation` 模块树
+- 已将联合登录模块收敛为 `armorauth-federation` + `armorauth-federation-providers`
+- 已理顺 `armorauth-core -> federation` 的反向依赖
 - 已为 `armorauth-server` 补充本地 `local` profile，用于无 MySQL 时的 H2 调试
 - 已统一服务端与管理端品牌资源，采用最终版橡果盾牌 logo
 
@@ -27,13 +27,9 @@ ArmorAuth 是一个基于 Spring Security 和 Spring Authorization Server 的认
 | --- | --- |
 | `armorauth-common` | 通用基础能力 |
 | `armorauth-model` | JPA 实体与 Repository |
-| `armorauth-core` | 认证授权主配置、设备授权、验证码登录等核心能力 |
-| `armorauth-federation` | 联合登录聚合模块 |
-| `armorauth-federation/armorauth-federation-core` | 联合登录基础抽象与属性映射 |
-| `armorauth-federation/armorauth-federation-integration` | 联合登录编排、确认页、配置器、安全处理器 |
-| `armorauth-federation/armorauth-federation-qq` | QQ provider 适配 |
-| `armorauth-federation/armorauth-federation-wechat` | 微信 provider 适配 |
-| `armorauth-federation/armorauth-federation-gitee` | Gitee provider 适配 |
+| `armorauth-core` | 认证授权核心能力、本地登录、设备授权、JPA 持久化适配 |
+| `armorauth-federation` | 联合登录编排、确认页、配置器、安全处理器、provider SPI |
+| `armorauth-federation-providers` | QQ / 微信 / Gitee provider 实现与默认元数据 |
 | `armorauth` | 对核心模块的聚合封装 |
 | `armorauth-server` | 可独立启动的认证服务端 |
 | `armorauth-server-ui` | 服务端模板和静态资源 |
@@ -185,7 +181,7 @@ armorauth-samples/hosts/armorauth-hosts
 
 ### 2. 验证码校验仍是 mock
 
-默认安全配置中的验证码校验目前仍是硬编码 mock，值为：
+当前仓库仍提供显式 mock 验证码 Bean，值为：
 
 ```text
 1234
@@ -216,11 +212,11 @@ armorauth-samples/hosts/armorauth-hosts
 
 1. `armorauth-core/src/main/java/com/armorauth/config/AuthorizationServerConfig.java`
 2. `armorauth-core/src/main/java/com/armorauth/config/DefaultSecurityConfig.java`
-3. `armorauth-federation/armorauth-federation-integration/src/main/java/com/armorauth/configurers/`
-4. `armorauth-model/src/main/java/com/armorauth/data/`
-5. `armorauth-server/src/main/resources/application*.yml`
-6. `armorauth-server/src/main/resources/sql/`
-7. `armorauth-samples/`
+3. `armorauth-federation/src/main/java/com/armorauth/federation/config/`
+4. `armorauth-federation/src/main/java/com/armorauth/federation/configurer/`
+5. `armorauth-federation-providers/src/main/java/com/armorauth/federation/provider/`
+6. `armorauth-model/src/main/java/com/armorauth/data/`
+7. `armorauth-server/src/main/resources/application*.yml`
 
 ## License
 
