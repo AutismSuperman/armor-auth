@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -36,6 +38,8 @@ import java.util.Optional;
 
 @Service
 public class FederatedLoginOrchestrator {
+
+    private static final Logger log = LoggerFactory.getLogger(FederatedLoginOrchestrator.class);
 
     private final ObjectMapper objectMapper;
 
@@ -66,6 +70,11 @@ public class FederatedLoginOrchestrator {
         }
         FederatedUserProfile federatedUserProfile = extractProfile(oauth2AuthenticationToken);
         String now = this.federatedAccountService.currentTimestamp();
+        log.info(
+                "Handling federated login success registrationId={} providerUserId={}",
+                federatedUserProfile.registrationId(),
+                abbreviateProviderUserId(federatedUserProfile.providerUserId())
+        );
 
         Optional<UserFederatedBinding> existingBinding = this.userFederatedBindingService.findBinding(
                 federatedUserProfile.registrationId(),
@@ -74,12 +83,22 @@ public class FederatedLoginOrchestrator {
         if (existingBinding.isPresent()) {
             try {
                 UserFederatedBinding binding = existingBinding.get();
+                log.info(
+                        "Found existing federated binding registrationId={} userId={}",
+                        federatedUserProfile.registrationId(),
+                        binding.getUserId()
+                );
                 UserInfo userInfo = this.federatedAccountService.getRequiredUser(binding.getUserId());
                 this.userFederatedBindingService.touchLastLogin(binding, now);
                 this.federatedSessionContextRepository.clearAll(request);
                 this.federatedLoginCompletionService.complete(request, response, userInfo);
                 return true;
             } catch (IllegalStateException ex) {
+                log.warn(
+                        "Failed to complete federated login with existing binding registrationId={} reason={}",
+                        federatedUserProfile.registrationId(),
+                        ex.getMessage()
+                );
                 return fail(request, response, ex.getMessage());
             }
         }
@@ -88,21 +107,42 @@ public class FederatedLoginOrchestrator {
                 .loadAuthorizationContext(request)
                 .orElse(null);
         if (authorizationContext == null) {
+            log.warn(
+                    "Missing federated authorization context registrationId={} providerUserId={}",
+                    federatedUserProfile.registrationId(),
+                    abbreviateProviderUserId(federatedUserProfile.providerUserId())
+            );
             return fail(request, response, "联合登录上下文已失效，请重新发起授权。");
         }
         if (!federatedUserProfile.registrationId().equals(authorizationContext.registrationId())) {
+            log.warn(
+                    "Federated authorization context mismatch expected={} actual={}",
+                    authorizationContext.registrationId(),
+                    federatedUserProfile.registrationId()
+            );
             return fail(request, response, "联合登录上下文与当前第三方提供商不匹配。");
         }
         this.federatedSessionContextRepository.clearAuthorizationContext(request);
+        log.info(
+                "Loaded federated authorization context registrationId={} mode={}",
+                authorizationContext.registrationId(),
+                authorizationContext.mode()
+        );
 
         if (authorizationContext.mode() == FederatedLoginMode.AUTO) {
             try {
+                log.info("Auto register flow started for registrationId={}", federatedUserProfile.registrationId());
                 UserInfo userInfo = this.federatedAccountService.createAutoRegisteredUser(federatedUserProfile, now);
                 this.userFederatedBindingService.createOrUpdateBinding(userInfo, federatedUserProfile, now);
                 this.federatedSessionContextRepository.clearPendingContext(request);
                 this.federatedLoginCompletionService.complete(request, response, userInfo);
                 return true;
             } catch (IllegalArgumentException | IllegalStateException ex) {
+                log.warn(
+                        "Auto register flow failed for registrationId={} reason={}",
+                        federatedUserProfile.registrationId(),
+                        ex.getMessage()
+                );
                 return fail(request, response, ex.getMessage());
             }
         }
@@ -116,12 +156,18 @@ public class FederatedLoginOrchestrator {
                 request,
                 federatedUserProfile.toPendingContext(suggestedUsername)
         );
+        log.info(
+                "Stored pending federated binding context registrationId={} suggestedUsername={}",
+                federatedUserProfile.registrationId(),
+                suggestedUsername
+        );
         this.federatedLoginCompletionService.clearAuthentication(request, response);
         response.sendRedirect(request.getContextPath() + "/federated/confirm");
         return true;
     }
 
     private boolean fail(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+        log.warn("Federated login flow failed: {}", message);
         this.federatedSessionContextRepository.clearAll(request);
         this.federatedLoginCompletionService.clearAuthentication(request, response);
         request.getSession(true)
@@ -181,6 +227,7 @@ public class FederatedLoginOrchestrator {
         try {
             return this.objectMapper.writeValueAsString(attributes);
         } catch (JsonProcessingException ex) {
+            log.warn("Failed to serialize federated provider attributes", ex);
             return "{}";
         }
     }

@@ -23,6 +23,8 @@ import com.armorauth.federation.PendingFederatedContext;
 import com.armorauth.federation.UserFederatedBindingService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.web.WebAttributes;
@@ -41,6 +43,8 @@ import java.util.Locale;
 
 @Controller
 public class FederatedConfirmController {
+
+    private static final Logger log = LoggerFactory.getLogger(FederatedConfirmController.class);
 
     private static final int MIN_PASSWORD_LENGTH = 6;
 
@@ -74,6 +78,11 @@ public class FederatedConfirmController {
         if (pendingContext == null) {
             return redirectToLoginError(request, "联合登录确认信息不存在或已过期，请重新发起授权。");
         }
+        log.info(
+                "Rendering federated confirm page registrationId={} tab={}",
+                pendingContext.registrationId(),
+                normalizeTab(tab)
+        );
         populateModel(model, pendingContext, pendingContext.suggestedUsername(), "", normalizeTab(tab), null);
         return "federated-confirm";
     }
@@ -86,16 +95,27 @@ public class FederatedConfirmController {
                               @RequestParam("confirmPassword") String confirmPassword) throws Exception {
         PendingFederatedContext pendingContext = loadPendingContext(request);
         if (pendingContext == null) {
+            log.warn("Federated confirm create requested without pending context");
             response.sendRedirect(request.getContextPath() + "/login?error");
             return;
         }
         String normalizedUsername = username == null ? "" : username.trim();
         String validationMessage = validateCreateForm(normalizedUsername, password, confirmPassword);
         if (validationMessage != null) {
+            log.warn(
+                    "Federated confirm create validation failed registrationId={} reason={}",
+                    pendingContext.registrationId(),
+                    validationMessage
+            );
             renderConfirmView(request, response, pendingContext, normalizedUsername, "", "create", validationMessage);
             return;
         }
         try {
+            log.info(
+                    "Federated confirm create started registrationId={} username={}",
+                    pendingContext.registrationId(),
+                    normalizedUsername
+            );
             String now = this.federatedAccountService.currentTimestamp();
             UserInfo userInfo = this.federatedAccountService.createLocalUser(
                     normalizedUsername,
@@ -107,6 +127,12 @@ public class FederatedConfirmController {
             this.federatedSessionContextRepository.clearAll(request);
             this.federatedLoginCompletionService.complete(request, response, userInfo);
         } catch (IllegalArgumentException | IllegalStateException ex) {
+            log.warn(
+                    "Federated confirm create failed registrationId={} username={} reason={}",
+                    pendingContext.registrationId(),
+                    normalizedUsername,
+                    ex.getMessage()
+            );
             renderConfirmView(request, response, pendingContext, normalizedUsername, "", "create", ex.getMessage());
         }
     }
@@ -118,11 +144,14 @@ public class FederatedConfirmController {
                             @RequestParam("password") String password) throws Exception {
         PendingFederatedContext pendingContext = loadPendingContext(request);
         if (pendingContext == null) {
+            log.warn("Federated confirm bind requested without pending context");
             response.sendRedirect(request.getContextPath() + "/login?error");
             return;
         }
         String normalizedUsername = username == null ? "" : username.trim();
         if (!StringUtils.hasText(normalizedUsername) || !StringUtils.hasText(password)) {
+            log.warn("Federated confirm bind validation failed registrationId={} reason=missing_credentials",
+                    pendingContext.registrationId());
             renderConfirmView(request, response, pendingContext, pendingContext.suggestedUsername(), normalizedUsername,
                     "bind", "请输入已有本地账号的用户名和密码。");
             return;
@@ -130,16 +159,33 @@ public class FederatedConfirmController {
         UserInfo userInfo = this.federatedAccountService.authenticateLocalUser(normalizedUsername, password)
                 .orElse(null);
         if (userInfo == null) {
+            log.warn(
+                    "Federated confirm bind failed due to local authentication registrationId={} username={}",
+                    pendingContext.registrationId(),
+                    normalizedUsername
+            );
             renderConfirmView(request, response, pendingContext, pendingContext.suggestedUsername(), normalizedUsername,
                     "bind", "本地账号认证失败，请检查用户名或密码。");
             return;
         }
         try {
+            log.info(
+                    "Federated confirm bind started registrationId={} username={} userId={}",
+                    pendingContext.registrationId(),
+                    normalizedUsername,
+                    userInfo.getId()
+            );
             String now = this.federatedAccountService.currentTimestamp();
             this.userFederatedBindingService.createOrUpdateBinding(userInfo, pendingContext.toProfile(), now);
             this.federatedSessionContextRepository.clearAll(request);
             this.federatedLoginCompletionService.complete(request, response, userInfo);
         } catch (IllegalStateException ex) {
+            log.warn(
+                    "Federated confirm bind failed registrationId={} username={} reason={}",
+                    pendingContext.registrationId(),
+                    normalizedUsername,
+                    ex.getMessage()
+            );
             renderConfirmView(request, response, pendingContext, pendingContext.suggestedUsername(), normalizedUsername,
                     "bind", ex.getMessage());
         }
@@ -149,10 +195,15 @@ public class FederatedConfirmController {
         PendingFederatedContext pendingContext = this.federatedSessionContextRepository.loadPendingContext(request)
                 .orElse(null);
         if (pendingContext == null) {
+            log.warn("Pending federated context not found for uri={}", request.getRequestURI());
             rememberError(request, "联合登录确认信息不存在或已过期，请重新发起授权。");
             return null;
         }
         if (!pendingContext.isComplete() || pendingContext.isExpired(FederatedSessionContextRepository.PENDING_CONTEXT_TTL)) {
+            log.warn(
+                    "Pending federated context expired or incomplete registrationId={}",
+                    pendingContext.registrationId()
+            );
             this.federatedSessionContextRepository.clearAll(request);
             rememberError(request, "联合登录确认信息不存在或已过期，请重新发起授权。");
             return null;

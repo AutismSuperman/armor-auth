@@ -18,6 +18,8 @@ package com.armorauth.federation;
 import com.armorauth.data.entity.UserFederatedBinding;
 import com.armorauth.data.entity.UserInfo;
 import com.armorauth.data.repository.UserFederatedBindingRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,8 @@ import java.util.Optional;
 
 @Service
 public class UserFederatedBindingService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserFederatedBindingService.class);
 
     private final UserFederatedBindingRepository userFederatedBindingRepository;
 
@@ -45,6 +49,11 @@ public class UserFederatedBindingService {
                 federatedUserProfile.providerUserId()
         );
         if (existingBinding.isPresent()) {
+            log.info(
+                    "Updating existing federated binding registrationId={} userId={}",
+                    federatedUserProfile.registrationId(),
+                    userInfo.getId()
+            );
             return updateExistingBinding(existingBinding.get(), userInfo, federatedUserProfile, now);
         }
         UserFederatedBinding binding = new UserFederatedBinding();
@@ -56,8 +65,19 @@ public class UserFederatedBindingService {
         binding.setCreateTime(now);
         binding.setLastLoginTime(now);
         try {
-            return this.userFederatedBindingRepository.save(binding);
+            UserFederatedBinding savedBinding = this.userFederatedBindingRepository.save(binding);
+            log.info(
+                    "Created federated binding registrationId={} userId={}",
+                    savedBinding.getRegistrationId(),
+                    savedBinding.getUserId()
+            );
+            return savedBinding;
         } catch (DataIntegrityViolationException ex) {
+            log.warn(
+                    "Concurrent federated binding creation detected registrationId={} providerUserId={}",
+                    federatedUserProfile.registrationId(),
+                    federatedUserProfile.providerUserId()
+            );
             UserFederatedBinding persisted = this.userFederatedBindingRepository
                     .findByRegistrationIdAndProviderUserId(
                             federatedUserProfile.registrationId(),
@@ -71,6 +91,7 @@ public class UserFederatedBindingService {
     @Transactional
     public UserFederatedBinding touchLastLogin(UserFederatedBinding binding, String now) {
         binding.setLastLoginTime(now);
+        log.debug("Refreshing federated binding lastLogin registrationId={} userId={}", binding.getRegistrationId(), binding.getUserId());
         return this.userFederatedBindingRepository.save(binding);
     }
 
@@ -84,6 +105,12 @@ public class UserFederatedBindingService {
         binding.setProviderUsername(federatedUserProfile.providerUsername());
         binding.setProviderAttributes(federatedUserProfile.providerAttributes());
         binding.setLastLoginTime(now);
-        return this.userFederatedBindingRepository.save(binding);
+        UserFederatedBinding savedBinding = this.userFederatedBindingRepository.save(binding);
+        log.info(
+                "Persisted federated binding registrationId={} userId={}",
+                savedBinding.getRegistrationId(),
+                savedBinding.getUserId()
+        );
+        return savedBinding;
     }
 }

@@ -17,6 +17,8 @@ package com.armorauth.federation;
 
 import com.armorauth.data.entity.UserInfo;
 import com.armorauth.data.repository.UserInfoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,8 @@ import java.util.UUID;
 
 @Service
 public class FederatedAccountService {
+
+    private static final Logger log = LoggerFactory.getLogger(FederatedAccountService.class);
 
     private static final int MAX_USERNAME_LENGTH = 32;
 
@@ -78,7 +82,9 @@ public class FederatedAccountService {
         userInfo.setStatus(0);
         userInfo.setCreateTime(now);
         userInfo.setLastLoginTime(now);
-        return this.userInfoRepository.save(userInfo);
+        UserInfo savedUser = this.userInfoRepository.save(userInfo);
+        log.info("Created local user for federated flow username={} userId={}", savedUser.getUsername(), savedUser.getId());
+        return savedUser;
     }
 
     @Transactional
@@ -92,6 +98,11 @@ public class FederatedAccountService {
         String displayName = StringUtils.hasText(federatedUserProfile.displayName())
                 ? federatedUserProfile.displayName()
                 : username;
+        log.info(
+                "Creating auto-registered local user registrationId={} username={}",
+                federatedUserProfile.registrationId(),
+                username
+        );
         return createLocalUser(username, rawPassword, displayName, now);
     }
 
@@ -107,6 +118,7 @@ public class FederatedAccountService {
             String candidateSuffix = String.valueOf(suffix++);
             candidate = abbreviate(baseUsername, MAX_USERNAME_LENGTH - candidateSuffix.length()) + candidateSuffix;
         }
+        log.debug("Generated available username registrationId={} username={}", registrationId, candidate);
         return candidate;
     }
 

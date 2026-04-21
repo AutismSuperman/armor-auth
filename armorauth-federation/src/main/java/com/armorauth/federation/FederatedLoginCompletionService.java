@@ -19,6 +19,8 @@ import com.armorauth.data.entity.UserInfo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,6 +38,8 @@ import java.io.IOException;
 
 @Service
 public class FederatedLoginCompletionService {
+
+    private static final Logger log = LoggerFactory.getLogger(FederatedLoginCompletionService.class);
 
     private final UserDetailsService userDetailsService;
 
@@ -55,6 +59,7 @@ public class FederatedLoginCompletionService {
 
     public void complete(HttpServletRequest request, HttpServletResponse response, UserInfo userInfo)
             throws IOException, ServletException {
+        log.info("Completing local sign-in for federated user username={} userId={}", userInfo.getUsername(), userInfo.getId());
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(userInfo.getUsername());
         Authentication authentication =
                 UsernamePasswordAuthenticationToken.authenticated(userDetails, null, userDetails.getAuthorities());
@@ -65,10 +70,12 @@ public class FederatedLoginCompletionService {
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
         this.securityContextRepository.saveContext(context, request, response);
+        log.debug("Saved security context for federated user username={}", userInfo.getUsername());
         this.successHandler.onAuthenticationSuccess(request, response, authentication);
     }
 
     public void clearAuthentication(HttpServletRequest request, HttpServletResponse response) {
+        log.debug("Clearing security context for federated flow uri={}", request.getRequestURI());
         SecurityContextHolder.clearContext();
         SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
         this.securityContextRepository.saveContext(emptyContext, request, response);

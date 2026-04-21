@@ -19,6 +19,8 @@ import com.armorauth.federation.provider.FederatedOAuth2Provider;
 import com.armorauth.federation.provider.FederatedOAuth2ProviderRegistry;
 import com.armorauth.federation.provider.converter.OAuth2AccessTokenRestTemplate;
 import com.armorauth.federation.provider.converter.OAuth2AuthorizationCodeGrantRequestConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -35,6 +37,8 @@ import org.springframework.web.client.RestTemplate;
 public class DelegateAccessTokenResponseClient
         implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
+    private static final Logger log = LoggerFactory.getLogger(DelegateAccessTokenResponseClient.class);
+
     private final RestClientAuthorizationCodeTokenResponseClient delegate =
             new RestClientAuthorizationCodeTokenResponseClient();
 
@@ -50,11 +54,18 @@ public class DelegateAccessTokenResponseClient
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
         String registrationId = authorizationGrantRequest.getClientRegistration().getRegistrationId();
+        log.info("Requesting access token for federated provider registrationId={}", registrationId);
         return this.providerRegistry.findProvider(registrationId)
                 .filter(provider -> provider.getAuthorizationCodeGrantRequestConverter() != null)
-                .map(provider -> executeCustomTokenRequest(authorizationGrantRequest, provider))
+                .map(provider -> {
+                    log.info("Using custom token client for federated provider registrationId={}", registrationId);
+                    return executeCustomTokenRequest(authorizationGrantRequest, provider);
+                })
                 .map(response -> validateAccessTokenResponse(response, registrationId))
-                .orElseGet(() -> validateAccessTokenResponse(this.delegate.getTokenResponse(authorizationGrantRequest), registrationId));
+                .orElseGet(() -> {
+                    log.debug("Using default token client for federated provider registrationId={}", registrationId);
+                    return validateAccessTokenResponse(this.delegate.getTokenResponse(authorizationGrantRequest), registrationId);
+                });
     }
 
     private OAuth2AccessTokenResponse executeCustomTokenRequest(
@@ -75,6 +86,7 @@ public class DelegateAccessTokenResponseClient
                 restTemplate.exchange(requestEntity, OAuth2AccessTokenResponse.class);
         OAuth2AccessTokenResponse body = response.getBody();
         if (body == null) {
+            log.warn("Received empty access token response body for provider={}", provider.getProviderId());
             throw new OAuth2AuthenticationException(new OAuth2Error(
                     OAuth2ErrorCodes.SERVER_ERROR,
                     "Access token response body is empty",
@@ -88,12 +100,14 @@ public class DelegateAccessTokenResponseClient
             OAuth2AccessTokenResponse response,
             String registrationId) {
         if (response == null || response.getAccessToken() == null) {
+            log.warn("Access token missing in token response for registrationId={}", registrationId);
             throw new OAuth2AuthenticationException(new OAuth2Error(
                     OAuth2ErrorCodes.SERVER_ERROR,
                     "Access token is missing in token response for " + registrationId,
                     null
             ));
         }
+        log.info("Received access token response for registrationId={}", registrationId);
         return response;
     }
 

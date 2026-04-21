@@ -15,6 +15,8 @@
  */
 package com.armorauth.authentication;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
@@ -40,6 +42,8 @@ import java.util.Collection;
  */
 public class CaptchaAuthenticationProvider implements AuthenticationProvider, InitializingBean, MessageSourceAware {
 
+    private static final Logger log = LoggerFactory.getLogger(CaptchaAuthenticationProvider.class);
+
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
     private final UserDetailsService userDetailsService;
     private final CaptchaVerifyService captchaService;
@@ -59,11 +63,14 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
         CaptchaAuthenticationToken unAuthenticationToken = (CaptchaAuthenticationToken) authentication;
         String phone = unAuthenticationToken.getName();
         String rawCode = (String) unAuthenticationToken.getCredentials();
+        log.info("Processing captcha authentication for account={}", maskAccount(phone));
         // verifyCaptcha
         if (captchaService.verifyCaptcha(phone, rawCode)) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(phone);
+            log.info("Captcha authentication succeeded for account={}", maskAccount(phone));
             return createSuccessAuthentication(authentication, userDetails);
         } else {
+            log.warn("Captcha authentication failed due to invalid captcha for account={}", maskAccount(phone));
             throw new BadCredentialsException("Captcha is not matched");
         }
     }
@@ -97,6 +104,16 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
         CaptchaAuthenticationToken authenticationToken = new CaptchaAuthenticationToken(user, null, authorities);
         authenticationToken.setDetails(authentication.getDetails());
         return authenticationToken;
+    }
+
+    private String maskAccount(String account) {
+        if (account == null || account.isBlank()) {
+            return "unknown";
+        }
+        if (account.length() <= 4) {
+            return account;
+        }
+        return account.substring(0, 2) + "***" + account.substring(account.length() - 2);
     }
 
 }

@@ -15,6 +15,8 @@
  */
 package com.armorauth.federation.provider.gitee;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.RequestEntity;
@@ -60,6 +62,8 @@ import java.util.Set;
  */
 public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
+    private static final Logger log = LoggerFactory.getLogger(GiteeOAuth2UserService.class);
+
     private static final String MISSING_USER_INFO_URI_ERROR_CODE = "missing_user_info_uri";
 
     private static final String MISSING_USER_NAME_ATTRIBUTE_ERROR_CODE = "missing_user_name_attribute";
@@ -82,6 +86,7 @@ public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserReque
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         Assert.notNull(userRequest, "userRequest cannot be null");
+        log.info("Loading Gitee user info for registrationId={}", userRequest.getClientRegistration().getRegistrationId());
         if (!StringUtils
                 .hasText(userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri())) {
             OAuth2Error oauth2Error = new OAuth2Error(MISSING_USER_INFO_URI_ERROR_CODE,
@@ -108,6 +113,11 @@ public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserReque
         for (String authority : token.getScopes()) {
             authorities.add(new SimpleGrantedAuthority("SCOPE_" + authority));
         }
+        log.info(
+                "Loaded Gitee user info for registrationId={} principalAttribute={}",
+                userRequest.getClientRegistration().getRegistrationId(),
+                userNameAttributeName
+        );
         return new GiteeOAuth2User(authorities, userAttributes, userNameAttributeName);
     }
 
@@ -115,6 +125,11 @@ public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserReque
         try {
             return this.restOperations.exchange(request, PARAMETERIZED_RESPONSE_TYPE);
         } catch (OAuth2AuthorizationException ex) {
+            log.warn(
+                    "Failed to load Gitee user info for registrationId={} due to authorization error",
+                    userRequest.getClientRegistration().getRegistrationId(),
+                    ex
+            );
             OAuth2Error oauth2Error = ex.getError();
             StringBuilder errorDetails = new StringBuilder();
             errorDetails.append("Error details: [");
@@ -130,6 +145,11 @@ public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserReque
                     null);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
         } catch (UnknownContentTypeException ex) {
+            log.warn(
+                    "Failed to load Gitee user info for registrationId={} due to invalid content type",
+                    userRequest.getClientRegistration().getRegistrationId(),
+                    ex
+            );
             String errorMessage = "An error occurred while attempting to retrieve the UserInfo Resource from '"
                     + userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri()
                     + "': response contains invalid content type '" + ex.getContentType().toString() + "'. "
@@ -141,6 +161,11 @@ public class GiteeOAuth2UserService implements OAuth2UserService<OAuth2UserReque
             OAuth2Error oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE, errorMessage, null);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
         } catch (RestClientException ex) {
+            log.warn(
+                    "Failed to load Gitee user info for registrationId={} due to rest client error",
+                    userRequest.getClientRegistration().getRegistrationId(),
+                    ex
+            );
             OAuth2Error oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
                     "An error occurred while attempting to retrieve the UserInfo Resource: " + ex.getMessage(), null);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);

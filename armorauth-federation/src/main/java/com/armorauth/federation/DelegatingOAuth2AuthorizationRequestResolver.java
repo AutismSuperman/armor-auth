@@ -17,6 +17,8 @@ package com.armorauth.federation;
 
 import com.armorauth.federation.provider.FederatedOAuth2ProviderRegistry;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -28,6 +30,8 @@ import org.springframework.security.web.WebAttributes;
 import org.springframework.util.Assert;
 
 public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
+
+    private static final Logger log = LoggerFactory.getLogger(DelegatingOAuth2AuthorizationRequestResolver.class);
 
     private final DefaultOAuth2AuthorizationRequestResolver delegate;
 
@@ -80,12 +84,19 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
             HttpServletRequest request,
             OAuth2AuthorizationRequest authorizationRequest) {
         if (authorizationRequest == null) {
+            log.debug("No federated authorization request resolved for uri={}", request.getRequestURI());
             return null;
         }
         try {
             FederatedLoginMode mode =
                     FederatedLoginMode.resolveForAuthorization(request.getParameter("mode"), this.defaultLoginMode);
             String registrationId = authorizationRequest.getAttribute(OAuth2ParameterNames.REGISTRATION_ID);
+            log.info(
+                    "Resolved federated authorization request registrationId={} mode={} uri={}",
+                    registrationId,
+                    mode,
+                    request.getRequestURI()
+            );
             this.sessionContextRepository.saveAuthorizationContext(
                     request,
                     new FederatedAuthorizationContext(
@@ -96,9 +107,15 @@ public class DelegatingOAuth2AuthorizationRequestResolver implements OAuth2Autho
                     )
             );
             this.sessionContextRepository.clearPendingContext(request);
+            log.debug("Stored federated authorization context for registrationId={}", registrationId);
             return authorizationRequest;
         } catch (IllegalArgumentException ex) {
             this.sessionContextRepository.clearAll(request);
+            log.warn(
+                    "Rejected federated authorization request uri={} due to invalid mode: {}",
+                    request.getRequestURI(),
+                    ex.getMessage()
+            );
             request.getSession(true)
                     .setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, new BadCredentialsException(ex.getMessage(), ex));
             throw ex;

@@ -15,6 +15,8 @@
  */
 package com.armorauth.federation.provider.wechat;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.http.converter.AbstractHttpMessageConverter;
@@ -51,6 +53,8 @@ import java.util.Collections;
 
 public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
+    private static final Logger log = LoggerFactory.getLogger(WechatOAuth2UserService.class);
+
     private static final String MISSING_USER_INFO_URI_ERROR_CODE = "missing_user_info_uri";
     private static final String MISSING_OPENID_ERROR_CODE = "missing_openid_attribute";
     private static final String INVALID_USER_INFO_RESPONSE_ERROR_CODE = "invalid_user_info_response";
@@ -73,6 +77,7 @@ public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     public WechatOAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         ClientRegistration clientRegistration = userRequest.getClientRegistration();
         String registrationId = clientRegistration.getRegistrationId();
+        log.info("Loading WeChat user info for registrationId={}", registrationId);
         Assert.notNull(userRequest, "userRequest cannot be null");
         if (!StringUtils.hasText(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUri())) {
             OAuth2Error oauth2Error = new OAuth2Error(MISSING_USER_INFO_URI_ERROR_CODE,
@@ -91,7 +96,9 @@ public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     null);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
         }
-        return getResponse(userRequest).getBody();
+        WechatOAuth2User user = getResponse(userRequest).getBody();
+        log.info("Loaded WeChat user info for registrationId={} openid={}", registrationId, openid);
+        return user;
     }
 
     /**
@@ -120,6 +127,7 @@ public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             URI userInfoEndpoint = UriComponentsBuilder.fromUriString(userInfoUri).queryParams(queryParams).build().toUri();
             return this.restOperations.exchange(userInfoEndpoint, HttpMethod.GET, null, OAUTH2_USER_OBJECT);
         } catch (OAuth2AuthorizationException ex) {
+            log.warn("Failed to load WeChat user info from uri={} due to authorization error", userInfoUri, ex);
             OAuth2Error oauth2Error = ex.getError();
             StringBuilder errorDetails = new StringBuilder();
             errorDetails.append("Error details: [");
@@ -135,6 +143,7 @@ public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     null);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
         } catch (UnknownContentTypeException ex) {
+            log.warn("Failed to load WeChat user info from uri={} due to invalid content type", userInfoUri, ex);
             String errorMessage = "An error occurred while attempting to retrieve the UserInfo Resource from '"
                     + userInfoUri
                     + "': response contains invalid content type '" + ex.getContentType() + "'. "
@@ -146,6 +155,7 @@ public class WechatOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             OAuth2Error oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE, errorMessage, null);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
         } catch (RestClientException ex) {
+            log.warn("Failed to load WeChat user info from uri={} due to rest client error", userInfoUri, ex);
             OAuth2Error oauth2Error = new OAuth2Error(INVALID_USER_INFO_RESPONSE_ERROR_CODE,
                     "An error occurred while attempting to retrieve the UserInfo Resource: " + ex.getMessage(), null);
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);

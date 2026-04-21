@@ -16,6 +16,8 @@
 package com.armorauth.federation;
 
 import com.armorauth.federation.provider.FederatedOAuth2ProviderRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -23,6 +25,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+
+    private static final Logger log = LoggerFactory.getLogger(DelegatingOAuth2UserService.class);
 
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> defaultOAuth2UserService =
             new DefaultOAuth2UserService();
@@ -35,11 +39,19 @@ public class DelegatingOAuth2UserService implements OAuth2UserService<OAuth2User
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        return this.providerRegistry.findProvider(userRequest.getClientRegistration().getRegistrationId())
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = this.providerRegistry.findProvider(registrationId)
                 .map(provider -> provider.getOAuth2UserService())
                 .filter(userService -> userService != null)
-                .orElse(this.defaultOAuth2UserService)
-                .loadUser(userRequest);
+                .orElse(this.defaultOAuth2UserService);
+        log.info(
+                "Loading federated user info for registrationId={} with service={}",
+                registrationId,
+                delegate.getClass().getSimpleName()
+        );
+        OAuth2User user = delegate.loadUser(userRequest);
+        log.info("Loaded federated user info for registrationId={} principalName={}", registrationId, user.getName());
+        return user;
     }
 
 }

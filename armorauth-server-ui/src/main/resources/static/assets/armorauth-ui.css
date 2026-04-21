@@ -1,5 +1,6 @@
 :root {
     color-scheme: dark;
+    --panel-scale: 0.8;
     --page-bg:
         radial-gradient(circle at top right, rgba(51, 103, 214, 0.16), transparent 30%),
         linear-gradient(180deg, #10141b 0%, #0f141c 100%);
@@ -97,6 +98,8 @@ select {
     border-radius: var(--radius-2xl);
     overflow: hidden;
     box-shadow: var(--shadow);
+    zoom: var(--panel-scale);
+    transform-origin: center center;
 }
 
 .visual-panel,
@@ -901,6 +904,7 @@ body[data-theme="light"] .page-footer {
 
 @media (max-width: 980px) {
     .panel-frame {
+        zoom: 1;
         grid-template-columns: 1fr;
         min-height: auto;
     }
