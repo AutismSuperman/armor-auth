@@ -45,16 +45,7 @@ public class AlipayAccessTokenRestTemplate implements OAuth2AccessTokenRestTempl
                 new MediaType("application", "*+json"))
         );
         tokenResponseHttpMessageConverter.setAccessTokenResponseConverter(responseParameters -> {
-            Map<String, Object> tokenParameters = responseParameters;
-            Object response = responseParameters.get("alipay_system_oauth_token_response");
-            if (response instanceof Map<?, ?> responseMap) {
-                tokenParameters = new LinkedHashMap<>();
-                responseMap.forEach((key, value) -> {
-                    if (key != null) {
-                        tokenParameters.put(String.valueOf(key), value);
-                    }
-                });
-            }
+            Map<String, Object> tokenParameters = extractTokenParameters(responseParameters);
             tokenParameters.put(OAuth2ParameterNames.TOKEN_TYPE, OAuth2AccessToken.TokenType.BEARER.getValue());
             if (tokenParameters.containsKey("expires_in")) {
                 tokenParameters.put(OAuth2ParameterNames.EXPIRES_IN, tokenParameters.get("expires_in"));
@@ -72,6 +63,20 @@ public class AlipayAccessTokenRestTemplate implements OAuth2AccessTokenRestTempl
     @Override
     public boolean supports(String registrationId) {
         return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.ALIPAY, registrationId);
+    }
+
+    private Map<String, Object> extractTokenParameters(Map<String, Object> responseParameters) {
+        Object response = responseParameters.get("alipay_system_oauth_token_response");
+        if (!(response instanceof Map<?, ?> responseMap)) {
+            return new LinkedHashMap<>(responseParameters);
+        }
+        Map<String, Object> tokenParameters = new LinkedHashMap<>();
+        responseMap.forEach((key, value) -> {
+            if (key != null) {
+                tokenParameters.put(String.valueOf(key), value);
+            }
+        });
+        return tokenParameters;
     }
 
 }

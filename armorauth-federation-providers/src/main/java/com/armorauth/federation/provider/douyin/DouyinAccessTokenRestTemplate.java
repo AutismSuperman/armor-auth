@@ -45,16 +45,7 @@ public class DouyinAccessTokenRestTemplate implements OAuth2AccessTokenRestTempl
                 new MediaType("application", "*+json"))
         );
         tokenResponseHttpMessageConverter.setAccessTokenResponseConverter(responseParameters -> {
-            Map<String, Object> tokenParameters = responseParameters;
-            Object data = responseParameters.get("data");
-            if (data instanceof Map<?, ?> dataMap) {
-                tokenParameters = new LinkedHashMap<>();
-                dataMap.forEach((key, value) -> {
-                    if (key != null) {
-                        tokenParameters.put(String.valueOf(key), value);
-                    }
-                });
-            }
+            Map<String, Object> tokenParameters = extractTokenParameters(responseParameters);
             tokenParameters.put(OAuth2ParameterNames.TOKEN_TYPE, OAuth2AccessToken.TokenType.BEARER.getValue());
             if (tokenParameters.containsKey("expires_in")) {
                 tokenParameters.put(OAuth2ParameterNames.EXPIRES_IN, tokenParameters.get("expires_in"));
@@ -72,6 +63,20 @@ public class DouyinAccessTokenRestTemplate implements OAuth2AccessTokenRestTempl
     @Override
     public boolean supports(String registrationId) {
         return ExtendedOAuth2ClientProvider.matchNameLowerCase(ExtendedOAuth2ClientProvider.DOUYIN, registrationId);
+    }
+
+    private Map<String, Object> extractTokenParameters(Map<String, Object> responseParameters) {
+        Object data = responseParameters.get("data");
+        if (!(data instanceof Map<?, ?> dataMap)) {
+            return new LinkedHashMap<>(responseParameters);
+        }
+        Map<String, Object> tokenParameters = new LinkedHashMap<>();
+        dataMap.forEach((key, value) -> {
+            if (key != null) {
+                tokenParameters.put(String.valueOf(key), value);
+            }
+        });
+        return tokenParameters;
     }
 
 }

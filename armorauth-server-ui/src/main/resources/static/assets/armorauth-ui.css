@@ -752,18 +752,18 @@ body[data-theme="light"] .notice.warning {
 .provider-list {
     width: min(100%, 472px);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+    gap: 8px;
 }
 
 .provider-link {
-    min-height: 88px;
+    min-height: 68px;
     display: grid;
     justify-items: center;
     align-content: center;
-    gap: 10px;
-    padding: 14px 10px;
-    border-radius: 16px;
+    gap: 7px;
+    padding: 10px 8px;
+    border-radius: 12px;
     border: 1px solid var(--line);
     background: var(--panel-soft);
     transition: border-color 0.18s ease, background 0.18s ease;
@@ -775,8 +775,8 @@ body[data-theme="light"] .notice.warning {
 }
 
 .provider-icon {
-    width: 38px;
-    height: 38px;
+    width: 28px;
+    height: 28px;
     border-radius: 10px;
     display: grid;
     place-items: center;
@@ -799,7 +799,7 @@ body[data-theme="light"] .notice.warning {
     display: grid;
     place-items: center;
     font-weight: 800;
-    font-size: 0.98rem;
+    font-size: 0.76rem;
     line-height: 1;
     color: #fff;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -814,14 +814,14 @@ body[data-theme="light"] .notice.warning {
 .provider-mark-facebook {
     background: #1877f2;
     font-family: Arial, sans-serif;
-    font-size: 1.35rem;
+    font-size: 1.05rem;
 }
 
 .provider-mark-microsoft {
     grid-template-columns: repeat(2, 1fr);
-    gap: 3px;
-    padding: 7px;
-    border-radius: 10px;
+    gap: 2px;
+    padding: 5px;
+    border-radius: 8px;
     background: var(--panel-elevated);
 }
 
@@ -848,7 +848,7 @@ body[data-theme="light"] .notice.warning {
 
 .provider-mark-gitlab {
     background: #fc6d26;
-    font-size: 0.8rem;
+    font-size: 0.68rem;
 }
 
 .provider-mark-discord {
@@ -864,7 +864,7 @@ body[data-theme="light"] .notice.warning {
 .provider-mark-linkedin {
     background: #0a66c2;
     font-family: Arial, sans-serif;
-    font-size: 1rem;
+    font-size: 0.82rem;
 }
 
 .provider-mark-apple {
@@ -873,32 +873,32 @@ body[data-theme="light"] .notice.warning {
 
 .provider-mark-weibo {
     background: #e6162d;
-    font-size: 0.76rem;
+    font-size: 0.66rem;
 }
 
 .provider-mark-baidu {
     background: #2932e1;
     font-family: Arial, sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.72rem;
     letter-spacing: 0;
 }
 
 .provider-mark-oschina {
     background: #21b351;
-    font-size: 0.78rem;
+    font-size: 0.66rem;
 }
 
 .provider-mark-douyin {
     background:
         linear-gradient(135deg, #25f4ee 0 28%, transparent 28% 42%, #fe2c55 42% 64%, transparent 64%),
         #111;
-    font-size: 0.86rem;
+    font-size: 0.7rem;
 }
 
 .provider-mark-alipay {
     background: #1677ff;
     font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-    font-size: 1rem;
+    font-size: 0.82rem;
 }
 
 .provider-fallback {
@@ -910,12 +910,16 @@ body[data-theme="light"] .notice.warning {
     background: var(--panel-elevated);
     box-shadow: inset 0 0 0 1px var(--line);
     font-weight: 800;
-    font-size: 0.86rem;
+    font-size: 0.74rem;
 }
 
 .provider-label {
-    font-size: 0.88rem;
+    max-width: 100%;
+    font-size: 0.76rem;
     color: var(--text-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .provider-github .provider-icon {
@@ -1272,17 +1276,17 @@ body[data-theme="light"] .page-footer {
 
     .provider-list {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+        gap: 8px;
     }
 
     .provider-link {
-        min-height: 76px;
+        min-height: 56px;
         border-radius: 12px;
     }
 
     .provider-icon {
-        width: 32px;
-        height: 32px;
+        width: 26px;
+        height: 26px;
     }
 
     .scope-item {
