@@ -175,6 +175,10 @@
                                         <span class="provider-mark provider-mark-baidu">du</span>
                                     <#elseif providerId == 'oschina'>
                                         <span class="provider-mark provider-mark-oschina">OS</span>
+                                    <#elseif providerId == 'douyin'>
+                                        <span class="provider-mark provider-mark-douyin">dy</span>
+                                    <#elseif providerId == 'alipay'>
+                                        <span class="provider-mark provider-mark-alipay">支</span>
                                     <#else>
                                         <span class="provider-fallback">${providerId?upper_case?substring(0, 2)}</span>
                                     </#if>

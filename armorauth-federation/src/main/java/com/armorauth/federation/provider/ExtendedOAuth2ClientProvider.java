@@ -227,6 +227,40 @@ public enum ExtendedOAuth2ClientProvider {
             builder.clientName("OSChina");
             return builder;
         }
+    },
+    DOUYIN {
+        @Override
+        public ClientRegistration.Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(
+                    registrationId,
+                    ClientAuthenticationMethod.CLIENT_SECRET_POST,
+                    DEFAULT_REDIRECT_URL
+            );
+            builder.scope("user_info");
+            builder.authorizationUri("https://open.douyin.com/platform/oauth/connect");
+            builder.tokenUri("https://open.douyin.com/oauth/access_token/");
+            builder.userInfoUri("https://open.douyin.com/oauth/userinfo/");
+            builder.userNameAttributeName("open_id");
+            builder.clientName("Douyin");
+            return builder;
+        }
+    },
+    ALIPAY {
+        @Override
+        public ClientRegistration.Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(
+                    registrationId,
+                    ClientAuthenticationMethod.NONE,
+                    DEFAULT_REDIRECT_URL
+            );
+            builder.scope("auth_user");
+            builder.authorizationUri("https://openauth.alipay.com/oauth2/publicAppAuthorize.htm");
+            builder.tokenUri("https://openapi.alipay.com/gateway.do");
+            builder.userInfoUri("https://openapi.alipay.com/gateway.do");
+            builder.userNameAttributeName("user_id");
+            builder.clientName("Alipay");
+            return builder;
+        }
     };
 
     private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}";
