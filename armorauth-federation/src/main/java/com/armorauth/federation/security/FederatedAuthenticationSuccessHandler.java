@@ -16,6 +16,9 @@
 package com.armorauth.federation.security;
 
 import com.armorauth.federation.FederatedLoginOrchestrator;
+import com.armorauth.security.SecurityAuditUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -39,6 +42,8 @@ import java.util.function.Consumer;
  * @since 0.2.3
  */
 public final class FederatedAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(FederatedAuthenticationSuccessHandler.class);
 
     private static final String DEFAULT_TARGET_URL = "/";
 
@@ -74,6 +79,10 @@ public final class FederatedAuthenticationSuccessHandler implements Authenticati
         } else if (principal instanceof OAuth2User oauth2User) {
             this.oauth2UserHandler.accept(oauth2User);
         }
+        log.info("Federated login succeeded username={} remoteAddress={} uri={} principalType={}",
+                SecurityAuditUtils.getAuthenticationName(authentication),
+                SecurityAuditUtils.getRemoteAddress(request), request.getRequestURI(),
+                principal != null ? principal.getClass().getSimpleName() : "unknown");
         if (principal instanceof OAuth2User && this.federatedLoginOrchestrator != null
                 && this.federatedLoginOrchestrator.handleSuccess(request, response, authentication)) {
             return;

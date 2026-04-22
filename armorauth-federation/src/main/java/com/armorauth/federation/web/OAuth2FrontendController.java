@@ -15,18 +15,30 @@
  */
 package com.armorauth.federation.web;
 
+import com.armorauth.authentication.CaptchaVerifyService;
 import com.armorauth.federation.config.FederationProperties;
 import com.armorauth.data.entity.OAuth2Scope;
 import com.armorauth.data.repository.OAuth2ScopeRepository;
 import com.armorauth.federation.FederatedLoginMode;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -35,6 +47,8 @@ import org.springframework.security.oauth2.server.authorization.OAuth2Authorizat
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,6 +57,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +80,14 @@ public class OAuth2FrontendController {
 
     private final AuthorizationServerSettings authorizationServerSettings;
 
+    private final CaptchaVerifyService captchaVerifyService;
+
+    private final UserDetailsService userDetailsService;
+
+    private final SecurityContextRepository securityContextRepository;
+
+    private final AuthenticationSuccessHandler authenticationSuccessHandler;
+
     private final FederatedLoginMode defaultFederatedLoginMode;
 
     public OAuth2FrontendController(RegisteredClientRepository registeredClientRepository,
@@ -72,12 +95,22 @@ public class OAuth2FrontendController {
                                     OAuth2AuthorizationConsentService authorizationConsentService,
                                     OAuth2ScopeRepository oAuth2ScopeRepository,
                                     AuthorizationServerSettings authorizationServerSettings,
+                                    ObjectProvider<CaptchaVerifyService> captchaVerifyServiceProvider,
+                                    UserDetailsService userDetailsService,
+                                    SecurityContextRepository securityContextRepository,
+                                    @Qualifier("formAuthenticationSuccessHandler")
+                                    AuthenticationSuccessHandler authenticationSuccessHandler,
                                     FederationProperties federationProperties) {
         this.registeredClientRepository = registeredClientRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.authorizationConsentService = authorizationConsentService;
         this.oAuth2ScopeRepository = oAuth2ScopeRepository;
         this.authorizationServerSettings = authorizationServerSettings;
+        this.captchaVerifyService = captchaVerifyServiceProvider.getIfAvailable(
+                () -> (account, code) -> "1234".equals(code));
+        this.userDetailsService = userDetailsService;
+        this.securityContextRepository = securityContextRepository;
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
         this.defaultFederatedLoginMode =
                 FederatedLoginMode.resolveConfiguredDefault(federationProperties.getDefaultLoginMode());
     }
@@ -137,6 +170,40 @@ public class OAuth2FrontendController {
         ));
     }
 
+    @GetMapping(path = "/login/captcha")
+    public String captchaLoginPage() {
+        return "redirect:/login";
+    }
+
+    @PostMapping(path = "/login/captcha", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public void captchaLogin(@RequestParam(name = "account", required = false) String account,
+                             @RequestParam(name = "captcha", required = false) String captcha,
+                             HttpServletRequest request,
+                             HttpServletResponse response) throws IOException, ServletException {
+        if (!StringUtils.hasText(account) || !StringUtils.hasText(captcha)
+                || !this.captchaVerifyService.verifyCaptcha(account.trim(), captcha.trim())) {
+            saveAuthenticationException(request, new BadCredentialsException("验证码不正确。"));
+            response.sendRedirect(request.getContextPath() + "/login?error");
+            return;
+        }
+
+        UserDetails userDetails;
+        try {
+            userDetails = this.userDetailsService.loadUserByUsername(account.trim());
+        } catch (AuthenticationException ex) {
+            saveAuthenticationException(request, ex);
+            response.sendRedirect(request.getContextPath() + "/login?error");
+            return;
+        }
+        Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
+                userDetails, null, userDetails.getAuthorities());
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        this.securityContextRepository.saveContext(securityContext, request, response);
+        this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
+    }
+
     @GetMapping(path = "/consent", produces = MediaType.TEXT_HTML_VALUE)
     @RegisterReflectionForBinding(String.class)
     public String consent(Principal principal, Model model,
@@ -190,6 +257,10 @@ public class OAuth2FrontendController {
             return providers;
         }
         return Collections.emptyList();
+    }
+
+    private void saveAuthenticationException(HttpServletRequest request, Exception exception) {
+        request.getSession(true).setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, exception);
     }
 
 }
