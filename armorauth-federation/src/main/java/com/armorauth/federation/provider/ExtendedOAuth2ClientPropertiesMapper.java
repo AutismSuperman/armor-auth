@@ -25,7 +25,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class ExtendedOAuth2ClientPropertiesMapper {
@@ -42,7 +42,7 @@ public final class ExtendedOAuth2ClientPropertiesMapper {
     }
 
     public Map<String, ClientRegistration> asClientRegistrations() {
-        Map<String, ClientRegistration> clientRegistrations = new HashMap<>();
+        Map<String, ClientRegistration> clientRegistrations = new LinkedHashMap<>();
         this.properties.getRegistration().forEach((key, value) ->
                 clientRegistrations.put(key, getClientRegistration(key, value, this.properties.getProvider())));
         return clientRegistrations;

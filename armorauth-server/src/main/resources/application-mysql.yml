@@ -4,17 +4,50 @@ spring:
       client:
         registration:
           github:
-            client-id: 1221e876540cca8ae5f9
-            client-secret: 162a98e9e71b29606a3c5f8e5e66a78e7b6a50e5
+            client-id: ${ARMORAUTH_GITHUB_CLIENT_ID:1221e876540cca8ae5f9}
+            client-secret: ${ARMORAUTH_GITHUB_CLIENT_SECRET:162a98e9e71b29606a3c5f8e5e66a78e7b6a50e5}
+          google:
+            client-id: ${ARMORAUTH_GOOGLE_CLIENT_ID:your-google-client-id}
+            client-secret: ${ARMORAUTH_GOOGLE_CLIENT_SECRET:your-google-client-secret}
+          facebook:
+            client-id: ${ARMORAUTH_FACEBOOK_CLIENT_ID:your-facebook-client-id}
+            client-secret: ${ARMORAUTH_FACEBOOK_CLIENT_SECRET:your-facebook-client-secret}
+          microsoft:
+            client-id: ${ARMORAUTH_MICROSOFT_CLIENT_ID:your-microsoft-client-id}
+            client-secret: ${ARMORAUTH_MICROSOFT_CLIENT_SECRET:your-microsoft-client-secret}
+          gitlab:
+            client-id: ${ARMORAUTH_GITLAB_CLIENT_ID:your-gitlab-client-id}
+            client-secret: ${ARMORAUTH_GITLAB_CLIENT_SECRET:your-gitlab-client-secret}
+          discord:
+            client-id: ${ARMORAUTH_DISCORD_CLIENT_ID:your-discord-client-id}
+            client-secret: ${ARMORAUTH_DISCORD_CLIENT_SECRET:your-discord-client-secret}
+          slack:
+            client-id: ${ARMORAUTH_SLACK_CLIENT_ID:your-slack-client-id}
+            client-secret: ${ARMORAUTH_SLACK_CLIENT_SECRET:your-slack-client-secret}
+          linkedin:
+            client-id: ${ARMORAUTH_LINKEDIN_CLIENT_ID:your-linkedin-client-id}
+            client-secret: ${ARMORAUTH_LINKEDIN_CLIENT_SECRET:your-linkedin-client-secret}
+          apple:
+            client-id: ${ARMORAUTH_APPLE_CLIENT_ID:your-apple-services-id}
+            client-secret: ${ARMORAUTH_APPLE_CLIENT_SECRET:your-apple-client-secret-jwt}
+          weibo:
+            client-id: ${ARMORAUTH_WEIBO_CLIENT_ID:your-weibo-client-id}
+            client-secret: ${ARMORAUTH_WEIBO_CLIENT_SECRET:your-weibo-client-secret}
+          baidu:
+            client-id: ${ARMORAUTH_BAIDU_CLIENT_ID:your-baidu-client-id}
+            client-secret: ${ARMORAUTH_BAIDU_CLIENT_SECRET:your-baidu-client-secret}
+          oschina:
+            client-id: ${ARMORAUTH_OSCHINA_CLIENT_ID:your-oschina-client-id}
+            client-secret: ${ARMORAUTH_OSCHINA_CLIENT_SECRET:your-oschina-client-secret}
           gitee:
-            client-id: 6117b6e01c09e53cd5b28c04492e1bb7c8eb33c343492e69f599160b464ef971
-            client-secret: bf1d6812ee3f1e97f2f87e49d4d39224247e9c3ebbaac2bbf089b22140dfdd72
+            client-id: ${ARMORAUTH_GITEE_CLIENT_ID:6117b6e01c09e53cd5b28c04492e1bb7c8eb33c343492e69f599160b464ef971}
+            client-secret: ${ARMORAUTH_GITEE_CLIENT_SECRET:bf1d6812ee3f1e97f2f87e49d4d39224247e9c3ebbaac2bbf089b22140dfdd72}
           qq:
-            client-id: 102061483
-            client-secret: DLGxQfgT2NUP7bst
+            client-id: ${ARMORAUTH_QQ_CLIENT_ID:102061483}
+            client-secret: ${ARMORAUTH_QQ_CLIENT_SECRET:DLGxQfgT2NUP7bst}
           wechat:
-            client-id: your-wechat-app-id
-            client-secret: your-wechat-app-secret
+            client-id: ${ARMORAUTH_WECHAT_CLIENT_ID:your-wechat-app-id}
+            client-secret: ${ARMORAUTH_WECHAT_CLIENT_SECRET:your-wechat-app-secret}
             scope:
               - snsapi_login
   datasource:

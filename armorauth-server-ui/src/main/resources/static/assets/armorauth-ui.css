@@ -792,6 +792,102 @@ body[data-theme="light"] .notice.warning {
     display: block;
 }
 
+.provider-mark {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 0.98rem;
+    line-height: 1;
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.provider-mark-google {
+    background:
+        conic-gradient(from -45deg, #4285f4 0 25%, #34a853 0 50%, #fbbc05 0 75%, #ea4335 0);
+    color: #fff;
+}
+
+.provider-mark-facebook {
+    background: #1877f2;
+    font-family: Arial, sans-serif;
+    font-size: 1.35rem;
+}
+
+.provider-mark-microsoft {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    padding: 7px;
+    border-radius: 10px;
+    background: var(--panel-elevated);
+}
+
+.provider-mark-microsoft span {
+    width: 100%;
+    height: 100%;
+}
+
+.provider-mark-microsoft span:nth-child(1) {
+    background: #f25022;
+}
+
+.provider-mark-microsoft span:nth-child(2) {
+    background: #7fba00;
+}
+
+.provider-mark-microsoft span:nth-child(3) {
+    background: #00a4ef;
+}
+
+.provider-mark-microsoft span:nth-child(4) {
+    background: #ffb900;
+}
+
+.provider-mark-gitlab {
+    background: #fc6d26;
+    font-size: 0.8rem;
+}
+
+.provider-mark-discord {
+    background: #5865f2;
+}
+
+.provider-mark-slack {
+    background:
+        linear-gradient(135deg, #36c5f0 0 24%, transparent 24% 38%, #2eb67d 38% 62%, transparent 62% 76%, #e01e5a 76%),
+        #ecb22e;
+}
+
+.provider-mark-linkedin {
+    background: #0a66c2;
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
+}
+
+.provider-mark-apple {
+    background: #111;
+}
+
+.provider-mark-weibo {
+    background: #e6162d;
+    font-size: 0.76rem;
+}
+
+.provider-mark-baidu {
+    background: #2932e1;
+    font-family: Arial, sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0;
+}
+
+.provider-mark-oschina {
+    background: #21b351;
+    font-size: 0.78rem;
+}
+
 .provider-fallback {
     width: 100%;
     height: 100%;
@@ -824,6 +920,22 @@ body[data-theme="light"] .notice.warning {
 .provider-wechat .provider-icon,
 .provider-weixin .provider-icon {
     border-radius: 50%;
+}
+
+.provider-google .provider-icon,
+.provider-facebook .provider-icon,
+.provider-discord .provider-icon,
+.provider-slack .provider-icon,
+.provider-linkedin .provider-icon,
+.provider-apple .provider-icon,
+.provider-weibo .provider-icon,
+.provider-baidu .provider-icon,
+.provider-oschina .provider-icon {
+    border-radius: 50%;
+}
+
+.provider-microsoft .provider-icon {
+    border-radius: 10px;
 }
 
 .scope-list {

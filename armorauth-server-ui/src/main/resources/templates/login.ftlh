@@ -151,6 +151,30 @@
                                         <svg class="provider-symbol" viewBox="0 0 1049 1024" focusable="false">
                                             <use href="#icon-GitHub"></use>
                                         </svg>
+                                    <#elseif providerId == 'google'>
+                                        <span class="provider-mark provider-mark-google">G</span>
+                                    <#elseif providerId == 'facebook'>
+                                        <span class="provider-mark provider-mark-facebook">f</span>
+                                    <#elseif providerId == 'microsoft'>
+                                        <span class="provider-mark provider-mark-microsoft">
+                                            <span></span><span></span><span></span><span></span>
+                                        </span>
+                                    <#elseif providerId == 'gitlab'>
+                                        <span class="provider-mark provider-mark-gitlab">GL</span>
+                                    <#elseif providerId == 'discord'>
+                                        <span class="provider-mark provider-mark-discord">D</span>
+                                    <#elseif providerId == 'slack'>
+                                        <span class="provider-mark provider-mark-slack">S</span>
+                                    <#elseif providerId == 'linkedin'>
+                                        <span class="provider-mark provider-mark-linkedin">in</span>
+                                    <#elseif providerId == 'apple'>
+                                        <span class="provider-mark provider-mark-apple">A</span>
+                                    <#elseif providerId == 'weibo'>
+                                        <span class="provider-mark provider-mark-weibo">WB</span>
+                                    <#elseif providerId == 'baidu'>
+                                        <span class="provider-mark provider-mark-baidu">du</span>
+                                    <#elseif providerId == 'oschina'>
+                                        <span class="provider-mark provider-mark-oschina">OS</span>
                                     <#else>
                                         <span class="provider-fallback">${providerId?upper_case?substring(0, 2)}</span>
                                     </#if>
