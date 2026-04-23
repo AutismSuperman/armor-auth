@@ -6,7 +6,7 @@
     <title>欢迎登录 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=20260423">
     <script src="/assets/iconfont.js"></script>
 </head>
 <body>
@@ -130,10 +130,13 @@
                     <span class="eyebrow">快捷登录</span>
                     <p>使用你常用的平台快速进入。</p>
                 </div>
-                    <div class="provider-list">
+                    <#if federatedProviders?size gt 8>
+                        <input class="provider-more-check" type="checkbox" id="provider-more-toggle">
+                    </#if>
+                    <div class="provider-list" data-provider-list>
                         <#list federatedProviders as provider>
                             <#assign providerId = provider.registrationId?lower_case>
-                            <a class="provider-link provider-${providerId}" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录">
+                            <a class="provider-link provider-${providerId}" href="/oauth2/authorization/${provider.registrationId}?mode=${selectedFederatedMode}" aria-label="使用 ${provider.clientName!provider.registrationId} 登录" <#if provider_index gte 8>data-provider-extra</#if>>
                                 <span class="provider-icon" aria-hidden="true">
                                     <#if providerId == 'gitee'>
                                         <svg class="provider-symbol" viewBox="0 0 1024 1024" focusable="false">
@@ -179,6 +182,12 @@
                                         <span class="provider-mark provider-mark-douyin">dy</span>
                                     <#elseif providerId == 'alipay'>
                                         <span class="provider-mark provider-mark-alipay">支</span>
+                                    <#elseif providerId == 'dingtalk'>
+                                        <span class="provider-mark provider-mark-dingtalk">钉</span>
+                                    <#elseif providerId == 'wecom'>
+                                        <span class="provider-mark provider-mark-wecom">企</span>
+                                    <#elseif providerId == 'feishu'>
+                                        <span class="provider-mark provider-mark-feishu">飞</span>
                                     <#else>
                                         <span class="provider-fallback">${providerId?upper_case?substring(0, 2)}</span>
                                     </#if>
@@ -187,6 +196,12 @@
                             </a>
                         </#list>
                     </div>
+                    <#if federatedProviders?size gt 8>
+                        <label class="provider-more" for="provider-more-toggle">
+                            <span class="provider-more-open">更多登录方式</span>
+                            <span class="provider-more-close">收起登录方式</span>
+                        </label>
+                    </#if>
                 </div>
             </#if>
 
@@ -205,6 +220,6 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js"></script>
+<script src="/assets/armorauth-ui.js?v=20260423"></script>
 </body>
 </html>

@@ -261,6 +261,57 @@ public enum ExtendedOAuth2ClientProvider {
             builder.clientName("Alipay");
             return builder;
         }
+    },
+    DINGTALK {
+        @Override
+        public ClientRegistration.Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(
+                    registrationId,
+                    ClientAuthenticationMethod.CLIENT_SECRET_POST,
+                    DEFAULT_REDIRECT_URL
+            );
+            builder.scope("openid");
+            builder.authorizationUri("https://login.dingtalk.com/oauth2/auth");
+            builder.tokenUri("https://api.dingtalk.com/v1.0/oauth2/userAccessToken");
+            builder.userInfoUri("https://api.dingtalk.com/v1.0/contact/users/me");
+            builder.userNameAttributeName("openId");
+            builder.clientName("DingTalk");
+            return builder;
+        }
+    },
+    WECOM {
+        @Override
+        public ClientRegistration.Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(
+                    registrationId,
+                    ClientAuthenticationMethod.NONE,
+                    DEFAULT_REDIRECT_URL
+            );
+            builder.scope("snsapi_base");
+            builder.authorizationUri("https://open.weixin.qq.com/connect/oauth2/authorize");
+            builder.tokenUri("https://qyapi.weixin.qq.com/cgi-bin/gettoken");
+            builder.userInfoUri("https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo");
+            builder.userNameAttributeName("UserId");
+            builder.clientName("WeCom");
+            return builder;
+        }
+    },
+    FEISHU {
+        @Override
+        public ClientRegistration.Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(
+                    registrationId,
+                    ClientAuthenticationMethod.CLIENT_SECRET_POST,
+                    DEFAULT_REDIRECT_URL
+            );
+            builder.scope("offline_access");
+            builder.authorizationUri("https://accounts.feishu.cn/open-apis/authen/v1/authorize");
+            builder.tokenUri("https://open.feishu.cn/open-apis/authen/v2/oauth/token");
+            builder.userInfoUri("https://open.feishu.cn/open-apis/authen/v1/user_info");
+            builder.userNameAttributeName("open_id");
+            builder.clientName("Feishu");
+            return builder;
+        }
     };
 
     private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}";

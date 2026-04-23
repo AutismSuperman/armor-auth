@@ -49,6 +49,15 @@ spring:
           alipay:
             client-id: ${ARMORAUTH_ALIPAY_APP_ID:your-alipay-app-id}
             client-secret: ${ARMORAUTH_ALIPAY_PRIVATE_KEY:your-alipay-private-key}
+          dingtalk:
+            client-id: ${ARMORAUTH_DINGTALK_CLIENT_ID:your-dingtalk-client-id}
+            client-secret: ${ARMORAUTH_DINGTALK_CLIENT_SECRET:your-dingtalk-client-secret}
+          wecom:
+            client-id: ${ARMORAUTH_WECOM_CORP_ID:your-wecom-corp-id}
+            client-secret: ${ARMORAUTH_WECOM_CORP_SECRET:your-wecom-corp-secret}
+          feishu:
+            client-id: ${ARMORAUTH_FEISHU_CLIENT_ID:your-feishu-client-id}
+            client-secret: ${ARMORAUTH_FEISHU_CLIENT_SECRET:your-feishu-client-secret}
           gitee:
             client-id: ${ARMORAUTH_GITEE_CLIENT_ID:6117b6e01c09e53cd5b28c04492e1bb7c8eb33c343492e69f599160b464ef971}
             client-secret: ${ARMORAUTH_GITEE_CLIENT_SECRET:bf1d6812ee3f1e97f2f87e49d4d39224247e9c3ebbaac2bbf089b22140dfdd72}

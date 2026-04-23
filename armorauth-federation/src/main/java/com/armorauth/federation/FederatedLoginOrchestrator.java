@@ -181,7 +181,7 @@ public class FederatedLoginOrchestrator {
         Map<String, Object> attributes = principal.getAttributes();
         String registrationId = authenticationToken.getAuthorizedClientRegistrationId();
         String providerUserId = principal.getName();
-        String displayName = firstNonBlank(attributes, "nickname", "name", "screen_name", "uname", "nick_name");
+        String displayName = firstNonBlank(attributes, "nickname", "name", "screen_name", "uname", "nick_name", "nick");
         if (!StringUtils.hasText(displayName)) {
             displayName = registrationId + "_" + abbreviateProviderUserId(providerUserId);
         }
@@ -194,7 +194,12 @@ public class FederatedLoginOrchestrator {
                 "name",
                 "screen_name",
                 "uname",
-                "nick_name"
+                "nick_name",
+                "nick",
+                "open_id",
+                "openId",
+                "UserId",
+                "OpenId"
         );
         String avatarUrl = firstNonBlank(
                 attributes,

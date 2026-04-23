@@ -25,9 +25,14 @@ import com.armorauth.federation.provider.douyin.DouyinAccessTokenRestTemplate;
 import com.armorauth.federation.provider.douyin.DouyinAuthorizationRequestConverter;
 import com.armorauth.federation.provider.douyin.DouyinAuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.provider.douyin.DouyinFederatedOAuth2Provider;
+import com.armorauth.federation.provider.dingtalk.DingTalkFederatedOAuth2Provider;
+import com.armorauth.federation.provider.feishu.FeishuFederatedOAuth2Provider;
 import com.armorauth.federation.provider.qq.QqAccessTokenRestTemplate;
 import com.armorauth.federation.provider.qq.QqFederatedOAuth2Provider;
 import com.armorauth.federation.provider.qq.QqOAuth2AuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.provider.wecom.WeComAccessTokenRestTemplate;
+import com.armorauth.federation.provider.wecom.WeComAuthorizationCodeGrantRequestConverter;
+import com.armorauth.federation.provider.wecom.WeComFederatedOAuth2Provider;
 import com.armorauth.federation.provider.wechat.WechatAccessTokenRestTemplate;
 import com.armorauth.federation.provider.wechat.WechatAuthorizationCodeGrantRequestConverter;
 import com.armorauth.federation.provider.wechat.WechatFederatedOAuth2Provider;
@@ -43,7 +48,10 @@ class DelegateAccessTokenResponseClientTest {
                     new QqFederatedOAuth2Provider(),
                     new WechatFederatedOAuth2Provider(),
                     new DouyinFederatedOAuth2Provider(),
-                    new AlipayFederatedOAuth2Provider()
+                    new AlipayFederatedOAuth2Provider(),
+                    new DingTalkFederatedOAuth2Provider(),
+                    new WeComFederatedOAuth2Provider(),
+                    new FeishuFederatedOAuth2Provider()
             )
     );
 
@@ -54,6 +62,9 @@ class DelegateAccessTokenResponseClientTest {
         FederatedOAuth2Provider wechat = providerRegistry.findProvider("wechat").orElseThrow();
         FederatedOAuth2Provider douyin = providerRegistry.findProvider("douyin").orElseThrow();
         FederatedOAuth2Provider alipay = providerRegistry.findProvider("alipay").orElseThrow();
+        FederatedOAuth2Provider dingtalk = providerRegistry.findProvider("dingtalk").orElseThrow();
+        FederatedOAuth2Provider wecom = providerRegistry.findProvider("wecom").orElseThrow();
+        FederatedOAuth2Provider feishu = providerRegistry.findProvider("feishu").orElseThrow();
 
         assertThat(new GiteeAccessTokenRestTemplate().supports("gitee")).isTrue();
         assertThat(new GiteeOAuth2AuthorizationCodeGrantRequestConverter().supports("gitee")).isTrue();
@@ -75,6 +86,19 @@ class DelegateAccessTokenResponseClientTest {
         assertThat(new AlipayAccessTokenRestTemplate().supports("alipay")).isTrue();
         assertThat(new AlipayAuthorizationCodeGrantRequestConverter().supports("alipay")).isTrue();
         assertThat(alipay.getAuthorizationRequestConverter()).isNotNull();
+
+        assertThat(dingtalk.getAuthorizationCodeGrantRequestConverter()).isNotNull();
+        assertThat(dingtalk.getAccessTokenRestTemplate()).isNotNull();
+        assertThat(dingtalk.getOAuth2UserService()).isNotNull();
+
+        assertThat(new WeComAccessTokenRestTemplate().supports("wecom")).isTrue();
+        assertThat(new WeComAuthorizationCodeGrantRequestConverter().supports("wecom")).isTrue();
+        assertThat(wecom.getAuthorizationRequestConverter()).isNotNull();
+        assertThat(wecom.getOAuth2UserService()).isNotNull();
+
+        assertThat(feishu.getAuthorizationCodeGrantRequestConverter()).isNotNull();
+        assertThat(feishu.getAccessTokenRestTemplate()).isNotNull();
+        assertThat(feishu.getOAuth2UserService()).isNotNull();
     }
 
     @Test
@@ -90,6 +114,8 @@ class DelegateAccessTokenResponseClientTest {
         assertThat(new DouyinAuthorizationCodeGrantRequestConverter().supports("github")).isFalse();
         assertThat(new AlipayAccessTokenRestTemplate().supports("github")).isFalse();
         assertThat(new AlipayAuthorizationCodeGrantRequestConverter().supports("github")).isFalse();
+        assertThat(new WeComAccessTokenRestTemplate().supports("github")).isFalse();
+        assertThat(new WeComAuthorizationCodeGrantRequestConverter().supports("github")).isFalse();
         assertThat(providerRegistry.findProvider("github")).isEmpty();
     }
 
