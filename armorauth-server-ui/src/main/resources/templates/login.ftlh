@@ -6,69 +6,58 @@
     <title>欢迎登录 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=20260423">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=20260428">
     <script src="/assets/iconfont.js"></script>
 </head>
-<body>
+<body class="authing-login-page">
 <div class="page-shell">
-    <main class="panel-frame">
-        <section class="visual-panel">
-            <div class="brand-row">
-                <div class="brand-chip brand-chip-logo">
-                    <img class="brand-logo" src="/brand/icon.svg" alt="ArmorAuth logo">
-                    <span class="brand-copy">
-                        <span>账号与授权中心</span>
-                    </span>
-                </div>
-                <div class="top-actions">
-                    <span class="status-pill">在线服务</span>
-                    <button class="theme-toggle" type="button" data-theme-toggle>
-                        <span class="theme-toggle-icon" data-theme-icon>☼</span>
-                        <span data-theme-text>浅色</span>
-                    </button>
-                </div>
+    <main class="login-product-shell">
+        <section class="login-visual-panel">
+            <div class="login-brand">
+                <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
+                <span>
+                    <strong>ArmorAuth</strong>
+                    <small>Identity Platform</small>
+                </span>
             </div>
 
-            <div class="hero-copy">
-                <span class="eyebrow">统一入口</span>
-                <h1>统一身份认证</h1>
-                <p>在一个界面完成登录、授权确认与设备激活。</p>
+            <div class="login-visual-copy">
+                <span class="login-kicker">统一认证入口</span>
+                <h1>统一登录与授权入口</h1>
+                <p>面向应用接入的身份平台登录页，支持账号密码、短信验证码和联合身份源。</p>
             </div>
 
-            <div class="hero-stage" aria-hidden="true">
-                <div class="showcase-panel">
-                    <div class="showcase-logo-shell">
-                        <img class="showcase-logo" src="/brand/logo.svg" alt="ArmorAuth logo">
-                    </div>
-                    <div class="showcase-orbit">
-                        <div class="showcase-node showcase-node-top">统一登录</div>
-                        <div class="showcase-node showcase-node-left">授权确认</div>
-                        <div class="showcase-node showcase-node-right">设备激活</div>
-                    </div>
+            <div class="login-visual-stack" aria-hidden="true">
+                <div class="login-preview-card is-primary">
+                    <span>SSO</span>
+                    <strong>Single Sign-On</strong>
+                    <small>统一登录会话</small>
                 </div>
-            </div>
-
-            <div class="signal-board" aria-label="平台能力">
-                <div class="signal-line">
-                    <span class="signal-tag">多方式登录</span>
-                    <strong>账号密码与短信验证码统一接入</strong>
-                </div>
-                <div class="signal-line">
-                    <span class="signal-tag">流程统一</span>
-                    <strong>登录、授权、设备激活保持同一套界面语言</strong>
-                </div>
-                <div class="signal-line">
-                    <span class="signal-tag">品牌一致</span>
-                    <strong>认证入口与平台身份体系保持清晰且连续</strong>
+                <div class="login-preview-grid">
+                    <span>OAuth2</span>
+                    <span>OIDC</span>
+                    <span>MFA</span>
+                    <span>Device</span>
                 </div>
             </div>
         </section>
-        <section class="content-panel">
-            <div class="content-column">
-                <div class="section-title">
-                    <span class="eyebrow">账号登录</span>
-                    <h1>欢迎登录</h1>
-                    <p>登录后即可继续访问你的账号与服务。</p>
+
+        <section class="login-card-panel">
+            <div class="login-card">
+                <div class="login-card-toolbar">
+                    <div class="login-card-logo">
+                        <img src="/brand/icon.svg" alt="ArmorAuth logo">
+                        <span>ArmorAuth</span>
+                    </div>
+                    <button class="theme-toggle" type="button" data-theme-toggle>
+                        <span class="theme-toggle-icon" data-theme-icon>浅</span>
+                        <span data-theme-text>浅色</span>
+                    </button>
+                </div>
+
+                <div class="login-card-title">
+                    <h1>登录账号</h1>
+                    <p>继续访问已授权的应用和服务。</p>
                 </div>
 
                 <#if errorMessage??>
@@ -78,7 +67,7 @@
                     <div class="notice success">您已成功退出当前会话。</div>
                 </#if>
 
-                <div data-tab-group>
+                <div class="login-methods" data-tab-group>
                     <div class="switcher" aria-label="登录模式">
                         <button type="button" class="is-active" data-tab-target="password-login">账号密码</button>
                         <button type="button" data-tab-target="captcha-login">短信验证码</button>
@@ -122,14 +111,10 @@
                         </div>
                     </form>
                 </div>
-            </div>
 
             <#if federatedProviders?has_content>
-                <div class="content-column">
-                <div class="section-title">
-                    <span class="eyebrow">快捷登录</span>
-                    <p>使用你常用的平台快速进入。</p>
-                </div>
+                <div class="login-provider-section">
+                    <div class="login-divider"><span>其他登录方式</span></div>
                     <#if federatedProviders?size gt 8>
                         <input class="provider-more-check" type="checkbox" id="provider-more-toggle">
                     </#if>
@@ -204,11 +189,11 @@
                     </#if>
                 </div>
             </#if>
-
-            <p class="footer-copy">ArmorAuth 统一身份平台</p>
+                <p class="login-card-foot">登录即表示你正在使用 ArmorAuth 统一身份平台。</p>
+            </div>
         </section>
     </main>
-    <footer class="page-footer">
+    <footer class="page-footer login-page-footer">
         <div class="page-footer-brand">
             <strong>ArmorAuth</strong>
             <span>统一身份与授权平台</span>
@@ -220,6 +205,6 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=20260423"></script>
+<script src="/assets/armorauth-ui.js?v=20260428"></script>
 </body>
 </html>

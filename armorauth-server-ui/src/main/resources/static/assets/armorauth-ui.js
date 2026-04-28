@@ -10,7 +10,7 @@
             const text = button.querySelector("[data-theme-text]");
             button.setAttribute("aria-label", theme === "light" ? "切换到深色主题" : "切换到浅色主题");
             if (icon) {
-                icon.textContent = theme === "light" ? "☾" : "☼";
+                icon.textContent = "";
             }
             if (text) {
                 text.textContent = theme === "light" ? "深色" : "浅色";
@@ -19,8 +19,7 @@
     };
 
     const storedTheme = localStorage.getItem(THEME_KEY);
-    const preferredTheme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-    applyTheme(storedTheme || preferredTheme);
+    applyTheme(storedTheme || "light");
 
     document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
         button.addEventListener("click", () => {

@@ -6,7 +6,7 @@
     <title>连接设备 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=20260428">
 </head>
 <body>
 <div class="page-shell">
@@ -23,7 +23,7 @@
                 <div class="top-actions">
                     <span class="status-pill">设备登录</span>
                     <button class="theme-toggle" type="button" data-theme-toggle>
-                        <span class="theme-toggle-icon" data-theme-icon>☼</span>
+                        <span class="theme-toggle-icon" data-theme-icon>浅</span>
                         <span data-theme-text>浅色</span>
                     </button>
                 </div>
@@ -80,6 +80,6 @@
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js"></script>
+<script src="/assets/armorauth-ui.js?v=20260428"></script>
 </body>
 </html>
