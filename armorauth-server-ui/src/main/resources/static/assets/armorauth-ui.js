@@ -6,12 +6,8 @@
         document.documentElement.style.colorScheme = theme === "light" ? "light" : "dark";
 
         document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
-            const icon = button.querySelector("[data-theme-icon]");
             const text = button.querySelector("[data-theme-text]");
             button.setAttribute("aria-label", theme === "light" ? "切换到深色主题" : "切换到浅色主题");
-            if (icon) {
-                icon.textContent = "";
-            }
             if (text) {
                 text.textContent = theme === "light" ? "深色" : "浅色";
             }
