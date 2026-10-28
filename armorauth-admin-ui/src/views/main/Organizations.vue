@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h2>组织管理</h2>
+        <h2>组织架构</h2>
         <div class="page-subtitle">按租户查看组织、成员和组织角色</div>
       </div>
       <a-button type="primary" @click="showCreate">
@@ -78,7 +78,8 @@
     </a-table>
 
     <a-modal v-model:open="modalVisible" :title="isEdit ? '编辑组织' : '创建组织'"
-             @ok="handleSubmit" :confirmLoading="submitting" width="640px">
+             @ok="handleSubmit" :confirmLoading="submitting" width="640px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }">
       <a-form :model="form" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">

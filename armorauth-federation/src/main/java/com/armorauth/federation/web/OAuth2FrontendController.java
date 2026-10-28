@@ -155,7 +155,7 @@ public class OAuth2FrontendController {
                 FederatedLoginMode.resolveConfiguredDefault(federationProperties.getDefaultLoginMode());
     }
 
-    @GetMapping(path = "/", produces = MediaType.TEXT_HTML_VALUE)
+    @GetMapping(path = {"/", "/home"}, produces = MediaType.TEXT_HTML_VALUE)
     @RegisterReflectionForBinding(String.class)
     public String index(@CurrentSecurityContext(expression = "authentication") Authentication authentication,
                         Model model) {

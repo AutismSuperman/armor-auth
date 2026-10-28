@@ -1,7 +1,10 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>审计日志</h2>
+      <div>
+        <h2>安全审计日志</h2>
+        <div class="page-subtitle">记录控制台安全变更、用户登录与凭据签发全生命周期操作轨迹</div>
+      </div>
       <a-space>
         <a-select v-model:value="filterEventType" placeholder="事件类型" allowClear style="width: 200px"
                   @change="fetchData">
@@ -32,7 +35,10 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
+import dayjs from 'dayjs'
 import { getAuditEvents } from '../../api'
+
+const formatTime = (time) => time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-'
 
 const events = ref([])
 const loading = ref(false)
@@ -51,7 +57,7 @@ const eventTypes = [
 ]
 
 const columns = [
-  { title: '时间', dataIndex: 'createdAt', key: 'time', width: 180 },
+  { title: '时间', dataIndex: 'createdAt', key: 'time', width: 180, customRender: ({ text }) => formatTime(text) },
   { title: '事件类型', key: 'type', width: 200 },
   { title: '操作者', dataIndex: 'principalName', key: 'principal', width: 150 },
   { title: '资源类型', dataIndex: 'resourceType', key: 'resource', width: 120 },

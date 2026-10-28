@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h2>租户管理</h2>
+        <h2>租户与用户池</h2>
         <div class="page-subtitle">用户池、品牌配置和组织边界</div>
       </div>
       <a-button type="primary" @click="showCreate">
@@ -81,6 +81,7 @@
       :title="isEdit ? '编辑租户' : '创建租户'"
       :confirmLoading="submitting"
       width="680px"
+      :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }"
       @ok="handleSubmit">
       <a-form :model="form" layout="vertical">
         <a-row :gutter="16">

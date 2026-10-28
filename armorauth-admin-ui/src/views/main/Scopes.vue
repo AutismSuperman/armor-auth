@@ -1,7 +1,10 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>Scope 管理</h2>
+      <div>
+        <h2>Scope 权限定义</h2>
+        <div class="page-subtitle">定义基于 OAuth 2.1 / OIDC 协议规范的资源访问授权范围与权限描述</div>
+      </div>
       <a-button type="primary" @click="showCreate">
         <template #icon><PlusOutlined /></template>
         新增 Scope
@@ -82,7 +85,8 @@
     </div>
 
     <a-modal v-model:open="modalVisible" :title="isEdit ? '编辑 Scope' : '新增 Scope'"
-             @ok="handleSubmit" :confirmLoading="submitting" width="560px">
+             @ok="handleSubmit" :confirmLoading="submitting" width="560px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }">
       <a-form :model="form" layout="vertical">
         <a-form-item label="应用" required>
           <a-select

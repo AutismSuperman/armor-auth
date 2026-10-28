@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h2>OAuth 用户</h2>
+        <h2>用户目录</h2>
         <div class="page-subtitle">管理用户、角色以及租户下的组织归属</div>
       </div>
       <a-button type="primary" @click="showCreate">
@@ -49,7 +49,7 @@
       :columns="columns"
       :loading="loading"
       :pagination="pagination"
-      :scroll="{ x: 2360 }"
+      :scroll="{ x: 1720 }"
       row-key="id"
       size="middle"
       @change="handleTableChange">
@@ -85,7 +85,7 @@
 
         <template v-if="column.key === 'roles'">
           <a-space wrap size="small">
-            <a-tag v-for="role in record.roles || []" :key="role" color="blue">{{ role }}</a-tag>
+            <a-tag v-for="role in Array.from(new Set(record.roles || []))" :key="role" color="blue">{{ role }}</a-tag>
             <span v-if="!record.roles?.length">-</span>
           </a-space>
         </template>
@@ -118,18 +118,48 @@
         </template>
 
         <template v-if="column.key === 'action'">
-          <a-space size="small" wrap>
+          <a-space size="small">
             <a @click="showEdit(record)">编辑</a>
-            <a v-if="canManageRoles" @click="showRoles(record)">角色</a>
-            <a v-if="canManageOrganizations" @click="showOrganizations(record)">组织</a>
-            <a @click="showProfile(record)">Profile</a>
-            <a @click="handleResetPwd(record)">重置密码</a>
-            <a v-if="isLocked(record)" @click="handleUnlock(record)">解锁</a>
-            <a v-else @click="handleLock(record)">锁定</a>
-            <a @click="toggleStatus(record)">{{ isEnabled(record) ? '禁用' : '启用' }}</a>
-            <a-popconfirm title="确认删除此 OAuth 用户？" @confirm="handleDelete(record)">
-              <a style="color: #ff4d4f">删除</a>
-            </a-popconfirm>
+            <a-divider type="vertical" />
+            <a-dropdown :trigger="['click']">
+              <a class="ant-dropdown-link" @click.prevent>
+                更多 <DownOutlined />
+              </a>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item v-if="canManageRoles" key="roles" @click="showRoles(record)">
+                    <SafetyCertificateOutlined /> 分配角色
+                  </a-menu-item>
+                  <a-menu-item v-if="canManageOrganizations" key="orgs" @click="showOrganizations(record)">
+                    <ApartmentOutlined /> 组织归属
+                  </a-menu-item>
+                  <a-menu-item key="profile" @click="showProfile(record)">
+                    <IdcardOutlined /> Profile 扩展
+                  </a-menu-item>
+                  <a-menu-item key="reset-pwd" @click="handleResetPwd(record)">
+                    <KeyOutlined /> 重置密码
+                  </a-menu-item>
+                  <a-menu-divider />
+                  <a-menu-item v-if="isLocked(record)" key="unlock" @click="handleUnlock(record)">
+                    <UnlockOutlined /> 解锁账号
+                  </a-menu-item>
+                  <a-menu-item v-else key="lock" @click="handleLock(record)">
+                    <LockOutlined /> 锁定账号
+                  </a-menu-item>
+                  <a-menu-item key="toggle-status" @click="toggleStatus(record)">
+                    <StopOutlined v-if="isEnabled(record)" />
+                    <CheckCircleOutlined v-else />
+                    {{ isEnabled(record) ? '禁用用户' : '启用用户' }}
+                  </a-menu-item>
+                  <a-menu-divider />
+                  <a-menu-item key="delete" danger>
+                    <a-popconfirm title="确认删除此 OAuth 用户？" @confirm="handleDelete(record)">
+                      <span style="color: #ff4d4f"><DeleteOutlined /> 删除用户</span>
+                    </a-popconfirm>
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
           </a-space>
         </template>
       </template>
@@ -140,6 +170,7 @@
       :title="isEdit ? '编辑 OAuth 用户' : '创建 OAuth 用户'"
       :confirmLoading="submitting"
       width="720px"
+      :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }"
       @ok="handleSubmit">
       <a-form :model="form" layout="vertical">
         <a-row :gutter="12">
@@ -237,6 +268,7 @@
       title="角色绑定"
       width="620px"
       :confirmLoading="roleSaving"
+      :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }"
       @ok="saveRoles">
       <a-form layout="vertical">
         <a-form-item label="用户">
@@ -258,6 +290,7 @@
       title="组织归属"
       width="620px"
       :confirmLoading="organizationSaving"
+      :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }"
       @ok="saveOrganizations">
       <a-form layout="vertical">
         <a-form-item label="用户">
@@ -295,6 +328,7 @@
       title="OAuth Profile"
       width="680px"
       :confirmLoading="profileSaving"
+      :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }"
       @ok="saveProfile">
       <a-descriptions :column="1" bordered size="small" style="margin-bottom: 16px">
         <a-descriptions-item label="用户">{{ profileUser?.username || '-' }}</a-descriptions-item>
@@ -321,7 +355,20 @@
 <script setup>
 import { computed, ref, reactive, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons-vue'
+import {
+  PlusOutlined,
+  ReloadOutlined,
+  DownOutlined,
+  SafetyCertificateOutlined,
+  ApartmentOutlined,
+  IdcardOutlined,
+  KeyOutlined,
+  LockOutlined,
+  UnlockOutlined,
+  StopOutlined,
+  CheckCircleOutlined,
+  DeleteOutlined
+} from '@ant-design/icons-vue'
 import dayjs from 'dayjs'
 import {
   getUsers,
@@ -405,7 +452,7 @@ const columns = [
   { title: '锁定', key: 'locked', width: 190 },
   { title: '创建时间', key: 'createdAt', width: 170 },
   { title: '最后登录', key: 'lastLogin', width: 170 },
-  { title: '操作', key: 'action', width: 660, fixed: 'right' }
+  { title: '操作', key: 'action', width: 140, fixed: 'right' }
 ]
 
 const roleOptions = computed(() => roles.value.map(role => ({

@@ -1,7 +1,10 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>监控管理</h2>
+      <div>
+        <h2>Token 签发监控</h2>
+        <div class="page-subtitle">实时观测全域令牌签发速率、授权事件频次与登录失败告警</div>
+      </div>
       <a-space>
         <a-range-picker v-model:value="dateRange" @change="fetchData" />
       </a-space>
@@ -12,7 +15,12 @@
         <a-card class="metric-card" :bordered="false"><a-statistic title="登录成功" :value="stats.loginSuccess" /></a-card>
       </a-col>
       <a-col :xs="24" :sm="12" :lg="6">
-        <a-card class="metric-card" :bordered="false"><a-statistic title="登录失败" :value="stats.loginFailure" :value-style="{ color: '#cf1322' }" /></a-card>
+        <a-card class="metric-card" :bordered="false">
+          <a-statistic
+            title="登录失败"
+            :value="stats.loginFailure"
+            :value-style="{ color: stats.loginFailure > 0 ? '#cf1322' : undefined }" />
+        </a-card>
       </a-col>
       <a-col :xs="24" :sm="12" :lg="6">
         <a-card class="metric-card" :bordered="false"><a-statistic title="Token 签发" :value="stats.tokenIssued" /></a-card>
@@ -69,7 +77,9 @@ const fetchData = async () => {
     try {
       stats.loginSuccess = (await getAuditEvents(0, 1, 'LOGIN_SUCCESS')).data?.totalElements || 0
       stats.loginFailure = (await getAuditEvents(0, 1, 'LOGIN_FAILURE')).data?.totalElements || 0
-      stats.tokenIssued = (await getAuditEvents(0, 1, 'TOKEN_ISSUED')).data?.totalElements || 0
+      const tableTotal = (tokenStats.value || []).reduce((sum, item) => sum + (Number(item.count) || 0), 0)
+      const auditTotal = (await getAuditEvents(0, 1, 'TOKEN_ISSUED')).data?.totalElements || 0
+      stats.tokenIssued = Math.max(tableTotal, auditTotal)
       stats.mfaChallenge = (await getAuditEvents(0, 1, 'MFA_CHALLENGE')).data?.totalElements || 0
     } catch (e) {
       message.warning('概览指标加载失败: ' + e.message)

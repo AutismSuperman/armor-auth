@@ -6,115 +6,112 @@
     <title>二次验证 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026062112">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026102801">
 </head>
-<body class="authing-login-page identity-page google-login-page auth-flow-page" data-page-title-key="page.mfa.title">
+<body class="authing-login-page identity-page google-login-page auth-flow-page mfa-flow-page" data-page-title-key="page.mfa.title">
 <div class="page-shell">
-    <main class="login-product-shell">
-        <section class="login-visual-panel" data-visual="mfa">
-            <div class="login-brand">
-                <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
-                <span>
-                    <strong>ArmorAuth</strong>
-                    <small>身份云控制台</small>
-                </span>
+    <main class="mfa-card-shell">
+        <section class="mfa-card">
+            <!-- Toolbar -->
+            <div class="mfa-card-toolbar">
+                <div class="mfa-brand">
+                    <img class="mfa-logo-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
+                    <span>ArmorAuth</span>
+                </div>
+                <div class="top-actions">
+                    <button class="locale-toggle" type="button" data-locale-toggle title="切换语言">
+                        <span data-locale-text>EN</span>
+                    </button>
+                    <button class="theme-toggle" type="button" data-theme-toggle title="切换主题">
+                        <span class="theme-toggle-icon" data-theme-icon>
+                            <svg class="icon-sun" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                            <svg class="icon-moon" viewBox="0 0 24 24">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </span>
+                        <span data-theme-text>深色</span>
+                    </button>
+                </div>
             </div>
-            <div class="login-visual-copy">
-                <span class="login-kicker">MFA Challenge</span>
-                <h1>完成二次验证</h1>
-                <p>当前会话需要额外验证，确认后继续进入授权流程。</p>
-            </div>
-            <div class="identity-menu" aria-label="二次验证状态">
-                <div class="identity-menu-item is-active">
-                    <span class="identity-menu-icon">01</span>
-                    <span>
-                        <strong>账号已验证</strong>
-                        <small>${principal!'-'}</small>
-                    </span>
+
+            <!-- MFA Header (Google 2-Step Verification Style) -->
+            <div class="mfa-header">
+                <div class="security-shield-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><circle cx="12" cy="11" r="2.5"></circle><line x1="12" y1="13.5" x2="12" y2="16"></line></svg>
                 </div>
-                <div class="identity-menu-item is-active">
-                    <span class="identity-menu-icon">02</span>
-                    <span>
-                        <strong>等待 MFA</strong>
-                        <small>TOTP / Recovery / Passkey</small>
-                    </span>
+                <h1 class="mfa-title">两步安全验证</h1>
+                <p class="mfa-subtitle">为了保障您的账号安全，请输入身份验证器 (Authenticator) 生成的 6 位动态验证码</p>
+                <div class="mfa-account-badge">
+                    <span class="account-dot"></span>
+                    <span>验证账号: <strong>${principal!'-'}</strong></span>
                 </div>
             </div>
-        </section>
 
-        <section class="login-card-panel">
-            <div class="login-card">
-                <div class="login-card-toolbar">
-                    <div class="login-card-logo">
-                        <img src="/brand/icon.svg" alt="ArmorAuth logo">
-                        <span>安全验证</span>
-                    </div>
-                    <div class="top-actions">
-                        <button class="locale-toggle" type="button" data-locale-toggle>
-                            <span data-locale-text>EN</span>
-                        </button>
-                        <button class="theme-toggle" type="button" data-theme-toggle>
-                            <span class="theme-toggle-icon" data-theme-icon>
-                                <svg class="icon-sun" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="5"></circle>
-                                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                                </svg>
-                                <svg class="icon-moon" viewBox="0 0 24 24">
-                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                                </svg>
-                            </span>
-                            <span data-theme-text>深色</span>
-                        </button>
-                    </div>
+            <#if errorMessage??>
+                <div class="notice error">
+                    <svg class="notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <span class="notice-message">${errorMessage}</span>
                 </div>
+            </#if>
 
-                <div class="login-card-title">
-                    <span class="login-card-kicker">Multi-factor</span>
-                    <h1>二次验证</h1>
-                    <p>使用身份验证器、恢复码或 Passkey 完成验证。</p>
-                </div>
-
-                <#if errorMessage??>
-                    <div class="notice error">${errorMessage}</div>
-                </#if>
-
-                <form class="auth-form" action="/login/mfa" method="post">
-                    <input type="hidden" name="principal" value="${principal!}">
-                    <div class="field-group field-with-affix">
-                        <label for="mfaCode">验证码</label>
-                        <span class="field-affix">OTP</span>
+            <form class="auth-form mfa-form" action="/login/mfa" method="post">
+                <input type="hidden" name="principal" value="${principal!}">
+                <div class="field-group mfa-code-group">
+                    <label for="mfaCode">动态验证码</label>
+                    <div class="mfa-input-wrap">
                         <input id="mfaCode" name="mfaCode" type="text"
                                autocomplete="one-time-code"
                                inputmode="numeric"
                                pattern="[0-9]{6}"
                                maxlength="6"
-                               placeholder="请输入 6 位验证码"
-                               autofocus>
+                               placeholder="000000"
+                               class="mfa-otp-input"
+                               autofocus required>
                     </div>
-                    <div class="action-row action-row-stacked">
-                        <button class="button primary" type="submit">验证</button>
-                    </div>
-                </form>
-
-                <div class="auth-divider"><span>或</span></div>
-                <div id="passkeyNotice" class="notice error" style="display:none"></div>
-                <div class="action-row action-row-stacked">
-                    <button id="passkeyButton" class="button secondary" type="button">使用 Passkey 验证</button>
                 </div>
+                <div class="action-row action-row-stacked">
+                    <button class="button primary mfa-verify-btn" type="submit">验 证</button>
+                </div>
+            </form>
 
-                <p class="login-card-foot">如果无法使用身份验证器，请使用恢复码登录。</p>
+            <div class="login-divider"><span>或使用无密码凭证</span></div>
+            <div id="passkeyNotice" class="notice error" style="display:none"></div>
+            <div class="action-row action-row-stacked">
+                <button id="passkeyButton" class="button secondary passkey-mfa-btn" type="button">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"></path></svg>
+                    使用绑定的 Passkey 安全密钥验证
+                </button>
+            </div>
+
+            <div class="mfa-footer-links">
+                <a class="mfa-back-link" href="/login">返回重新登录</a>
+                <span class="mfa-recovery-tip">如果无法使用验证器，请联系租户管理员重置 MFA</span>
             </div>
         </section>
     </main>
+    <footer class="page-footer">
+        <div class="page-footer-brand">
+            <strong>ArmorAuth</strong>
+            <span>企业统一身份与多因素凭据保护平台</span>
+        </div>
+        <div class="page-footer-nav" aria-label="页面信息">
+            <span>FIDO2 / WebAuthn</span>
+            <span>TOTP 动态令牌</span>
+            <span>会话防御</span>
+        </div>
+    </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=2026062113"></script>
+<script src="/assets/armorauth-ui.js?v=2026102801"></script>
 <script>
     const passkeyButton = document.getElementById('passkeyButton');
     const passkeyNotice = document.getElementById('passkeyNotice');

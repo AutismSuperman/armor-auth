@@ -6,98 +6,98 @@
     <title>控制台 - ArmorAuth</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026062112">
+    <link rel="stylesheet" href="/assets/armorauth-ui.css?v=2026102801">
 </head>
 <body class="authing-login-page identity-page google-account-page" data-page-title-key="page.home.title">
 <div class="page-shell">
-    <main class="login-product-shell">
-        <section class="login-visual-panel" data-visual="home">
+    <main class="login-product-shell is-wide account-shell">
+        <!-- Sidebar Navigation (Google Account / Authing Console Style) -->
+        <section class="login-visual-panel account-sidebar-panel" data-visual="home">
             <div class="login-brand">
-                <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
-                <span>
+                <div class="brand-logo-wrap">
+                    <img class="login-brand-mark" src="/brand/icon.svg" alt="ArmorAuth logo">
+                </div>
+                <div class="brand-text-wrap">
                     <strong>ArmorAuth 账号</strong>
-                    <small>个人账号中心</small>
-                </span>
+                    <small>个人安全中心</small>
+                </div>
             </div>
 
             <div class="login-visual-copy">
-                <span class="login-kicker">首页</span>
+                <span class="login-kicker">用户中心</span>
                 <h1>欢迎回来</h1>
-                <p>查看账号安全、授权应用和登录会话。</p>
+                <p>集中查看与管理个人资料、两步验证、授权应用与活动会话。</p>
             </div>
 
-            <div class="identity-menu" aria-label="账号服务">
+            <div class="identity-menu account-nav-menu" aria-label="账号服务">
                 <button class="identity-menu-item is-active" type="button" data-account-section-target="home">
-                    <span class="identity-menu-icon">H</span>
+                    <span class="identity-menu-icon">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                    </span>
                     <span>
-                        <strong>首页</strong>
-                        <small>账号概览</small>
+                        <strong>首页概览</strong>
+                        <small>安全评分与快捷入口</small>
                     </span>
                 </button>
                 <button class="identity-menu-item" type="button" data-account-section-target="profile">
-                    <span class="identity-menu-icon">ID</span>
+                    <span class="identity-menu-icon">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </span>
                     <span>
                         <strong>个人信息</strong>
-                        <small>资料与联系方式</small>
+                        <small>昵称与联系方式验证</small>
                     </span>
                 </button>
                 <button class="identity-menu-item" type="button" data-account-section-target="security">
-                    <span class="identity-menu-icon">S</span>
+                    <span class="identity-menu-icon">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </span>
                     <span>
-                        <strong>安全性与登录</strong>
-                        <small>MFA / Passkey / 会话</small>
+                        <strong>安全性与 MFA</strong>
+                        <small>二次验证 / Authenticator</small>
                     </span>
                 </button>
                 <button class="identity-menu-item" type="button" data-account-section-target="apps">
-                    <span class="identity-menu-icon">A</span>
+                    <span class="identity-menu-icon">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </span>
                     <span>
-                        <strong>关联的应用</strong>
-                        <small>OAuth2 / OIDC 授权</small>
+                        <strong>已授权应用</strong>
+                        <small>OAuth2 / OIDC 客户端</small>
                     </span>
                 </button>
                 <button class="identity-menu-item" type="button" data-account-section-target="privacy">
-                    <span class="identity-menu-icon">D</span>
+                    <span class="identity-menu-icon">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </span>
                     <span>
-                        <strong>数据和隐私设置</strong>
-                        <small>活动与审计</small>
+                        <strong>数据与隐私</strong>
+                        <small>活动日志与审计</small>
                     </span>
                 </button>
             </div>
 
             <div class="account-side-actions">
-                <a class="account-side-link" href="/login">返回登录页</a>
-                <form action="/logout" method="post">
-                    <button class="account-side-button account-side-button-primary" type="submit">退出登录</button>
+                <a class="account-side-link" href="/login">返回登录页面</a>
+                <form action="/logout" method="post" style="display:inline-block;width:100%;">
+                    <button class="button secondary button-compact account-logout-btn" type="submit">安全退出当前账号</button>
                 </form>
-            </div>
-
-            <div class="login-visual-stack">
-                <div class="login-preview-card">
-                    <span>当前入口</span>
-                    <strong>Hosted Login</strong>
-                    <small>统一登录页</small>
-                </div>
-                <div class="login-preview-grid">
-                    <span>OIDC</span>
-                    <span>SSO</span>
-                    <span>MFA</span>
-                    <span>RBAC</span>
-                </div>
             </div>
         </section>
 
-        <section class="login-card-panel">
-            <div class="login-card">
+        <!-- Main Account Content Panel -->
+        <section class="login-card-panel account-content-panel">
+            <div class="login-card account-card">
                 <div class="login-card-toolbar">
                     <div class="login-card-logo">
                         <img src="/brand/icon.svg" alt="ArmorAuth logo">
-                        <span>控制台</span>
+                        <span>个人账号中心</span>
                     </div>
                     <div class="top-actions">
-                        <button class="locale-toggle" type="button" data-locale-toggle>
+                        <button class="locale-toggle" type="button" data-locale-toggle title="切换语言">
                             <span data-locale-text>EN</span>
                         </button>
-                        <button class="theme-toggle" type="button" data-theme-toggle>
+                        <button class="theme-toggle" type="button" data-theme-toggle title="切换主题">
                             <span class="theme-toggle-icon" data-theme-icon>
                                 <svg class="icon-sun" viewBox="0 0 24 24">
                                     <circle cx="12" cy="12" r="5"></circle>
@@ -119,55 +119,72 @@
                     </div>
                 </div>
 
-                <div class="login-card-title">
-                    <div class="account-profile-hero">
-                        <span class="account-profile-avatar">
-                            <img src="/brand/icon.svg" alt="ArmorAuth logo">
-                        </span>
+                <!-- Account Hero (Google Account Header Style) -->
+                <div class="account-profile-hero">
+                    <div class="account-profile-avatar">
+                        <span>${(userName!'A')?substring(0, 1)?upper_case}</span>
+                    </div>
+                    <div class="account-hero-copy">
                         <h1 data-i18n-template="home.welcome" data-i18n-value-name="${userName}">欢迎，${userName}</h1>
-                        <p>管理你的账号、安全设置和授权应用。</p>
+                        <p>管理您的个人资料、密码凭据与授权应用</p>
                     </div>
                     <div class="account-chip-row" aria-label="账号快捷入口">
-                        <button type="button" data-account-section-target="profile">个人信息</button>
-                        <button type="button" data-account-section-target="security">我的 MFA</button>
+                        <button type="button" data-account-section-target="profile">个人资料</button>
+                        <button type="button" data-account-section-target="security">MFA 安全</button>
                         <button type="button" data-account-section-target="apps">授权应用</button>
-                        <button type="button" data-account-section-target="privacy">登录活动</button>
+                        <button type="button" data-account-section-target="privacy">登录审计</button>
                     </div>
                 </div>
 
                 <div class="account-center" data-account-center>
+                    <!-- Tab 1: Home Overview -->
                     <section class="account-section is-active" data-account-section="home">
                         <div class="account-summary-grid">
                             <button class="account-summary-card" type="button" data-account-section-target="profile">
-                                <strong>个人信息</strong>
-                                <span data-overview-profile>加载资料状态...</span>
+                                <div class="summary-card-head">
+                                    <div class="summary-icon icon-profile">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                    </div>
+                                    <strong>个人资料</strong>
+                                </div>
+                                <span class="summary-desc" data-overview-profile>加载资料状态...</span>
                             </button>
                             <button class="account-summary-card" type="button" data-account-section-target="security">
-                                <strong>账号安全</strong>
-                                <span data-overview-security>正在检查 MFA 状态...</span>
+                                <div class="summary-card-head">
+                                    <div class="summary-icon icon-security">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    </div>
+                                    <strong>账号安全与 MFA</strong>
+                                </div>
+                                <span class="summary-desc" data-overview-security>正在检查 MFA 状态...</span>
                             </button>
                             <button class="account-summary-card" type="button" data-account-section-target="apps">
-                                <strong>授权应用</strong>
-                                <span>查看已授权的 OAuth2/OIDC 应用。</span>
+                                <div class="summary-card-head">
+                                    <div class="summary-icon icon-apps">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                    </div>
+                                    <strong>授权应用</strong>
+                                </div>
+                                <span class="summary-desc">查看已授权访问的 OAuth2 / OIDC 应用。</span>
                             </button>
                             <button class="account-summary-card" type="button" data-account-section-target="privacy">
-                                <strong>数据和隐私</strong>
-                                <span>查看最近登录和账号安全活动。</span>
+                                <div class="summary-card-head">
+                                    <div class="summary-icon icon-privacy">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                    </div>
+                                    <strong>活动与会话</strong>
+                                </div>
+                                <span class="summary-desc">查看最近登录设备与安全操作审计。</span>
                             </button>
-                        </div>
-                        <div class="meta-block meta-block-compact">
-                            <strong>快捷入口</strong>
-                            <span>1. 发起新的授权请求</span>
-                            <span>2. 处理设备激活</span>
-                            <span>3. 进入联邦登录流程</span>
                         </div>
                     </section>
 
+                    <!-- Tab 2: Profile -->
                     <section class="account-section" data-account-section="profile" hidden>
                         <div class="account-section-head">
                             <div>
-                                <strong>个人信息</strong>
-                                <span>维护显示名称、邮箱和手机号，并完成联系方式验证。</span>
+                                <strong>个人资料与联系方式</strong>
+                                <span>维护您的公开显示名称、邮箱和手机号，并完成安全校验。</span>
                             </div>
                             <span class="account-security-badge is-muted" data-profile-status>未加载</span>
                         </div>
@@ -177,7 +194,7 @@
                                 <div class="profile-card-head">
                                     <div>
                                         <strong>基础资料</strong>
-                                        <span>这些信息用于账号中心展示。</span>
+                                        <span>这些信息将用于系统内与已授权应用的用户识别。</span>
                                     </div>
                                     <button class="button secondary button-compact" type="button" data-profile-refresh>刷新</button>
                                 </div>
@@ -190,45 +207,47 @@
                                     <div class="field-group">
                                         <label for="profile-about">个人备注</label>
                                         <textarea id="profile-about" rows="3" data-profile-field="profile"
-                                                  placeholder="可选，记录账号备注"></textarea>
+                                                  placeholder="记录您的个性签名或组织备注"></textarea>
                                     </div>
                                 </div>
                                 <div class="profile-form-actions">
-                                    <button class="button primary button-compact" type="submit">保存资料</button>
+                                    <button class="button primary button-compact" type="submit">保存基本资料</button>
                                 </div>
                             </div>
 
                             <div class="profile-card">
                                 <div class="profile-card-head">
                                     <div>
-                                        <strong>联系方式</strong>
-                                        <span>邮箱和手机号需要先保存，再发送验证码完成验证。</span>
+                                        <strong>联系方式验证</strong>
+                                        <span>绑定的邮箱或手机号可用于二次验证及密码找回。</span>
                                     </div>
                                 </div>
 
                                 <div class="contact-verify-card" data-contact-card="email">
                                     <div class="contact-verify-main">
-                                        <span class="contact-verify-icon">E</span>
+                                        <span class="contact-verify-icon">
+                                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                        </span>
                                         <div>
-                                            <strong>邮箱</strong>
-                                            <span data-contact-summary="email">填写并保存后可验证。</span>
+                                            <strong>电子邮箱</strong>
+                                            <span data-contact-summary="email">填写并保存后可发送验证码完成验证。</span>
                                         </div>
                                     </div>
                                     <span class="account-security-badge is-muted" data-contact-status="email">未验证</span>
                                     <div class="field-group contact-value-field">
                                         <label for="profile-email">邮箱地址</label>
                                         <input id="profile-email" type="email" autocomplete="email"
-                                               data-profile-field="email" placeholder="请输入邮箱">
+                                               data-profile-field="email" placeholder="example@armorauth.com">
                                     </div>
                                     <div class="contact-verify-actions">
                                         <button class="button secondary button-compact" type="button" data-send-contact-code="email">
                                             发送验证码
                                         </button>
                                         <div class="contact-code-row" data-contact-code-row="email" hidden>
-                                            <input type="text" inputmode="numeric" maxlength="8" placeholder="输入验证码"
+                                            <input type="text" inputmode="numeric" maxlength="8" placeholder="输入邮箱验证码"
                                                    data-contact-code="email">
                                             <button class="button primary button-compact" type="button" data-verify-contact="email">
-                                                完成验证
+                                                确认验证
                                             </button>
                                         </div>
                                     </div>
@@ -237,27 +256,29 @@
 
                                 <div class="contact-verify-card" data-contact-card="phone">
                                     <div class="contact-verify-main">
-                                        <span class="contact-verify-icon">P</span>
+                                        <span class="contact-verify-icon">
+                                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                                        </span>
                                         <div>
-                                            <strong>手机号</strong>
-                                            <span data-contact-summary="phone">填写并保存后可验证。</span>
+                                            <strong>手机号码</strong>
+                                            <span data-contact-summary="phone">填写并保存后可发送短信验证码完成验证。</span>
                                         </div>
                                     </div>
                                     <span class="account-security-badge is-muted" data-contact-status="phone">未验证</span>
                                     <div class="field-group contact-value-field">
-                                        <label for="profile-phone">手机号</label>
+                                        <label for="profile-phone">手机号码</label>
                                         <input id="profile-phone" type="tel" autocomplete="tel"
-                                               data-profile-field="phone" placeholder="请输入手机号">
+                                               data-profile-field="phone" placeholder="请输入 11 位手机号码">
                                     </div>
                                     <div class="contact-verify-actions">
                                         <button class="button secondary button-compact" type="button" data-send-contact-code="phone">
                                             发送验证码
                                         </button>
                                         <div class="contact-code-row" data-contact-code-row="phone" hidden>
-                                            <input type="text" inputmode="numeric" maxlength="8" placeholder="输入验证码"
+                                            <input type="text" inputmode="numeric" maxlength="8" placeholder="输入短信验证码"
                                                    data-contact-code="phone">
                                             <button class="button primary button-compact" type="button" data-verify-contact="phone">
-                                                完成验证
+                                                确认验证
                                             </button>
                                         </div>
                                     </div>
@@ -267,21 +288,22 @@
                         </form>
                     </section>
 
+                    <!-- Tab 3: Security & MFA -->
                     <section class="account-section" data-account-section="security" hidden>
                         <div class="account-security-panel" data-account-security>
                             <div class="account-security-head">
                                 <div>
-                                    <strong>账号安全</strong>
-                                    <span data-mfa-summary>正在检查 MFA 状态...</span>
+                                    <strong>多因素认证与凭证安全</strong>
+                                    <span data-mfa-summary>正在检查 MFA 保护策略...</span>
                                 </div>
                                 <span class="account-security-badge is-muted" data-mfa-status>检查中</span>
                             </div>
 
                             <div class="security-toggle-row">
-                                <span>
-                                    <strong>登录二次验证</strong>
-                                    <small>开启后，登录时需要验证 Authenticator 或恢复码。</small>
-                                </span>
+                                <div class="security-toggle-info">
+                                    <strong>登录二次安全验证 (2FA / MFA)</strong>
+                                    <small>启用后，在输入密码后必须通过 Authenticator 动态码验证身份。</small>
+                                </div>
                                 <button class="security-switch" type="button" aria-label="切换登录二次验证"
                                         aria-pressed="false" data-mfa-toggle disabled>
                                     <span></span>
@@ -289,34 +311,34 @@
                             </div>
 
                             <div class="factor-list" data-factor-list>
-                                <div class="factor-empty">正在加载验证方法...</div>
+                                <div class="factor-empty">正在加载绑定的验证方式...</div>
                             </div>
 
                             <div class="security-actions-inline">
-                                <button class="button secondary button-compact" type="button" data-totp-setup>
+                                <button class="button primary button-compact" type="button" data-totp-setup>
                                     添加 Authenticator
                                 </button>
                                 <button class="button secondary button-compact" type="button" data-factor-refresh>
-                                    刷新
+                                    刷新状态
                                 </button>
                             </div>
 
                             <div class="totp-setup-panel" data-totp-panel hidden>
                                 <div class="totp-setup-head">
-                                    <strong>Authenticator 设置</strong>
-                                    <span>使用 Authenticator 扫描二维码，或在手机上打开 otpauth 链接，然后输入 6 位验证码完成绑定。</span>
+                                    <strong>绑定 Google Authenticator / Microsoft Authenticator</strong>
+                                    <span>打开手机身份验证器应用扫描下方二维码，或手动输入密钥，然后输入 6 位验证码完成激活。</span>
                                 </div>
                                 <div class="totp-setup-grid">
                                     <div class="totp-qr-card">
                                         <img src="" alt="Authenticator 二维码" data-totp-qr hidden>
-                                        <span data-totp-qr-empty>二维码生成后显示在这里</span>
+                                        <span data-totp-qr-empty>正在生成安全令牌二维码...</span>
                                     </div>
                                     <div class="totp-manual-fields">
                                         <a class="button secondary button-compact totp-open-link" href="#" data-totp-open hidden>
-                                            打开 Authenticator 链接
+                                            在 Authenticator 中直接打开
                                         </a>
                                         <div class="copy-field">
-                                            <label>Secret</label>
+                                            <label>Secret 密钥</label>
                                             <code data-totp-secret>-</code>
                                             <button type="button" data-copy-field="secret">复制</button>
                                         </div>
@@ -328,63 +350,64 @@
                                     </div>
                                 </div>
                                 <div class="field-group compact-field">
-                                    <label for="totp-code">验证码</label>
+                                    <label for="totp-code">输入 6 位动态验证码</label>
                                     <input id="totp-code" type="text" inputmode="numeric" maxlength="8"
-                                           autocomplete="one-time-code" placeholder="请输入 6 位验证码" data-totp-code>
+                                           autocomplete="one-time-code" placeholder="例如：123456" data-totp-code>
                                 </div>
                                 <div class="security-actions-inline">
                                     <button class="button primary button-compact" type="button" data-totp-verify>
-                                        验证并启用
+                                        验证并正式启用
                                     </button>
                                     <button class="button secondary button-compact" type="button" data-totp-cancel>
-                                        取消
+                                        取消配置
                                     </button>
                                 </div>
                                 <div class="recovery-code-panel" data-recovery-panel hidden>
-                                    <strong>恢复码</strong>
-                                    <span>请保存这些恢复码，身份验证器不可用时可用于登录。</span>
+                                    <strong>安全应急恢复码</strong>
+                                    <span>请妥善离线保存这些恢复码。当您的手机丢失或无法使用 Authenticator 时可用于紧急登录。</span>
                                     <div class="recovery-code-grid" data-recovery-codes></div>
                                 </div>
                             </div>
                         </div>
                     </section>
 
+                    <!-- Tab 4: Apps -->
                     <section class="account-section" data-account-section="apps" hidden>
                         <div class="account-section-head">
                             <div>
-                                <strong>关联的应用</strong>
-                                <span>这里用于展示你授权过的 OAuth2/OIDC 应用和第三方登录绑定。</span>
+                                <strong>已授权访问的第三方应用</strong>
+                                <span>这些应用获得了访问您 ArmorAuth 账号部分资源的授权。您可以随时撤销访问权限。</span>
                             </div>
                         </div>
-                        <div class="factor-empty">应用授权和第三方绑定列表后续接入到这里。</div>
+                        <div class="factor-empty">当前账号尚未对任何第三方应用发放外部授权访问。</div>
                     </section>
 
+                    <!-- Tab 5: Privacy -->
                     <section class="account-section" data-account-section="privacy" hidden>
                         <div class="account-section-head">
                             <div>
-                                <strong>数据和隐私设置</strong>
-                                <span>这里用于查看最近登录、安全审计和账号数据。</span>
+                                <strong>登录活动与安全审计</strong>
+                                <span>记录当前会话、登录历史与安全凭据变动记录。</span>
                             </div>
                         </div>
-                        <div class="factor-empty">最近活动和数据导出后续接入到这里。</div>
+                        <div class="factor-empty">安全审计日志实时记录中。如需查看完整审计事件，请访问管理员控制台。</div>
                     </section>
                 </div>
-
             </div>
         </section>
     </main>
     <footer class="page-footer">
         <div class="page-footer-brand">
             <strong>ArmorAuth</strong>
-            <span>统一身份与授权平台</span>
+            <span>统一身份与访问控制平台</span>
         </div>
         <div class="page-footer-nav" aria-label="页面信息">
-            <span>控制台</span>
-            <span>账号服务</span>
-            <span>安全会话</span>
+            <span>安全中心</span>
+            <span>凭据隔离</span>
+            <span>合规防护</span>
         </div>
     </footer>
 </div>
-<script src="/assets/armorauth-ui.js?v=2026062113"></script>
+<script src="/assets/armorauth-ui.js?v=2026102801"></script>
 </body>
 </html>

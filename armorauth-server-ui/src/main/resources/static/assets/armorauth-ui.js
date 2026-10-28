@@ -554,7 +554,23 @@
             "绑定并完成登录": "Bind and sign in",
             "ArmorAuth 第三方接入": "ArmorAuth federated access",
             "身份确认": "Identity confirmation",
-            "绑定安全": "Secure binding"
+            "绑定安全": "Secure binding",
+            "企业级统一身份与访问管理平台": "Enterprise Identity & Access Management Platform",
+            "安全连接 · 全域统一": "Secure Connections · Universal IAM",
+            "让每一次登录": "Making Every Sign-In",
+            "安全且值得信赖": "Secure & Trustworthy",
+            "集中处理企业单点登录 (SSO)、多因素安全凭据认证 (MFA)、无密码 Passkey 与全域联合身份源接入。": "Unified enterprise SSO, multi-factor credential authentication (MFA), passwordless Passkey, and federated identity providers.",
+            "企业级安全防护": "Enterprise-Grade Protection",
+            "OAuth 2.1 / OIDC / PKCE / DPoP 安全基线": "OAuth 2.1 / OIDC / PKCE / DPoP Security Baseline",
+            "无密码与多因素验证": "Passwordless & Multi-Factor Auth",
+            "Passkey FIDO2 凭据与动态 TOTP 保护": "Passkey FIDO2 Credentials & Dynamic TOTP Protection",
+            "全生态身份源互联": "Full-Ecosystem Identity Federation",
+            "SAML 2.0 / LDAP / 企业微信 / 飞书 / GitHub": "SAML 2.0 / LDAP / WeCom / Lark / GitHub",
+            "当前环境:": "Environment:",
+            "默认用户池 · Default Pool": "Default Pool",
+            "受 ArmorAuth 安全架构保护 · 敏感凭据端到端加密": "Protected by ArmorAuth Security · End-to-end Encrypted",
+            "核心能力": "Key capabilities",
+            "企业统一身份与访问控制平台": "Enterprise Identity and Access Control Platform"
         }
     };
 
@@ -786,6 +802,19 @@
                 });
                 button.classList.add("is-active");
             });
+        });
+    });
+
+    /* ===== 密码可见性切换 ===== */
+    document.querySelectorAll("[data-password-toggle]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const box = btn.closest(".field-input-box");
+            const input = box ? box.querySelector("input") : null;
+            if (!input) return;
+            const isPassword = input.type === "password";
+            input.type = isPassword ? "text" : "password";
+            btn.classList.toggle("is-revealed", isPassword);
+            btn.setAttribute("title", isPassword ? "隐藏密码" : "显示密码");
         });
     });
 

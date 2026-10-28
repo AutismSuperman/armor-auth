@@ -1,12 +1,23 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>应用管理</h2>
+      <div>
+        <h2>单点登录应用</h2>
+        <div class="page-subtitle">管理基于 OAuth 2.1 / OIDC 协议集成的自建应用与第三方客户端</div>
+      </div>
       <a-space wrap>
+        <a-radio-group v-model:value="viewMode" button-style="solid">
+          <a-radio-button value="card">
+            <AppstoreOutlined /> 卡片
+          </a-radio-button>
+          <a-radio-button value="table">
+            <BarsOutlined /> 表格
+          </a-radio-button>
+        </a-radio-group>
         <a-select
           v-model:value="selectedTenantId"
           allow-clear
-          placeholder="全部租户"
+          placeholder="全部租户空间"
           style="width: 220px"
           @change="handleTenantFilterChange">
           <a-select-option v-for="tenant in tenantOptions" :key="tenant.id" :value="tenant.id">
@@ -20,9 +31,98 @@
       </a-space>
     </div>
 
-    <a-table :dataSource="applications" :columns="columns" :loading="loading"
-             :pagination="pagination" @change="handleTableChange" row-key="id" size="middle"
-             :scroll="{ x: 2100 }">
+    <!-- Authing-Style Card Grid View -->
+    <div v-if="viewMode === 'card'" class="app-card-grid-container">
+      <a-spin :spinning="loading">
+        <div class="app-card-grid" v-if="applications.length">
+          <div v-for="record in applications" :key="record.id" class="app-entity-card">
+            <div class="app-card-top">
+              <div class="app-badge-box">
+                <span>{{ (record.clientName || 'A').charAt(0).toUpperCase() }}</span>
+              </div>
+              <div class="app-card-main-info">
+                <div class="app-title-line">
+                  <h4 class="app-card-title" :title="record.clientName">{{ record.clientName }}</h4>
+                  <a-tag :color="appTypeColor(record)">{{ appTypeLabel(record) }}</a-tag>
+                </div>
+                <div class="app-client-id-row">
+                  <span class="id-kicker">Client ID:</span>
+                  <code class="id-code" :title="record.clientId">{{ record.clientId }}</code>
+                  <a-tooltip title="复制 Client ID">
+                    <a-button type="text" size="small" class="copy-icon-btn" @click.stop="copyToClipboard(record.clientId)">
+                      <CopyOutlined />
+                    </a-button>
+                  </a-tooltip>
+                </div>
+              </div>
+            </div>
+
+            <div class="app-card-tags">
+              <a-tag color="blue">{{ record.tenantCode || record.tenantId || 'default' }}</a-tag>
+              <a-tag v-if="record.registrationSource === 'DYNAMIC_REGISTRATION'" color="purple">DCR 注册</a-tag>
+              <a-tag v-if="record.clientSettings?.dpopEnabled" color="green">DPoP 开启</a-tag>
+              <a-tag v-if="record.mfaRequired" color="orange">强制 MFA</a-tag>
+              <a-tag v-for="grant in parseList(record.authorizationGrantTypes).slice(0, 2)" :key="grant">
+                {{ grantLabel(grant) }}
+              </a-tag>
+            </div>
+
+            <div class="app-card-footer">
+              <div class="status-toggle-wrap">
+                <span class="status-label">状态:</span>
+                <a-switch
+                  :checked="record.enabled"
+                  size="small"
+                  @change="val => toggleStatus(record, val)"
+                />
+                <span class="status-pill-text" :class="record.enabled ? 'is-enabled' : 'is-disabled'">
+                  {{ record.enabled ? '启用' : '停用' }}
+                </span>
+              </div>
+              <div class="app-actions-wrap">
+                <a-button type="text" size="small" @click="showEndpointDetails(record)">
+                  <ApiOutlined /> 端点
+                </a-button>
+                <a-button type="text" size="small" @click="showEdit(record)">
+                  编辑
+                </a-button>
+                <a-dropdown :trigger="['click']">
+                  <a-button type="text" size="small">更多</a-button>
+                  <template #overlay>
+                    <a-menu>
+                      <a-menu-item v-if="hasSecretMethod(record)" key="secret" @click="handleRotateSecret(record)">
+                        <KeyOutlined /> 重置密钥
+                      </a-menu-item>
+                      <a-menu-divider />
+                      <a-menu-item key="delete" danger>
+                        <a-popconfirm title="确认删除此应用？" @confirm="handleDelete(record.id)">
+                          <span style="color: #ff4d4f"><DeleteOutlined /> 删除应用</span>
+                        </a-popconfirm>
+                      </a-menu-item>
+                    </a-menu>
+                  </template>
+                </a-dropdown>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="!loading" class="app-empty-wrap">
+          <a-empty description="当前暂无应用，点击右上角创建第一个单点登录应用" />
+        </div>
+      </a-spin>
+    </div>
+
+    <!-- Table View -->
+    <a-table
+      v-else
+      :dataSource="applications"
+      :columns="columns"
+      :loading="loading"
+      :pagination="pagination"
+      @change="handleTableChange"
+      row-key="id"
+      size="middle"
+      :scroll="{ x: 1800 }">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'auth'">
           <a-space size="small" wrap>
@@ -61,8 +161,15 @@
           </a-space>
         </template>
         <template v-if="column.key === 'status'">
-          <a-switch :checked="record.enabled" @change="val => toggleStatus(record, val)"
-                    checked-children="启用" un-checked-children="禁用" />
+          <div class="table-switch-wrap">
+            <a-switch
+              :checked="record.enabled"
+              @change="val => toggleStatus(record, val)"
+            />
+            <span class="status-pill-text" :class="record.enabled ? 'is-enabled' : 'is-disabled'">
+              {{ record.enabled ? '已启用' : '已禁用' }}
+            </span>
+          </div>
         </template>
         <template v-if="column.key === 'mfaRequired'">
           <a-tag :color="record.mfaRequired ? 'orange' : 'default'">
@@ -70,134 +177,162 @@
           </a-tag>
         </template>
         <template v-if="column.key === 'action'">
-          <a-space>
-            <a @click="showEndpointDetails(record)"><ApiOutlined /> 端点详情</a>
+          <a-space size="small">
+            <a @click="showEndpointDetails(record)"><ApiOutlined /> 端点</a>
             <a @click="showEdit(record)">编辑</a>
-            <a v-if="hasSecretMethod(record)" @click="handleRotateSecret(record)">重置密钥</a>
-            <a-popconfirm title="确认删除此应用？" @confirm="handleDelete(record.id)">
-              <a style="color: #ff4d4f">删除</a>
-            </a-popconfirm>
+            <a-dropdown :trigger="['click']">
+              <a class="ant-dropdown-link" @click.prevent>
+                更多 <DownOutlined />
+              </a>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item v-if="hasSecretMethod(record)" key="secret" @click="handleRotateSecret(record)">
+                    <KeyOutlined /> 重置密钥
+                  </a-menu-item>
+                  <a-menu-divider v-if="hasSecretMethod(record)" />
+                  <a-menu-item key="delete" danger>
+                    <a-popconfirm title="确认删除此应用？" @confirm="handleDelete(record.id)">
+                      <span style="color: #ff4d4f"><DeleteOutlined /> 删除应用</span>
+                    </a-popconfirm>
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
           </a-space>
         </template>
       </template>
     </a-table>
 
-    <a-modal v-model:open="modalVisible" :title="isEdit ? '编辑应用' : '创建应用'"
-             @ok="handleSubmit" :confirmLoading="submitting" width="760px">
+    <!-- Tabbed Modal (Authing Workspace Style) -->
+    <a-modal v-model:open="modalVisible" :title="isEdit ? '编辑应用配置' : '创建单点登录应用'"
+             @ok="handleSubmit" :confirmLoading="submitting" width="780px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto', paddingRight: '12px' }">
       <a-form :model="form" layout="vertical">
-        <a-form-item label="归属租户" required>
-          <a-select
-            v-model:value="form.tenantId"
-            :disabled="isEdit"
-            placeholder="选择租户">
-            <a-select-option value="tenant-default">Default / default</a-select-option>
-            <a-select-option v-for="tenant in tenantOptions" :key="tenant.id" :value="tenant.id">
-              {{ tenant.tenantName }} / {{ tenant.tenantCode }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-
-        <a-form-item label="应用名称" required>
-          <a-input v-model:value="form.clientName" placeholder="请输入应用名称" />
-        </a-form-item>
-
-        <a-form-item label="客户端认证方式" required>
-          <a-select
-            v-model:value="form.clientAuthenticationMethods"
-            mode="multiple"
-            placeholder="选择客户端认证方式"
-            :max-tag-count="3"
-            @change="handleAuthMethodsChange">
-            <a-select-option v-for="method in authMethodOptions" :key="method.value" :value="method.value">
-              {{ method.label }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-
-        <div class="setting-grid">
-          <a-form-item v-if="usesJwkSetUrl" label="JWK Set URL">
-            <a-input v-model:value="form.clientSettings.jwkSetUrl"
-                     placeholder="https://client.example.com/.well-known/jwks.json" />
-          </a-form-item>
-          <a-form-item v-if="usesTlsClientAuth" label="X.509 Subject DN">
-            <a-input v-model:value="form.clientSettings.x509CertificateSubjectDN"
-                     placeholder="CN=client.example.com,O=Example" />
-          </a-form-item>
-          <a-form-item v-if="usesJwtAuth" label="Token Endpoint 签名算法">
-            <a-select v-model:value="form.clientSettings.signingAlgorithm" placeholder="选择客户端认证 JWT 签名算法">
-              <a-select-option v-for="algorithm in signingAlgorithmOptions" :key="algorithm.value" :value="algorithm.value">
-                {{ algorithm.label }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </div>
-
-        <a-form-item label="授权类型" required>
-          <a-select v-model:value="form.authorizationGrantTypes" mode="multiple" placeholder="选择授权类型">
-            <a-select-option v-for="grant in grantTypeOptions" :key="grant.value" :value="grant.value">
-              {{ grant.label }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item label="回调地址">
-          <a-textarea v-model:value="form.redirectUris" :rows="2"
-                      placeholder="每行一个回调地址，如 http://localhost:8080/callback" />
-        </a-form-item>
-        <a-form-item label="退出后重定向地址">
-          <a-textarea v-model:value="form.postLogoutRedirectUris" :rows="2"
-                      placeholder="每行一个地址" />
-        </a-form-item>
-        <a-form-item label="Scopes">
-          <a-select v-model:value="form.scopes" mode="tags" placeholder="输入 scope 后回车" />
-        </a-form-item>
-
-        <a-form-item label="DCR">
-          <a-checkbox v-model:checked="form.dynamicClientRegistrar" @change="handleDcrRegistrarChange">
-            作为动态客户端注册管理客户端
-          </a-checkbox>
-        </a-form-item>
-
-        <a-row :gutter="12">
-          <a-col :xs="24" :md="12">
-            <a-form-item label="ID Token 签名算法">
-              <a-select v-model:value="form.tokenSettings.idTokenSignatureAlgorithm" placeholder="选择 ID Token 签名算法">
-                <a-select-option v-for="algorithm in idTokenAlgorithmOptions" :key="algorithm.value" :value="algorithm.value">
-                  {{ algorithm.label }}
+        <a-tabs default-active-key="basic">
+          <!-- Tab 1: Basic -->
+          <a-tab-pane key="basic" tab="基本设置">
+            <a-form-item label="归属租户空间" required>
+              <a-select
+                v-model:value="form.tenantId"
+                :disabled="isEdit"
+                placeholder="选择租户">
+                <a-select-option value="tenant-default">Default / default</a-select-option>
+                <a-select-option v-for="tenant in tenantOptions" :key="tenant.id" :value="tenant.id">
+                  {{ tenant.tenantName }} / {{ tenant.tenantCode }}
                 </a-select-option>
               </a-select>
             </a-form-item>
-          </a-col>
-          <a-col :xs="24" :md="12">
-            <a-form-item label="Access Token 格式">
-              <a-select v-model:value="form.tokenSettings.tokenFormat" placeholder="选择 Token 格式">
-                <a-select-option value="self-contained">Self-contained JWT</a-select-option>
-                <a-select-option value="reference">Reference Token</a-select-option>
+
+            <a-form-item label="应用名称" required>
+              <a-input v-model:value="form.clientName" placeholder="例如：CRM 管理系统 / 运营工作台" />
+            </a-form-item>
+
+            <a-form-item label="客户端认证方式" required>
+              <a-select
+                v-model:value="form.clientAuthenticationMethods"
+                mode="multiple"
+                placeholder="选择客户端认证方式"
+                :max-tag-count="3"
+                @change="handleAuthMethodsChange">
+                <a-select-option v-for="method in authMethodOptions" :key="method.value" :value="method.value">
+                  {{ method.label }}
+                </a-select-option>
               </a-select>
             </a-form-item>
-          </a-col>
-        </a-row>
 
-        <div class="switch-row">
-          <a-checkbox v-model:checked="form.clientSettings.requireProofKey">要求 PKCE</a-checkbox>
-          <a-checkbox v-model:checked="form.clientSettings.requireAuthorizationConsent">要求授权确认</a-checkbox>
-          <a-checkbox v-model:checked="form.clientSettings.dpopEnabled" @change="handleDpopEnabledChange">
-            启用 DPoP
-          </a-checkbox>
-          <a-checkbox v-if="form.clientSettings.dpopEnabled" v-model:checked="form.clientSettings.dpopRequired">
-            要求 DPoP Proof
-          </a-checkbox>
-          <a-checkbox v-if="usesMtlsAuth" v-model:checked="form.tokenSettings.x509CertificateBoundAccessTokens">
-            证书绑定 Access Token
-          </a-checkbox>
-          <a-checkbox v-model:checked="form.mfaRequired">强制 MFA</a-checkbox>
-        </div>
-        <a-form-item v-if="form.clientSettings.dpopEnabled" label="DPoP 允许算法">
-          <a-select v-model:value="form.clientSettings.dpopAllowedAlgorithms" mode="multiple" placeholder="默认允许服务器支持的算法">
-            <a-select-option v-for="algorithm in dpopAlgorithmOptions" :key="algorithm" :value="algorithm">
-              {{ algorithm }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
+            <div class="setting-grid">
+              <a-form-item v-if="usesJwkSetUrl" label="JWK Set URL">
+                <a-input v-model:value="form.clientSettings.jwkSetUrl"
+                         placeholder="https://client.example.com/.well-known/jwks.json" />
+              </a-form-item>
+              <a-form-item v-if="usesTlsClientAuth" label="X.509 Subject DN">
+                <a-input v-model:value="form.clientSettings.x509CertificateSubjectDN"
+                         placeholder="CN=client.example.com,O=Example" />
+              </a-form-item>
+              <a-form-item v-if="usesJwtAuth" label="Token Endpoint 签名算法">
+                <a-select v-model:value="form.clientSettings.signingAlgorithm" placeholder="选择客户端认证 JWT 签名算法">
+                  <a-select-option v-for="algorithm in signingAlgorithmOptions" :key="algorithm.value" :value="algorithm.value">
+                    {{ algorithm.label }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+            </div>
+          </a-tab-pane>
+
+          <!-- Tab 2: Protocol & Endpoints -->
+          <a-tab-pane key="protocol" tab="授权协议与回调">
+            <a-form-item label="允许的授权类型 (Grant Types)" required>
+              <a-select v-model:value="form.authorizationGrantTypes" mode="multiple" placeholder="选择授权类型">
+                <a-select-option v-for="grant in grantTypeOptions" :key="grant.value" :value="grant.value">
+                  {{ grant.label }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+
+            <a-form-item label="登录回调地址 (Redirect URIs)">
+              <a-textarea v-model:value="form.redirectUris" :rows="3"
+                          placeholder="每行一个合法回调地址，如 https://app.example.com/oauth2/callback" />
+            </a-form-item>
+
+            <a-form-item label="登出后重定向地址 (Post Logout Redirect URIs)">
+              <a-textarea v-model:value="form.postLogoutRedirectUris" :rows="2"
+                          placeholder="每行一个登出重定向地址" />
+            </a-form-item>
+
+            <a-form-item label="允许申请的权限范围 (Scopes)">
+              <a-select v-model:value="form.scopes" mode="tags" placeholder="输入 scope 后按回车添加" />
+            </a-form-item>
+          </a-tab-pane>
+
+          <!-- Tab 3: Security & Advanced -->
+          <a-tab-pane key="security" tab="高级安全策略">
+            <div class="switch-row-box">
+              <a-checkbox v-model:checked="form.clientSettings.requireProofKey">要求 PKCE 凭据 (SPA/移动端强制推荐)</a-checkbox>
+              <a-checkbox v-model:checked="form.clientSettings.requireAuthorizationConsent">要求用户授权确认页面 (Consent)</a-checkbox>
+              <a-checkbox v-model:checked="form.clientSettings.dpopEnabled" @change="handleDpopEnabledChange">
+                启用 DPoP 证明凭证 (RFC 9449)
+              </a-checkbox>
+              <a-checkbox v-if="form.clientSettings.dpopEnabled" v-model:checked="form.clientSettings.dpopRequired">
+                强制要求 DPoP Proof
+              </a-checkbox>
+              <a-checkbox v-if="usesMtlsAuth" v-model:checked="form.tokenSettings.x509CertificateBoundAccessTokens">
+                证书绑定 Access Token (x5t#S256)
+              </a-checkbox>
+              <a-checkbox v-model:checked="form.mfaRequired">强制多因素二次验证 (MFA)</a-checkbox>
+              <a-checkbox v-model:checked="form.dynamicClientRegistrar" @change="handleDcrRegistrarChange">
+                作为动态客户端注册 (DCR) 管理客户端
+              </a-checkbox>
+            </div>
+
+            <a-row :gutter="12" style="margin-top: 16px;">
+              <a-col :xs="24" :md="12">
+                <a-form-item label="ID Token 签名算法">
+                  <a-select v-model:value="form.tokenSettings.idTokenSignatureAlgorithm" placeholder="选择签名算法">
+                    <a-select-option v-for="algorithm in idTokenAlgorithmOptions" :key="algorithm.value" :value="algorithm.value">
+                      {{ algorithm.label }}
+                    </a-select-option>
+                  </a-select>
+                </a-form-item>
+              </a-col>
+              <a-col :xs="24" :md="12">
+                <a-form-item label="Access Token 格式">
+                  <a-select v-model:value="form.tokenSettings.tokenFormat" placeholder="选择 Token 格式">
+                    <a-select-option value="self-contained">Self-contained JWT</a-select-option>
+                    <a-select-option value="reference">Reference Token (不透明句柄)</a-select-option>
+                  </a-select>
+                </a-form-item>
+              </a-col>
+            </a-row>
+
+            <a-form-item v-if="form.clientSettings.dpopEnabled" label="DPoP 允许算法">
+              <a-select v-model:value="form.clientSettings.dpopAllowedAlgorithms" mode="multiple" placeholder="默认允许服务器支持的所有算法">
+                <a-select-option v-for="algorithm in dpopAlgorithmOptions" :key="algorithm" :value="algorithm">
+                  {{ algorithm }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-tab-pane>
+        </a-tabs>
       </a-form>
     </a-modal>
 
@@ -209,9 +344,13 @@
           <a-typography-paragraph copyable>{{ secretData.clientSecret }}</a-typography-paragraph>
         </a-descriptions-item>
       </a-descriptions>
+      <div style="margin-top: 20px; text-align: right;">
+        <a-button type="primary" @click="secretVisible = false">我已妥善保存密钥并关闭</a-button>
+      </div>
     </a-modal>
 
-    <a-modal v-model:open="endpointVisible" title="SAS 端点详情" :footer="null" width="980px">
+    <a-modal v-model:open="endpointVisible" title="OIDC / OAuth 2.1 协议端点列表" :footer="null" width="980px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }">
       <div v-if="endpointRecord" class="endpoint-detail">
         <div class="endpoint-summary">
           <div>
@@ -314,6 +453,9 @@
             </div>
           </section>
         </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+          <a-button type="primary" @click="endpointVisible = false">关闭</a-button>
+        </div>
       </div>
     </a-modal>
   </div>
@@ -322,8 +464,24 @@
 <script setup>
 import { computed, ref, reactive, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
-import { ApiOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import {
+  ApiOutlined,
+  PlusOutlined,
+  AppstoreOutlined,
+  BarsOutlined,
+  KeyOutlined,
+  DeleteOutlined,
+  CopyOutlined,
+  DownOutlined
+} from '@ant-design/icons-vue'
 import { getApplications, createApplication, updateApplication, deleteApplication, rotateSecret, updateAppStatus, getTenants } from '../../api'
+
+const copyToClipboard = (text) => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text)
+    message.success('已复制到剪贴板')
+  }
+}
 
 const applications = ref([])
 const tenants = ref([])
@@ -337,6 +495,7 @@ const secretVisible = ref(false)
 const secretData = ref({})
 const endpointVisible = ref(false)
 const endpointRecord = ref(null)
+const viewMode = ref('card')
 
 const pagination = reactive({ current: 1, pageSize: 20, total: 0 })
 
@@ -401,11 +560,11 @@ const columns = [
   { title: '租户', key: 'tenant', width: 200 },
   { title: '来源', key: 'source', width: 160 },
   { title: '认证方式', dataIndex: 'clientAuthenticationMethods', key: 'auth', width: 300 },
-  { title: '授权类型', dataIndex: 'authorizationGrantTypes', key: 'grant', width: 320 },
+  { title: '授权类型', dataIndex: 'authorizationGrantTypes', key: 'grant', width: 380 },
   { title: 'DPoP', key: 'dpop', width: 120 },
   { title: '状态', key: 'status', width: 100 },
   { title: 'MFA', key: 'mfaRequired', width: 80 },
-  { title: '操作', key: 'action', width: 340, fixed: 'right' }
+  { title: '操作', key: 'action', width: 190, fixed: 'right' }
 ]
 
 const usesSecretJwt = computed(() => form.clientAuthenticationMethods.includes('client_secret_jwt'))
@@ -454,6 +613,30 @@ const authMethodColor = (method) => authMethodMap[method]?.color || 'default'
 const grantLabel = (grant) => grantTypeMap[grant]?.label || grant
 const registrationSourceLabel = (source) => source === 'DYNAMIC_REGISTRATION' ? 'DCR' : 'Admin'
 const hasSecretMethod = (record) => recordAuthMethods(record).some(method => method.startsWith('client_secret'))
+
+const appTypeLabel = (record) => {
+  const grants = parseList(record.authorizationGrantTypes)
+  const authMethods = recordAuthMethods(record)
+  if (authMethods.includes('none')) {
+    return '单页应用 SPA'
+  }
+  if (grants.includes('client_credentials')) {
+    return '后端服务 M2M'
+  }
+  if (grants.includes('urn:ietf:params:oauth:grant-type:device_code')) {
+    return '智能终端 / CLI'
+  }
+  return '标准 Web 应用'
+}
+
+const appTypeColor = (record) => {
+  const grants = parseList(record.authorizationGrantTypes)
+  const authMethods = recordAuthMethods(record)
+  if (authMethods.includes('none')) return 'cyan'
+  if (grants.includes('client_credentials')) return 'geekblue'
+  if (grants.includes('urn:ietf:params:oauth:grant-type:device_code')) return 'gold'
+  return 'blue'
+}
 
 const endpointTenant = (record) => tenants.value.find(item => item.id === record?.tenantId)
 
@@ -1056,6 +1239,205 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.page-container {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.page-subtitle {
+  color: var(--aa-text-secondary);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.app-card-grid-container {
+  margin-top: 16px;
+}
+
+.app-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.app-entity-card {
+  background: #ffffff;
+  border: 1px solid var(--aa-border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--aa-shadow-sm);
+}
+
+.app-entity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--aa-shadow-md);
+  border-color: #cbd5e1;
+}
+
+.app-card-top {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.app-badge-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2152ff 0%, #3b82f6 100%);
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(33, 82, 255, 0.25);
+}
+
+.app-card-main-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.app-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--aa-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.app-client-id-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--aa-text-muted);
+}
+
+.id-kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--aa-text-secondary);
+}
+
+.id-code {
+  font-family: var(--aa-font-mono);
+  font-size: 12px;
+  background: #f1f5f9;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #334155;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-inline {
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+.app-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 16px 0;
+  min-height: 28px;
+}
+
+.app-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--aa-border-light);
+  padding-top: 14px;
+  margin-top: auto;
+}
+
+.status-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-switch-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-pill-text {
+  font-size: 12px;
+  font-weight: 500;
+
+  &.is-enabled {
+    color: var(--aa-primary);
+  }
+
+  &.is-disabled {
+    color: var(--aa-text-muted);
+  }
+}
+
+.status-label {
+  font-size: 12px;
+  color: var(--aa-text-secondary);
+}
+
+.app-actions-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.app-empty-wrap {
+  padding: 60px 0;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px dashed var(--aa-border);
+  text-align: center;
+}
+
+.switch-row-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--aa-border-light);
+}
+
 .setting-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);

@@ -1,7 +1,10 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>外部账号绑定</h2>
+      <div>
+        <h2>外部账号映射绑定</h2>
+        <div class="page-subtitle">查看及管理企业用户与第三方身份源（GitHub、飞书、企业微信等）的联邦身份映射关系</div>
+      </div>
       <a-button @click="fetchData">
         <template #icon><ReloadOutlined /></template>
         刷新
@@ -56,7 +59,8 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="attributesVisible" title="Provider Attributes" :footer="null" width="720px">
+    <a-modal v-model:open="attributesVisible" title="Provider Attributes" :footer="null" width="720px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }">
       <pre class="json-preview">{{ selectedAttributes }}</pre>
     </a-modal>
 

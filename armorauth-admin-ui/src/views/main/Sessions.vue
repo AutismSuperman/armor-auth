@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h2>会话管理</h2>
+        <h2>在线会话管理</h2>
         <div class="page-subtitle">活跃会话查询和强制下线</div>
       </div>
       <div class="session-toolbar">
@@ -63,7 +63,10 @@
 import { computed, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { ReloadOutlined } from '@ant-design/icons-vue'
+import dayjs from 'dayjs'
 import { expireSession, getSessions, getUserSessions } from '../../api'
+
+const formatTime = (time) => time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-'
 
 const username = ref('')
 const sessions = ref([])
@@ -72,7 +75,7 @@ const loading = ref(false)
 const columns = [
   { title: 'Session ID', key: 'sessionId', width: 320, ellipsis: true },
   { title: '用户', dataIndex: 'username', key: 'username', width: 180 },
-  { title: '最后访问', dataIndex: 'lastRequest', key: 'lastRequest', width: 220 },
+  { title: '最后访问', dataIndex: 'lastRequest', key: 'lastRequest', width: 220, customRender: ({ text }) => formatTime(text) },
   { title: '状态', key: 'active', width: 100 },
   { title: '操作', key: 'action', width: 160, fixed: 'right' }
 ]

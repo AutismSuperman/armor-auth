@@ -229,6 +229,7 @@ public class UserService {
                 .map(UserRole::getRole)
                 .filter(role -> role != null)
                 .map(role -> role.getRoleCode())
+                .distinct()
                 .toList();
 
         return new UserDTO.Response(

@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="page-header">
       <div>
-        <h2>JWK 密钥</h2>
+        <h2>JWK 签名密钥轮转</h2>
         <div class="page-subtitle">签名密钥状态、算法轮换、废弃和删除</div>
       </div>
       <a-space wrap>
@@ -81,6 +81,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { SyncOutlined } from '@ant-design/icons-vue'
+import dayjs from 'dayjs'
 import { deleteJwkKey, getJwkKeys, retireJwkKey, rotateJwkKey } from '../../api'
 
 const keys = ref([])
@@ -100,13 +101,15 @@ const algorithmOptions = [
   { value: 'ES512', label: 'ES512 / ECDSA P-521' }
 ]
 
+const formatTime = (time) => time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-'
+
 const columns = [
   { title: 'Kid', dataIndex: 'kid', key: 'kid', width: 340, ellipsis: true },
   { title: '类型', dataIndex: 'keyType', key: 'keyType', width: 100 },
   { title: '算法', dataIndex: 'algorithm', key: 'algorithm', width: 150 },
   { title: '状态', key: 'status', width: 120 },
-  { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 190 },
-  { title: '过期时间', dataIndex: 'expiresAt', key: 'expiresAt', width: 190 },
+  { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 190, customRender: ({ text }) => formatTime(text) },
+  { title: '过期时间', dataIndex: 'expiresAt', key: 'expiresAt', width: 190, customRender: ({ text }) => formatTime(text) },
   { title: '操作', key: 'action', width: 180, fixed: 'right' }
 ]
 

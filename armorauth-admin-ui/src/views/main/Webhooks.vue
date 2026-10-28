@@ -1,7 +1,10 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>Webhook 管理</h2>
+      <div>
+        <h2>Webhook 事件</h2>
+        <div class="page-subtitle">订阅认证系统核心事件（用户创建、登录、MFA 变更等）并向业务系统实时推送</div>
+      </div>
       <a-button type="primary" @click="showCreate">
         <template #icon><PlusOutlined /></template>
         添加 Webhook
@@ -31,7 +34,8 @@
     </a-table>
 
     <a-modal v-model:open="modalVisible" title="添加 Webhook" @ok="handleSubmit"
-             :confirmLoading="submitting" width="520px">
+             :confirmLoading="submitting" width="520px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }">
       <a-form :model="form" layout="vertical">
         <a-form-item label="名称" required>
           <a-input v-model:value="form.name" placeholder="如 登录事件通知" />
@@ -56,7 +60,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
+import dayjs from 'dayjs'
 import { getWebhooks, createWebhook, deleteWebhook } from '../../api'
+
+const formatTime = (time) => time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-'
 
 const webhooks = ref([])
 const loading = ref(false)
@@ -78,7 +85,7 @@ const columns = [
   { title: 'URL', dataIndex: 'url', key: 'url', width: 400, ellipsis: true },
   { title: '事件类型', key: 'events', width: 300 },
   { title: '状态', key: 'status', width: 80 },
-  { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 180 },
+  { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 180, customRender: ({ text }) => formatTime(text) },
   { title: '操作', key: 'action', width: 120, fixed: 'right' }
 ]
 

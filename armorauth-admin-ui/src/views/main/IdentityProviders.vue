@@ -1,73 +1,289 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h2>身份源管理</h2>
+      <div>
+        <h2>身份源连接</h2>
+        <div class="page-subtitle">连接社交登录与企业身份提供商，支持零代码配置与标准协议即插即用</div>
+      </div>
       <div class="page-actions">
+        <a-segmented
+          v-model:value="activeSection"
+          :options="[
+            { label: '已配置连接 (' + providers.length + ')', value: 'connections' },
+            { label: '连接器市场 (8)', value: 'catalog' }
+          ]"
+        />
+        <a-radio-group v-if="activeSection === 'connections'" v-model:value="viewMode" button-style="solid">
+          <a-radio-button value="card">
+            <AppstoreOutlined /> 卡片
+          </a-radio-button>
+          <a-radio-button value="table">
+            <BarsOutlined /> 表格
+          </a-radio-button>
+        </a-radio-group>
         <a-select
+          v-if="activeSection === 'connections'"
           v-model:value="sourceFilter"
           :options="sourceOptions"
           class="source-filter"
+          style="width: 150px"
           @change="handleSourceFilterChange" />
         <a-button type="primary" @click="showCreate">
           <template #icon><PlusOutlined /></template>
-          添加身份源
+          添加自定义身份源
         </a-button>
       </div>
     </div>
 
-    <a-table :dataSource="providers" :columns="columns" :loading="loading"
-             :pagination="pagination" :scroll="{ x: 1900 }"
-             @change="handleTableChange" row-key="id" size="middle">
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'type'">
-          <a-tag :color="providerMeta(record.providerType).color" class="provider-tag">
-            <component :is="providerMeta(record.providerType).icon" />
-            {{ providerMeta(record.providerType).label }}
-          </a-tag>
-        </template>
-        <template v-if="column.key === 'source'">
-          <a-tag :color="sourceColor(record)">
-            {{ sourceLabel(record) }}
-          </a-tag>
-        </template>
-        <template v-if="column.key === 'displayOnLogin'">
-          <a-tag v-if="record.providerType === 'LDAP'">不适用</a-tag>
-          <a-switch v-else :checked="record.displayOnLogin !== false"
+    <!-- Section 1: Configured Connections -->
+    <div v-if="activeSection === 'connections'">
+      <!-- Card View -->
+      <div v-if="viewMode === 'card'" class="idp-card-grid-container">
+        <a-spin :spinning="loading">
+          <div v-if="providers.length" class="idp-card-grid">
+            <div v-for="record in providers" :key="record.id" class="idp-entity-card">
+              <div class="idp-card-top">
+                <div class="idp-avatar-box">
+                  <img v-if="record.iconUrl" :src="record.iconUrl" alt="" class="idp-avatar-img" />
+                  <component v-else :is="iconMeta(record.iconKey, record.providerType).icon" class="idp-avatar-icon" />
+                </div>
+                <div class="idp-card-main-info">
+                  <div class="idp-title-line">
+                    <h4 class="idp-card-title">{{ record.providerName }}</h4>
+                    <a-tag :color="providerMeta(record.providerType).color">
+                      {{ providerMeta(record.providerType).label }}
+                    </a-tag>
+                  </div>
+                  <div class="idp-sub-id">
+                    <span class="reg-label">ID:</span>
+                    <code class="reg-code" :title="record.registrationId">{{ record.registrationId }}</code>
+                    <a-tooltip title="复制 ID">
+                      <a-button type="text" size="small" class="copy-icon-btn" @click.stop="copyToClipboard(record.registrationId)">
+                        <CopyOutlined />
+                      </a-button>
+                    </a-tooltip>
+                  </div>
+                </div>
+              </div>
+
+              <div class="idp-card-meta">
+                <div class="idp-meta-item">
+                  <span class="meta-label">来源:</span>
+                  <a-tag :color="sourceColor(record)">{{ sourceLabel(record) }}</a-tag>
+                </div>
+                <div class="idp-meta-item">
+                  <span class="meta-label">策略:</span>
+                  <a-tag color="geekblue">{{ record.linkingStrategy || 'AUTO_REGISTER' }}</a-tag>
+                </div>
+                <div v-if="record.providerType !== 'LDAP'" class="idp-meta-item">
+                  <span class="meta-label">登录页:</span>
+                  <a-switch
+                    :checked="record.displayOnLogin !== false"
                     :loading="record.displayUpdating"
+                    size="small"
                     @change="val => toggleLoginDisplay(record, val)"
-                    checked-children="显示" un-checked-children="隐藏" />
+                  />
+                  <span class="status-pill-text" :class="record.displayOnLogin !== false ? 'is-enabled' : 'is-disabled'">
+                    {{ record.displayOnLogin !== false ? '显示' : '隐藏' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="idp-card-footer">
+                <div class="status-toggle-wrap">
+                  <span class="status-label">状态:</span>
+                  <a-tag v-if="isConfigProvider(record)" color="green">配置生效</a-tag>
+                  <template v-else>
+                    <a-switch
+                      :checked="record.enabled"
+                      size="small"
+                      @change="val => toggleStatus(record, val)"
+                    />
+                    <span class="status-pill-text" :class="record.enabled ? 'is-enabled' : 'is-disabled'">
+                      {{ record.enabled ? '已启用' : '已禁用' }}
+                    </span>
+                  </template>
+                </div>
+                <div class="idp-actions-wrap">
+                  <a-button type="text" size="small" @click="handleTest(record, false)">
+                    测试
+                  </a-button>
+                  <a-button type="text" size="small" @click="showConfig(record)">
+                    配置
+                  </a-button>
+                  <a-button v-if="!isConfigProvider(record)" type="text" size="small" @click="showEdit(record)">
+                    编辑
+                  </a-button>
+                  <a-dropdown :trigger="['click']">
+                    <a-button type="text" size="small">更多</a-button>
+                    <template #overlay>
+                      <a-menu>
+                        <a-menu-item key="probe" @click="handleTest(record, true)">
+                          远程探测
+                        </a-menu-item>
+                        <template v-if="record.providerType === 'LDAP'">
+                          <a-menu-item key="sync-dry" @click="handleLdapSync(record, true)">
+                            同步预演
+                          </a-menu-item>
+                          <a-menu-item key="sync-exec" @click="handleLdapSync(record, false)">
+                            立即同步
+                          </a-menu-item>
+                        </template>
+                        <template v-if="!isConfigProvider(record)">
+                          <a-menu-divider />
+                          <a-menu-item key="delete" danger>
+                            <a-popconfirm title="确认删除此身份源？" @confirm="handleDelete(record.id)">
+                              <span style="color: #ff4d4f">删除身份源</span>
+                            </a-popconfirm>
+                          </a-menu-item>
+                        </template>
+                      </a-menu>
+                    </template>
+                  </a-dropdown>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="!loading" class="idp-empty-wrap">
+            <a-empty description="暂未配置任何身份源，您可以从上方市场挑选常用连接器或自定义创建" />
+            <a-button type="primary" style="margin-top: 16px" @click="activeSection = 'catalog'">
+              浏览连接器市场
+            </a-button>
+          </div>
+        </a-spin>
+      </div>
+
+      <!-- Table View -->
+      <a-table
+        v-else
+        :dataSource="providers"
+        :columns="columns"
+        :loading="loading"
+        :pagination="pagination"
+        :scroll="{ x: 1400 }"
+        @change="handleTableChange"
+        row-key="id"
+        size="middle">
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'type'">
+            <a-tag :color="providerMeta(record.providerType).color" class="provider-tag">
+              <component :is="providerMeta(record.providerType).icon" />
+              {{ providerMeta(record.providerType).label }}
+            </a-tag>
+          </template>
+          <template v-if="column.key === 'source'">
+            <a-tag :color="sourceColor(record)">
+              {{ sourceLabel(record) }}
+            </a-tag>
+          </template>
+          <template v-if="column.key === 'displayOnLogin'">
+            <a-tag v-if="record.providerType === 'LDAP'">不适用</a-tag>
+            <div v-else class="table-switch-wrap">
+              <a-switch :checked="record.displayOnLogin !== false"
+                        :loading="record.displayUpdating"
+                        size="small"
+                        @change="val => toggleLoginDisplay(record, val)" />
+              <span class="status-pill-text" :class="record.displayOnLogin !== false ? 'is-enabled' : 'is-disabled'">
+                {{ record.displayOnLogin !== false ? '显示' : '隐藏' }}
+              </span>
+            </div>
+          </template>
+          <template v-if="column.key === 'status'">
+            <a-tag v-if="isConfigProvider(record)" color="green">配置生效</a-tag>
+            <div v-else class="table-switch-wrap">
+              <a-switch :checked="record.enabled" size="small" @change="val => toggleStatus(record, val)" />
+              <span class="status-pill-text" :class="record.enabled ? 'is-enabled' : 'is-disabled'">
+                {{ record.enabled ? '已启用' : '已禁用' }}
+              </span>
+            </div>
+          </template>
+          <template v-if="column.key === 'action'">
+            <a-space size="small" v-if="!isConfigProvider(record)">
+              <a @click="showConfig(record)">查看配置</a>
+              <a @click="showEdit(record)">编辑</a>
+              <a @click="handleTest(record, false)">测试</a>
+              <a-dropdown :trigger="['click']">
+                <a class="ant-dropdown-link" @click.prevent>
+                  更多 <DownOutlined />
+                </a>
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item key="probe">
+                      <a-popconfirm title="远程探测会访问外部 URL，确认执行？" @confirm="handleTest(record, true)">
+                        <span>远程探测</span>
+                      </a-popconfirm>
+                    </a-menu-item>
+                    <template v-if="record.providerType === 'LDAP'">
+                      <a-menu-item key="sync-dry" @click="handleLdapSync(record, true)">
+                        同步预演
+                      </a-menu-item>
+                      <a-menu-item key="sync-exec">
+                        <a-popconfirm title="确认同步 LDAP 用户？" @confirm="handleLdapSync(record, false)">
+                          <span>立即同步</span>
+                        </a-popconfirm>
+                      </a-menu-item>
+                    </template>
+                    <a-menu-divider />
+                    <a-menu-item key="delete" danger>
+                      <a-popconfirm title="确认删除此身份源？" @confirm="handleDelete(record.id)">
+                        <span style="color: #ff4d4f">删除身份源</span>
+                      </a-popconfirm>
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </a-space>
+            <a-space v-else>
+              <a @click="showConfig(record)">查看配置</a>
+              <a-typography-text type="secondary">配置文件只读</a-typography-text>
+            </a-space>
+          </template>
         </template>
-        <template v-if="column.key === 'status'">
-          <a-tag v-if="isConfigProvider(record)" color="green">配置生效</a-tag>
-          <a-switch v-else :checked="record.enabled" @change="val => toggleStatus(record, val)"
-                    checked-children="启用" un-checked-children="禁用" />
-        </template>
-        <template v-if="column.key === 'action'">
-          <a-space v-if="!isConfigProvider(record)">
-            <a @click="showConfig(record)">查看配置</a>
-            <a @click="showEdit(record)">编辑</a>
-            <a @click="handleTest(record, false)">测试</a>
-            <a-popconfirm title="远程探测会访问身份源配置的外部 URL，确认执行？" @confirm="handleTest(record, true)">
-              <a>远程探测</a>
-            </a-popconfirm>
-            <a v-if="record.providerType === 'LDAP'" @click="handleLdapSync(record, true)">同步预演</a>
-            <a-popconfirm v-if="record.providerType === 'LDAP'" title="确认把 LDAP/AD 用户同步到本地目录？" @confirm="handleLdapSync(record, false)">
-              <a>同步</a>
-            </a-popconfirm>
-            <a-popconfirm title="确认删除此身份源？" @confirm="handleDelete(record.id)">
-              <a style="color: #ff4d4f">删除</a>
-            </a-popconfirm>
-          </a-space>
-          <a-space v-else>
-            <a @click="showConfig(record)">查看配置</a>
-            <a-typography-text type="secondary">配置文件只读</a-typography-text>
-          </a-space>
-        </template>
-      </template>
-    </a-table>
+      </a-table>
+    </div>
+
+    <!-- Section 2: Catalog Market (Authing Style IdP Marketplace) -->
+    <div v-else class="idp-catalog-section">
+      <div class="catalog-filters">
+        <a-radio-group v-model:value="catalogCategoryFilter" button-style="solid">
+          <a-radio-button value="all">全部连接器 (8)</a-radio-button>
+          <a-radio-button value="social">社交与个人登录 (5)</a-radio-button>
+          <a-radio-button value="enterprise">企业级身份源 SSO (3)</a-radio-button>
+        </a-radio-group>
+        <span class="catalog-count-tip">点击任意连接器卡片一键配置预填</span>
+      </div>
+
+      <div class="idp-catalog-grid">
+        <div
+          v-for="item in filteredCatalog"
+          :key="item.key"
+          class="catalog-card"
+          @click="handleConnectFromCatalog(item)">
+          <div class="catalog-card-header">
+            <div class="catalog-icon-wrapper" :style="{ color: item.color }">
+              <component :is="iconMeta(item.iconKey, item.type).icon" />
+            </div>
+            <div class="catalog-title-box">
+              <h4 class="catalog-title">{{ item.name }}</h4>
+              <a-tag :color="item.category === 'social' ? 'blue' : 'purple'">
+                {{ item.type }}
+              </a-tag>
+            </div>
+          </div>
+          <p class="catalog-desc">{{ item.desc }}</p>
+          <div class="catalog-card-footer">
+            <span class="catalog-category-tag">{{ item.category === 'social' ? '社交身份' : '企业目录/SSO' }}</span>
+            <a-button type="primary" size="small" ghost>
+              + 连接
+            </a-button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <a-modal v-model:open="modalVisible" :title="isEdit ? '编辑身份源' : '添加身份源'"
-             @ok="handleSubmit" :confirmLoading="submitting" width="780px">
+             @ok="handleSubmit" :confirmLoading="submitting" width="780px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto', paddingRight: '12px' }">
       <a-form :model="form" layout="vertical">
         <a-form-item label="提供商类型" required>
           <div class="provider-type-grid" :class="{ disabled: isEdit }">
@@ -101,9 +317,11 @@
           <a-col :span="12">
             <a-form-item label="登录页展示" class="idp-display-form-item">
               <div class="idp-display-control">
-                <a-switch v-model:checked="form.displayOnLogin"
-                          checked-children="显示" un-checked-children="隐藏" />
-                <span>关闭后不会出现在 server 登录页，已配置的授权入口仍保留。</span>
+                <a-switch v-model:checked="form.displayOnLogin" />
+                <span class="status-pill-text" :class="form.displayOnLogin !== false ? 'is-enabled' : 'is-disabled'">
+                  {{ form.displayOnLogin !== false ? '显示' : '隐藏' }}
+                </span>
+                <span class="hint-text">关闭后不会出现在 server 登录页，已配置的授权入口仍保留。</span>
               </div>
             </a-form-item>
           </a-col>
@@ -348,7 +566,8 @@
       </a-form>
     </a-modal>
 
-    <a-modal v-model:open="configVisible" title="查看身份源配置" :footer="null" width="840px">
+    <a-modal v-model:open="configVisible" title="查看身份源配置" :footer="null" width="840px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }">
       <template v-if="configRecord">
         <div class="config-view-header">
           <div>
@@ -504,10 +723,14 @@
 
         <a-divider orientation="left">属性映射</a-divider>
         <pre class="config-pre">{{ displayText(configRecord.attributeMapping) }}</pre>
+        <div style="margin-top: 20px; text-align: right;">
+          <a-button type="primary" @click="configVisible = false">关闭</a-button>
+        </div>
       </template>
     </a-modal>
 
-    <a-modal v-model:open="testVisible" title="身份源测试结果" :footer="null" width="640px">
+    <a-modal v-model:open="testVisible" title="身份源测试结果" :footer="null" width="640px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }">
       <a-alert :type="testResult.success ? 'success' : 'error'"
                :message="testResult.message || (testResult.success ? '配置检查通过' : '配置检查失败')"
                show-icon style="margin-bottom: 16px" />
@@ -516,9 +739,13 @@
           <a-tag :color="checkColor(item.value)">{{ checkLabel(item.value) }}</a-tag>
         </a-descriptions-item>
       </a-descriptions>
+      <div style="margin-top: 20px; text-align: right;">
+        <a-button type="primary" @click="testVisible = false">关闭</a-button>
+      </div>
     </a-modal>
 
-    <a-modal v-model:open="syncVisible" title="LDAP/AD 同步结果" :footer="null" width="640px">
+    <a-modal v-model:open="syncVisible" title="LDAP/AD 同步结果" :footer="null" width="640px"
+             :bodyStyle="{ maxHeight: 'calc(80vh - 120px)', overflowY: 'auto' }">
       <a-alert :type="syncResult.failed ? 'warning' : 'success'"
                :message="syncResult.message || '同步完成'"
                show-icon style="margin-bottom: 16px" />
@@ -532,6 +759,9 @@
         <a-descriptions-item label="跳过">{{ syncResult.skipped ?? 0 }}</a-descriptions-item>
         <a-descriptions-item label="失败">{{ syncResult.failed ?? 0 }}</a-descriptions-item>
       </a-descriptions>
+      <div style="margin-top: 20px; text-align: right;">
+        <a-button type="primary" @click="syncVisible = false">关闭</a-button>
+      </div>
     </a-modal>
   </div>
 </template>
@@ -552,7 +782,11 @@ import {
   TeamOutlined,
   WechatOutlined,
   PlusOutlined,
-  UploadOutlined
+  UploadOutlined,
+  AppstoreOutlined,
+  BarsOutlined,
+  CopyOutlined,
+  DownOutlined
 } from '@ant-design/icons-vue'
 import {
   getIdentityProviders,
@@ -564,6 +798,13 @@ import {
   testIdentityProvider,
   syncIdentityProviderUsers
 } from '../../api'
+
+const copyToClipboard = (text) => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text)
+    message.success('已复制到剪贴板')
+  }
+}
 
 const providers = ref([])
 const loading = ref(false)
@@ -600,6 +841,176 @@ const iconModeOptions = [
   { label: '图标库', value: 'library' },
   { label: '上传图片', value: 'upload' }
 ]
+
+const activeSection = ref('connections')
+const viewMode = ref('card')
+const catalogCategoryFilter = ref('all')
+
+const idpCatalog = [
+  {
+    key: 'google',
+    name: 'Google',
+    type: 'OIDC',
+    category: 'social',
+    desc: 'Google 账号全球快捷单点登录，基于 OpenID Connect 1.0 标准协议',
+    iconKey: 'google',
+    color: '#ea4335',
+    preset: {
+      providerName: 'Google',
+      providerType: 'OIDC',
+      registrationId: 'google',
+      authorizationUri: 'https://accounts.google.com/o/oauth2/v2/auth',
+      tokenUri: 'https://oauth2.googleapis.com/token',
+      userinfoUri: 'https://openidconnect.googleapis.com/v1/userinfo',
+      jwkSetUri: 'https://www.googleapis.com/oauth2/v3/certs',
+      scopes: 'openid,profile,email',
+      iconKey: 'google'
+    }
+  },
+  {
+    key: 'github',
+    name: 'GitHub',
+    type: 'CUSTOM',
+    category: 'social',
+    desc: '面向开发者的 GitHub 账号 OAuth 2.0 授权一键登录',
+    iconKey: 'github',
+    color: '#24292f',
+    preset: {
+      providerName: 'GitHub',
+      providerType: 'CUSTOM',
+      registrationId: 'github',
+      authorizationUri: 'https://github.com/login/oauth/authorize',
+      tokenUri: 'https://github.com/login/oauth/access_token',
+      userinfoUri: 'https://api.github.com/user',
+      scopes: 'read:user,user:email',
+      iconKey: 'github'
+    }
+  },
+  {
+    key: 'wechat',
+    name: '微信扫码',
+    type: 'CUSTOM',
+    category: 'social',
+    desc: '微信开放平台网站应用微信扫码登录与公众号免密',
+    iconKey: 'wechat',
+    color: '#07c160',
+    preset: {
+      providerName: '微信扫码登录',
+      providerType: 'CUSTOM',
+      registrationId: 'wechat',
+      authorizationUri: 'https://open.weixin.qq.com/connect/qrconnect',
+      tokenUri: 'https://api.weixin.qq.com/sns/oauth2/access_token',
+      userinfoUri: 'https://api.weixin.qq.com/sns/userinfo',
+      scopes: 'snsapi_login',
+      iconKey: 'wechat'
+    }
+  },
+  {
+    key: 'feishu',
+    name: '飞书',
+    type: 'CUSTOM',
+    category: 'social',
+    desc: '飞书企业办公平台扫码登录与组织人员免密协同',
+    iconKey: 'feishu',
+    color: '#00d6b9',
+    preset: {
+      providerName: '飞书',
+      providerType: 'CUSTOM',
+      registrationId: 'feishu',
+      authorizationUri: 'https://passport.feishu.cn/suite/pas/oauth/authorize',
+      tokenUri: 'https://passport.feishu.cn/suite/pas/oauth/token',
+      userinfoUri: 'https://passport.feishu.cn/suite/pas/oauth/userinfo',
+      scopes: 'contact:user.base:readonly',
+      iconKey: 'feishu'
+    }
+  },
+  {
+    key: 'dingtalk',
+    name: '钉钉',
+    type: 'CUSTOM',
+    category: 'social',
+    desc: '钉钉企业组织工作台扫码与第三方免密授权登录',
+    iconKey: 'dingtalk',
+    color: '#007fff',
+    preset: {
+      providerName: '钉钉',
+      providerType: 'CUSTOM',
+      registrationId: 'dingtalk',
+      authorizationUri: 'https://login.dingtalk.com/oauth2/auth',
+      tokenUri: 'https://api.dingtalk.com/v1.0/oauth2/userAccessToken',
+      userinfoUri: 'https://api.dingtalk.com/v1.0/contact/users/me',
+      scopes: 'openid,corpid',
+      iconKey: 'dingtalk'
+    }
+  },
+  {
+    key: 'saml',
+    name: '企业 SAML 2.0',
+    type: 'SAML',
+    category: 'enterprise',
+    desc: '集成 Okta、Azure AD、OneLogin 等企业级 SAML 2.0 单点登录',
+    iconKey: 'saml',
+    color: '#7c3aed',
+    preset: {
+      providerName: '企业 SAML SSO',
+      providerType: 'SAML',
+      registrationId: 'saml-sso',
+      iconKey: 'saml'
+    }
+  },
+  {
+    key: 'ldap',
+    name: 'LDAP / Active Directory',
+    type: 'LDAP',
+    category: 'enterprise',
+    desc: '连接 Windows AD 或 OpenLDAP 企业员工目录，支持属性映射与批量同步',
+    iconKey: 'custom',
+    color: '#059669',
+    preset: {
+      providerName: '企业 LDAP 目录',
+      providerType: 'LDAP',
+      registrationId: 'enterprise-ldap',
+      ldapUrl: 'ldap://ad.example.com:389',
+      ldapBaseDn: 'dc=example,dc=com',
+      ldapUserSearchBase: 'ou=users',
+      ldapUserSearchFilter: '(objectClass=person)',
+      ldapUsernameAttribute: 'sAMAccountName',
+      ldapEmailAttribute: 'mail'
+    }
+  },
+  {
+    key: 'oidc',
+    name: '标准 OIDC 连接器',
+    type: 'OIDC',
+    category: 'enterprise',
+    desc: '连接任意兼容 OpenID Connect 1.0 标准的企业身份源或 IdP 服务',
+    iconKey: 'oidc',
+    color: '#2563eb',
+    preset: {
+      providerName: '标准 OIDC',
+      providerType: 'OIDC',
+      registrationId: 'custom-oidc',
+      scopes: 'openid,profile,email',
+      iconKey: 'oidc'
+    }
+  }
+]
+
+const filteredCatalog = computed(() => {
+  if (catalogCategoryFilter.value === 'all') return idpCatalog
+  return idpCatalog.filter(item => item.category === catalogCategoryFilter.value)
+})
+
+const handleConnectFromCatalog = (item) => {
+  resetForm()
+  Object.assign(form, item.preset)
+  if (item.preset.iconKey) {
+    iconMode.value = 'library'
+  }
+  isEdit.value = false
+  editId.value = null
+  modalVisible.value = true
+}
 
 const providerTypeOptions = [
   { value: 'CUSTOM', label: 'Custom', description: '自定义 OAuth2', icon: ApiOutlined, color: 'default' },
@@ -679,7 +1090,7 @@ const columns = [
   { title: '顺序', dataIndex: 'displayOrder', key: 'order', width: 80 },
   { title: '登录页', key: 'displayOnLogin', width: 120 },
   { title: '状态', key: 'status', width: 100 },
-  { title: '操作', key: 'action', width: 620, fixed: 'right' }
+  { title: '操作', key: 'action', width: 220, fixed: 'right' }
 ]
 
 const checkItems = computed(() =>
@@ -926,6 +1337,315 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
+.page-container {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.page-subtitle {
+  color: var(--aa-text-secondary);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.idp-card-grid-container {
+  margin-top: 16px;
+}
+
+.idp-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.idp-entity-card {
+  background: #ffffff;
+  border: 1px solid var(--aa-border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--aa-shadow-sm);
+}
+
+.idp-entity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--aa-shadow-md);
+  border-color: #cbd5e1;
+}
+
+.idp-card-top {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.idp-avatar-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--aa-border);
+}
+
+.idp-avatar-icon {
+  font-size: 22px;
+  color: var(--aa-primary);
+}
+
+.idp-avatar-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.idp-card-main-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.idp-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.idp-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--aa-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.idp-sub-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--aa-text-muted);
+}
+
+.reg-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--aa-text-secondary);
+}
+
+.reg-code {
+  font-family: var(--aa-font-mono);
+  font-size: 12px;
+  background: #f1f5f9;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #334155;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-inline {
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+.idp-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 16px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid var(--aa-border-light);
+}
+
+.idp-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.meta-label {
+  color: var(--aa-text-secondary);
+  font-size: 12px;
+}
+
+.idp-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--aa-border-light);
+  padding-top: 14px;
+  margin-top: auto;
+}
+
+.status-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-switch-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-pill-text {
+  font-size: 12px;
+  font-weight: 500;
+
+  &.is-enabled {
+    color: var(--aa-primary);
+  }
+
+  &.is-disabled {
+    color: var(--aa-text-muted);
+  }
+}
+
+.status-label {
+  font-size: 12px;
+  color: var(--aa-text-secondary);
+}
+
+.idp-actions-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.idp-empty-wrap {
+  padding: 60px 0;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px dashed var(--aa-border);
+  text-align: center;
+}
+
+/* IdP Catalog Market */
+.idp-catalog-section {
+  margin-top: 16px;
+}
+
+.catalog-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.catalog-count-tip {
+  font-size: 13px;
+  color: var(--aa-text-secondary);
+}
+
+.idp-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.catalog-card {
+  background: #ffffff;
+  border: 1px solid var(--aa-border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--aa-shadow-sm);
+}
+
+.catalog-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--aa-primary);
+  box-shadow: 0 10px 24px rgba(33, 82, 255, 0.12);
+}
+
+.catalog-card-header {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.catalog-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: 1px solid var(--aa-border-light);
+  flex-shrink: 0;
+}
+
+.catalog-title-box {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.catalog-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--aa-text-primary);
+}
+
+.catalog-desc {
+  color: var(--aa-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  min-height: 40px;
+}
+
+.catalog-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--aa-border-light);
+  padding-top: 12px;
+}
+
+.catalog-category-tag {
+  font-size: 12px;
+  color: var(--aa-text-muted);
+}
+
 .provider-tag {
   display: inline-flex;
   align-items: center;
